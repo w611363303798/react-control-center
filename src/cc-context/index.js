@@ -1,4 +1,4 @@
-import { MODULE_GLOBAL } from '../support/constant';
+import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 
 /**
  ccClassContext:{
@@ -8,9 +8,9 @@ import { MODULE_GLOBAL } from '../support/constant';
  }
  */
 const ccContext = {
-   // if isStrict is true, every error will be throw out instead of console.error, 
-   // but this may crash your app, make sure you have a nice error handling way,
-   // like componentDidCatch in react 16.*
+  // if isStrict is true, every error will be throw out instead of console.error, 
+  // but this may crash your app, make sure you have a nice error handling way,
+  // like componentDidCatch in react 16.*
   isStrict: false,
   returnRootState: false,
   isModuleMode: false,
@@ -22,7 +22,14 @@ const ccContext = {
 
   },
   store: {
-    _state: {},
+    _state: {
+      [MODULE_GLOBAL]: {
+
+      },
+      [MODULE_CC]: {
+
+      }
+    },
     getState: function () {
       if (ccContext.returnRootState) {
         return ccContext.store._state;
@@ -42,7 +49,14 @@ const ccContext = {
     }
   },
   reducer: {
-    _reducers: {}
+    _reducers: {
+      [MODULE_GLOBAL]: {
+
+      },
+      [MODULE_CC]: {
+
+      }
+    }
   }
 }
 

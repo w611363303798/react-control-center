@@ -35,9 +35,24 @@ function extractSharedState(state, sharedStateKeys) {
 options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
 */
-export default function register(ccClassKey, { module = MODULE_GLOBAL, sharedStateKeys = [] } = {}) {
-  if (!ccContext.isModuleMode && module !== MODULE_GLOBAL) {
-    throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `module:${module}`);
+export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerModule, sharedStateKeys = [] } = {}) {
+  const _state = ccContext.store._state;
+  const _reducers = ccContext.reducer._reducers;
+  const _reducerModule = reducerModule || module;//if reducerModule not defined, will be equal module;
+  if (!ccContext.isModuleMode) {
+    if (module !== MODULE_GLOBAL) {
+      throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `module:${module}`);
+    }
+    if (_reducerModule != MODULE_GLOBAL) {
+      throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `reducerModule:${_reducerModule}`);
+    }
+  } else {
+    if (!_state[module]) {
+      throw util.makeError(ERR.CC_CLASS_STORE_MODULE_INVALID, `module:${module}`);
+    }
+    if (!_reducers[_reducerModule]) {
+      throw util.makeError(ERR.CC_CLASS_REDUCER_MODULE_INVALID, `reducerModule:${_reducerModule}`);
+    }
   }
 
   const contextMap = ccContext.ccClassKey_ccClassContext_;
@@ -71,7 +86,7 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, sharedSta
 
         const ccClassContext = this.bindDataToCcClassContext(ccClassKey, ccUniqueKey, ccOption);
         const reactSetState = this.setState;
-        this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, sharedStateKeys, reactSetState);
+        this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys, reactSetState);
       }
 
       // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -108,23 +123,25 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, sharedSta
         return classContext;
       }
 
-      mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, sharedStateKeys, reactSetState) {
+      mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, reducerModule, sharedStateKeys, reactSetState) {
         this.cc = {
-          ccState: { ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, sharedStateKeys },
+          ccState: { ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, reducerModule, sharedStateKeys },
           ccUniqueKey,
           ccKey,
           reactSetState,
           setState: this.changeState,
-          dispatch: ({ module, type, payload, cb } = {}) => {
-            const { ccUniqueKey, ccOption, module: currentModule } = this.cc.ccState;
-            const toModule = module || currentModule;//if module not defined, will find currentModule's reducer
+          dispatch: ({ reducerModule, type, payload, cb } = {}) => {
+            const { ccUniqueKey, ccOption, module, reducerModule: currentReducerModule } = this.cc.ccState;
+            const targetModule = reducerModule || currentReducerModule;//if reducerModule not defined, will find currentReducerModule's reducer
 
-            const reducerFn = ccContext.reducer._reducers[toModule][type];
-            if (!reducerFn) return console.error(`no reducer defined in ccContext for module:${toModule}/type:${type}`);
+            const targetReducerMap = ccContext.reducer._reducers[targetModule];
+            if (!targetReducerMap) return console.error(`no reducerMap found for module:${targetModule}`);
+            const reducerFn = targetReducerMap[type];
+            if (!reducerFn) return console.error(`no reducer defined in ccContext for module:${targetModule}/type:${type}`);
             const errMsg = util.verifyCcAction({ type, payload });
             if (errMsg) return console.error(errMsg);
 
-            const dispatchContext = { ccUniqueKey, ccOption, toModule, type, state: this.state };
+            const dispatchContext = { ccUniqueKey, ccOption, module, reducerModule: targetModule, type, state: this.state };
             // const mail = util.makeStateMail(ccUniqueKey, ccOption, toModule, type, cb);
             if (cb) {
               reducerFn(this.changeStateClosureReactCb(cb), payload, dispatchContext);
@@ -150,7 +167,7 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, sharedSta
 
       changeState(state, cb) {
         const { module, ccOption } = this.cc.ccState;
-        // who dispatch the action, who will receive the whole state
+        // who dispatch the action, who will go to change the whole received state 
         this.cc.reactSetState(state, cb);
         if (ccOption.syncState) {
           this.broadcastState(module, state);

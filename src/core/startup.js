@@ -4,17 +4,20 @@ import ccContext from '../cc-context';
 
 const vbi = verboseInfo;
 
+function checkModuleNames(moduleNames) {
+  const includeCC = moduleNames.filter(name => MODULE_CC_LIKE.includes(name)).length > 0;
+  if (includeCC) {
+    throw util.makeError(ERR.MODULE_KEY_CC_FOUND);
+  }
+}
+
 function bindStoreToCcContext(store, isModuleMode) {
-  let mergedStore;
+  const _state = ccContext.store._state;
   if (isModuleMode) {
     const moduleNames = Object.keys(store);
-    const includeCC = moduleNames.filter(name => MODULE_CC_LIKE.includes(name)).length > 0;
-    if (includeCC) {
-      throw util.makeError(ERR.STORE_KEY_CC_FOUND);
-    }
+    checkModuleNames(moduleNames);
 
     const len = moduleNames.length;
-    const hasGlobalModule = false;
     for (let i = 0; i < len; i++) {
       const moduleName = moduleNames[i];
       if (!util.verifyModuleName(moduleName)) {
@@ -24,16 +27,12 @@ function bindStoreToCcContext(store, isModuleMode) {
       if (!verifyModuleValue(moduleValue)) {
         throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi(`moduleName:${moduleName}'s value is invalid!`));
       }
-      if (moduleName === MODULE_GLOBAL) hasGlobalModule = true;
+      _state[moduleName] = moduleValue;
+      if (moduleName === MODULE_GLOBAL) {
+        console.log('%c$$global module state found while startup cc!', 'color:green;border:1px solid green;')
+      }
     }
-    mergedStore = { ...store, [MODULE_CC]: {} };
-    if (!hasGlobalModule) mergedStore[MODULE_GLOBAL] = {};
-  } else {
-    mergedStore = { [MODULE_GLOBAL]: store, [MODULE_CC]: {} };
   }
-  ccContext.store._state = mergedStore;
-
-  return mergedStore;
 }
 
 /**
@@ -42,21 +41,18 @@ function bindStoreToCcContext(store, isModuleMode) {
  * @param {*} mergedStore
  * @param {*} namespacedKeyReducers may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
  */
-function bindNamespacedKeyReducersToCcContext(mergedStore, namespacedKeyReducers) {
+function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
   const namespacedActionTypes = Object.keys(reducers);
-  const len2 = namespacedActionTypes.length;
-  for (let i = 0; i < len2; i++) {
+  const _reducers = ccContext.reducer._reducers;
+  const len = namespacedActionTypes.length;
+  for (let i = 0; i < len; i++) {
     const actionType = namespacedActionTypes[i];
     if (!util.verifyActionType(actionType)) {
       throw util.makeError(ERR.REDUCER_ACTION_TYPE_NAMING_INVALID, ` actionType:${actionType} is invalid!`);
     }
-    const { moduleName } = util.disassembleActionType(actionType);
-    if (!mergedStore[moduleName]) {
-      throw util.makeError(ERR.REDUCER_ACTION_TYPE_NO_MODULE, ` actionType:${actionType}'s moduleName:${moduleName} is invalid!`);
-    }
+    // const { moduleName } = util.disassembleActionType(actionType);
+    _reducers[actionType] = namespacedKeyReducers[actionType];
   }
-
-  ccContext.reducer._reducers = reducers;
 }
 
 /**
@@ -65,20 +61,23 @@ function bindNamespacedKeyReducersToCcContext(mergedStore, namespacedKeyReducers
  * @param {*} mergedStore
  * @param {*} reducers may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
  */
-function bindReducersToCcContext(mergedStore, reducers, isModuleMode) {
+function bindReducersToCcContext(reducers, isModuleMode) {
   const _reducers = ccContext.reducer._reducers;
   if (isModuleMode) {
     const moduleNames = Object.keys(reducers);
+    checkModuleNames(moduleNames);
+
     const len = moduleNames.length;
     for (let i = 0; i < len; i++) {
       const moduleName = moduleNames[i];
-      if (!mergedStore[moduleName]) {
-        throw util.makeError(ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE, vbi(`moduleName:${moduleName} is invalid!`));
-      }
+      // if (!mergedStore[moduleName]) {
+      //   throw util.makeError(ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE, vbi(`moduleName:${moduleName} is invalid!`));
+      // }
       _reducers[moduleName] = reducers[moduleName];
     }
   } else {
-    _reducers[MODULE_GLOBAL] = reducers;
+    if (reducers.hasOwnProperty(MODULE_GLOBAL)) _reducers[MODULE_GLOBAL] = reducers[MODULE_GLOBAL];
+    else _reducers[MODULE_GLOBAL] = reducers;
   }
 }
 
@@ -141,10 +140,10 @@ export default function ({
   ccContext.returnRootState = returnRootState;
   ccContext.isStrict = isStrict;
 
-  const mergedStore = bindStoreToCcContext(store, isModuleMode);
+  bindStoreToCcContext(store, isModuleMode);
 
-  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(mergedStore, reducers);
-  else bindReducersToCcContext(mergedStore, reducers, isModuleMode);
+  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);
+  else bindReducersToCcContext(reducers, isModuleMode);
 
   if (window) window.CC_CONTEXT = ccContext;
 }
