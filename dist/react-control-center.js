@@ -843,7 +843,7 @@
           }
         };
 
-        _proto.syncStateToOtherCcComponent = function syncStateToOtherCcComponent(moduleName, state) {
+        _proto.syncStateToOtherCcComponent = function syncStateToOtherCcComponent(moduleName, sourceSharedState) {
           var currentCcKey = this.cc.ccState.ccUniqueKey;
           var ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName]; //these ccClass subscribe the same module's state
 
@@ -851,7 +851,15 @@
             var classContext = ccContext.ccClassKey_ccClassContext_[classKey];
             var ccKeys = classContext.ccKeys,
                 ccKey_componentRef_ = classContext.ccKey_componentRef_,
-                ccKey_option_ = classContext.ccKey_option_;
+                ccKey_option_ = classContext.ccKey_option_,
+                sharedStateKeys = classContext.sharedStateKeys;
+            if (sharedStateKeys.length === 0) return;
+
+            var _extractSharedState3 = extractSharedState(sourceSharedState, sharedStateKeys),
+                sharedStateForCurrentCcClass = _extractSharedState3.sharedState,
+                isStateEmpty = _extractSharedState3.isStateEmpty;
+
+            if (isStateEmpty) return;
             ccKeys.forEach(function (ccKey) {
               if (ccKey !== currentCcKey) {
                 //exclude currentCcKey, it's setState been invoked 
@@ -859,7 +867,7 @@
 
                 if (ref) {
                   var option = ccKey_option_[ccKey];
-                  if (option.syncState) ref.cc.reactSetState(state);
+                  if (option.syncState) ref.cc.reactSetState(sharedStateForCurrentCcClass);
                 }
               }
             });
