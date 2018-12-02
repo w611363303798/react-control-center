@@ -804,10 +804,15 @@
         };
 
         _proto.changeState = function changeState(state, cb) {
-          var module = this.cc.ccState.module; // who dispatch the action, who will receive the whole state
+          var _this$cc$ccState2 = this.cc.ccState,
+              module = _this$cc$ccState2.module,
+              ccOption = _this$cc$ccState2.ccOption; // who dispatch the action, who will receive the whole state
 
           this.cc.reactSetState(state, cb);
-          this.broadcastState(module, state);
+
+          if (ccOption.syncState) {
+            this.broadcastState(module, state);
+          }
         };
 
         _proto.broadcastState = function broadcastState(module, state) {
@@ -849,12 +854,12 @@
         _proto.componentWillUnmount = function componentWillUnmount() {
           //如果父组件实现了componentWillUnmount，要调用一遍
           if (_ReactClass.prototype.componentWillUnmount) _ReactClass.prototype.componentWillUnmount.call(this);
-          var _this$cc$ccState2 = this.cc.ccState,
-              ccUniqueKey = _this$cc$ccState2.ccUniqueKey,
-              _this$cc$ccState2$ccC = _this$cc$ccState2.ccClassContext,
-              ccKey_componentRef_ = _this$cc$ccState2$ccC.ccKey_componentRef_,
-              ccKeys = _this$cc$ccState2$ccC.ccKeys,
-              ccKey_option_ = _this$cc$ccState2$ccC.ccKey_option_;
+          var _this$cc$ccState3 = this.cc.ccState,
+              ccUniqueKey = _this$cc$ccState3.ccUniqueKey,
+              _this$cc$ccState3$ccC = _this$cc$ccState3.ccClassContext,
+              ccKey_componentRef_ = _this$cc$ccState3$ccC.ccKey_componentRef_,
+              ccKeys = _this$cc$ccState3$ccC.ccKeys,
+              ccKey_option_ = _this$cc$ccState3$ccC.ccKey_option_;
           console.log("%c " + ccUniqueKey + " unset ref", 'color:blue;border:1px solid blue');
           ccKey_componentRef_[ccUniqueKey] = null;
           var ccKeyIdx = ccKeys.indexOf(ccUniqueKey);
