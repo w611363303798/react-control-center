@@ -1,5 +1,8 @@
 import _extends from "@babel/runtime/helpers/esm/extends";
-import { MODULE_GLOBAL } from '../support/constant';
+
+var _state2, _reducers;
+
+import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 /**
  ccClassContext:{
   ccKeys: [],
@@ -19,7 +22,7 @@ var ccContext = {
   moduleName_ccClassKeys_: {},
   ccClassKey_ccClassContext_: {},
   store: {
-    _state: {},
+    _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
     getState: function getState() {
       if (ccContext.returnRootState) {
         return ccContext.store._state;
@@ -41,7 +44,7 @@ var ccContext = {
     }
   },
   reducer: {
-    _reducers: {}
+    _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
   }
 };
 export default ccContext;

@@ -1,27 +1,25 @@
-import _extends from "@babel/runtime/helpers/esm/extends";
-import _readOnlyError from "@babel/runtime/helpers/esm/readOnlyError";
 import util, { verifyModuleValue, verboseInfo } from '../support/util';
 import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_CC_LIKE } from '../support/constant';
 import ccContext from '../cc-context';
 var vbi = verboseInfo;
 
+function checkModuleNames(moduleNames) {
+  var includeCC = moduleNames.filter(function (name) {
+    return MODULE_CC_LIKE.includes(name);
+  }).length > 0;
+
+  if (includeCC) {
+    throw util.makeError(ERR.MODULE_KEY_CC_FOUND);
+  }
+}
+
 function bindStoreToCcContext(store, isModuleMode) {
-  var mergedStore;
+  var _state = ccContext.store._state;
 
   if (isModuleMode) {
-    var _extends2;
-
     var moduleNames = Object.keys(store);
-    var includeCC = moduleNames.filter(function (name) {
-      return MODULE_CC_LIKE.includes(name);
-    }).length > 0;
-
-    if (includeCC) {
-      throw util.makeError(ERR.STORE_KEY_CC_FOUND);
-    }
-
+    checkModuleNames(moduleNames);
     var len = moduleNames.length;
-    var hasGlobalModule = false;
 
     for (var i = 0; i < len; i++) {
       var moduleName = moduleNames[i];
@@ -36,19 +34,13 @@ function bindStoreToCcContext(store, isModuleMode) {
         throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi("moduleName:" + moduleName + "'s value is invalid!"));
       }
 
-      if (moduleName === MODULE_GLOBAL) hasGlobalModule = (_readOnlyError("hasGlobalModule"), true);
+      _state[moduleName] = moduleValue;
+
+      if (moduleName === MODULE_GLOBAL) {
+        console.log('%c$$global module state found while startup cc!', 'color:green;border:1px solid green;');
+      }
     }
-
-    mergedStore = _extends({}, store, (_extends2 = {}, _extends2[MODULE_CC] = {}, _extends2));
-    if (!hasGlobalModule) mergedStore[MODULE_GLOBAL] = {};
-  } else {
-    var _mergedStore;
-
-    mergedStore = (_mergedStore = {}, _mergedStore[MODULE_GLOBAL] = store, _mergedStore[MODULE_CC] = {}, _mergedStore);
   }
-
-  ccContext.store._state = mergedStore;
-  return mergedStore;
 }
 /**
  * @description
@@ -58,26 +50,21 @@ function bindStoreToCcContext(store, isModuleMode) {
  */
 
 
-function bindNamespacedKeyReducersToCcContext(mergedStore, namespacedKeyReducers) {
+function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
   var namespacedActionTypes = Object.keys(reducers);
-  var len2 = namespacedActionTypes.length;
+  var _reducers = ccContext.reducer._reducers;
+  var len = namespacedActionTypes.length;
 
-  for (var i = 0; i < len2; i++) {
+  for (var i = 0; i < len; i++) {
     var actionType = namespacedActionTypes[i];
 
     if (!util.verifyActionType(actionType)) {
       throw util.makeError(ERR.REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
-    }
+    } // const { moduleName } = util.disassembleActionType(actionType);
 
-    var _util$disassembleActi = util.disassembleActionType(actionType),
-        moduleName = _util$disassembleActi.moduleName;
 
-    if (!mergedStore[moduleName]) {
-      throw util.makeError(ERR.REDUCER_ACTION_TYPE_NO_MODULE, " actionType:" + actionType + "'s moduleName:" + moduleName + " is invalid!");
-    }
+    _reducers[actionType] = namespacedKeyReducers[actionType];
   }
-
-  ccContext.reducer._reducers = reducers;
 }
 /**
  * @description
@@ -87,24 +74,23 @@ function bindNamespacedKeyReducersToCcContext(mergedStore, namespacedKeyReducers
  */
 
 
-function bindReducersToCcContext(mergedStore, reducers, isModuleMode) {
+function bindReducersToCcContext(reducers, isModuleMode) {
   var _reducers = ccContext.reducer._reducers;
 
   if (isModuleMode) {
     var moduleNames = Object.keys(reducers);
+    checkModuleNames(moduleNames);
     var len = moduleNames.length;
 
     for (var i = 0; i < len; i++) {
-      var moduleName = moduleNames[i];
-
-      if (!mergedStore[moduleName]) {
-        throw util.makeError(ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE, vbi("moduleName:" + moduleName + " is invalid!"));
-      }
+      var moduleName = moduleNames[i]; // if (!mergedStore[moduleName]) {
+      //   throw util.makeError(ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE, vbi(`moduleName:${moduleName} is invalid!`));
+      // }
 
       _reducers[moduleName] = reducers[moduleName];
     }
   } else {
-    _reducers[MODULE_GLOBAL] = reducers;
+    if (reducers.hasOwnProperty(MODULE_GLOBAL)) _reducers[MODULE_GLOBAL] = reducers[MODULE_GLOBAL];else _reducers[MODULE_GLOBAL] = reducers;
   }
 }
 /* 
@@ -174,7 +160,7 @@ export default function (_temp) {
   ccContext.isModuleMode = isModuleMode;
   ccContext.returnRootState = returnRootState;
   ccContext.isStrict = isStrict;
-  var mergedStore = bindStoreToCcContext(store, isModuleMode);
-  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(mergedStore, reducers);else bindReducersToCcContext(mergedStore, reducers, isModuleMode);
+  bindStoreToCcContext(store, isModuleMode);
+  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);else bindReducersToCcContext(reducers, isModuleMode);
   if (window) window.CC_CONTEXT = ccContext;
 }

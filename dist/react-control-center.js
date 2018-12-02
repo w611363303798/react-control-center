@@ -1,11 +1,10 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@babel/runtime/helpers/esm/extends'), require('@babel/runtime/helpers/esm/readOnlyError'), require('crypto'), require('@babel/runtime/helpers/esm/inheritsLoose'), require('@babel/runtime/helpers/esm/assertThisInitialized')) :
-  typeof define === 'function' && define.amd ? define(['@babel/runtime/helpers/esm/extends', '@babel/runtime/helpers/esm/readOnlyError', 'crypto', '@babel/runtime/helpers/esm/inheritsLoose', '@babel/runtime/helpers/esm/assertThisInitialized'], factory) :
-  (global.ReactControlCenter = factory(global._extends,global._readOnlyError,global.crypto,global._inheritsLoose,global._assertThisInitialized));
-}(this, (function (_extends,_readOnlyError,crypto,_inheritsLoose,_assertThisInitialized) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@babel/runtime/helpers/esm/extends'), require('crypto'), require('@babel/runtime/helpers/esm/inheritsLoose'), require('@babel/runtime/helpers/esm/assertThisInitialized')) :
+  typeof define === 'function' && define.amd ? define(['@babel/runtime/helpers/esm/extends', 'crypto', '@babel/runtime/helpers/esm/inheritsLoose', '@babel/runtime/helpers/esm/assertThisInitialized'], factory) :
+  (global.ReactControlCenter = factory(global._extends,global.crypto,global._inheritsLoose,global._assertThisInitialized));
+}(this, (function (_extends,crypto,_inheritsLoose,_assertThisInitialized) { 'use strict';
 
   _extends = _extends && _extends.hasOwnProperty('default') ? _extends['default'] : _extends;
-  _readOnlyError = _readOnlyError && _readOnlyError.hasOwnProperty('default') ? _readOnlyError['default'] : _readOnlyError;
   crypto = crypto && crypto.hasOwnProperty('default') ? crypto['default'] : crypto;
   _inheritsLoose = _inheritsLoose && _inheritsLoose.hasOwnProperty('default') ? _inheritsLoose['default'] : _inheritsLoose;
   _assertThisInitialized = _assertThisInitialized && _assertThisInitialized.hasOwnProperty('default') ? _assertThisInitialized['default'] : _assertThisInitialized;
@@ -20,19 +19,20 @@
     CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE: 1001,
     CC_CLASS_KEY_DUPLICATE: 1002,
     CC_CLASS_NOT_FOUND: 1003,
-    CC_CLASS_INSTANCE_KEY_NOT_FOUND: 1004,
-    CC_CLASS_INSTANCE_KEY_DUPLICATE: 1005,
-    CC_CLASS_INSTANCE_OPTION_INVALID: 1006,
-    CC_CLASS_INSTANCE_NOT_FOUND: 1007,
-    CC_CLASS_INSTANCE_METHOD_NOT_FOUND: 1007,
-    STORE_KEY_CC_FOUND: 1100,
+    CC_CLASS_STORE_MODULE_INVALID: 1004,
+    CC_CLASS_REDUCER_MODULE_INVALID: 1005,
+    CC_CLASS_INSTANCE_KEY_DUPLICATE: 1006,
+    CC_CLASS_INSTANCE_OPTION_INVALID: 1007,
+    CC_CLASS_INSTANCE_NOT_FOUND: 1008,
+    CC_CLASS_INSTANCE_METHOD_NOT_FOUND: 1009,
+    MODULE_KEY_CC_FOUND: 1100,
     STORE_KEY_NAMING_INVALID: 1101,
     STORE_MODULE_VALUE_INVALID: 1102,
     REDUCER_ACTION_TYPE_NAMING_INVALID: 1201,
-    REDUCER_ACTION_TYPE_NO_MODULE: 1202,
-    REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203
+    REDUCER_ACTION_TYPE_NO_MODULE: 1202 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
+
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_NOT_FOUND] = 'ccKey must be supply to props while new a CCReactComponent!  ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.STORE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE] = "reducer key is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in reducer keys!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store or reducers! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
 
   function bindThis(_this, methods) {
     methods.forEach(function (method) {
@@ -191,6 +191,7 @@
     bindThis: bindThis
   };
 
+  var _state2, _reducers;
   /**
    ccClassContext:{
     ccKeys: [],
@@ -210,7 +211,7 @@
     moduleName_ccClassKeys_: {},
     ccClassKey_ccClassContext_: {},
     store: {
-      _state: {},
+      _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
       getState: function getState() {
         if (ccContext.returnRootState) {
           return ccContext.store._state;
@@ -232,29 +233,29 @@
       }
     },
     reducer: {
-      _reducers: {}
+      _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
     }
   };
 
   var vbi = verboseInfo;
 
+  function checkModuleNames(moduleNames) {
+    var includeCC = moduleNames.filter(function (name) {
+      return MODULE_CC_LIKE.includes(name);
+    }).length > 0;
+
+    if (includeCC) {
+      throw util.makeError(ERR.MODULE_KEY_CC_FOUND);
+    }
+  }
+
   function bindStoreToCcContext(store, isModuleMode) {
-    var mergedStore;
+    var _state = ccContext.store._state;
 
     if (isModuleMode) {
-      var _extends2;
-
       var moduleNames = Object.keys(store);
-      var includeCC = moduleNames.filter(function (name) {
-        return MODULE_CC_LIKE.includes(name);
-      }).length > 0;
-
-      if (includeCC) {
-        throw util.makeError(ERR.STORE_KEY_CC_FOUND);
-      }
-
+      checkModuleNames(moduleNames);
       var len = moduleNames.length;
-      var hasGlobalModule = false;
 
       for (var i = 0; i < len; i++) {
         var moduleName = moduleNames[i];
@@ -269,19 +270,13 @@
           throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi("moduleName:" + moduleName + "'s value is invalid!"));
         }
 
-        if (moduleName === MODULE_GLOBAL) hasGlobalModule = (_readOnlyError("hasGlobalModule"), true);
+        _state[moduleName] = moduleValue;
+
+        if (moduleName === MODULE_GLOBAL) {
+          console.log('%c$$global module state found while startup cc!', 'color:green;border:1px solid green;');
+        }
       }
-
-      mergedStore = _extends({}, store, (_extends2 = {}, _extends2[MODULE_CC] = {}, _extends2));
-      if (!hasGlobalModule) mergedStore[MODULE_GLOBAL] = {};
-    } else {
-      var _mergedStore;
-
-      mergedStore = (_mergedStore = {}, _mergedStore[MODULE_GLOBAL] = store, _mergedStore[MODULE_CC] = {}, _mergedStore);
     }
-
-    ccContext.store._state = mergedStore;
-    return mergedStore;
   }
   /**
    * @description
@@ -291,26 +286,21 @@
    */
 
 
-  function bindNamespacedKeyReducersToCcContext(mergedStore, namespacedKeyReducers) {
+  function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
     var namespacedActionTypes = Object.keys(reducers);
-    var len2 = namespacedActionTypes.length;
+    var _reducers = ccContext.reducer._reducers;
+    var len = namespacedActionTypes.length;
 
-    for (var i = 0; i < len2; i++) {
+    for (var i = 0; i < len; i++) {
       var actionType = namespacedActionTypes[i];
 
       if (!util.verifyActionType(actionType)) {
         throw util.makeError(ERR.REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
-      }
+      } // const { moduleName } = util.disassembleActionType(actionType);
 
-      var _util$disassembleActi = util.disassembleActionType(actionType),
-          moduleName = _util$disassembleActi.moduleName;
 
-      if (!mergedStore[moduleName]) {
-        throw util.makeError(ERR.REDUCER_ACTION_TYPE_NO_MODULE, " actionType:" + actionType + "'s moduleName:" + moduleName + " is invalid!");
-      }
+      _reducers[actionType] = namespacedKeyReducers[actionType];
     }
-
-    ccContext.reducer._reducers = reducers;
   }
   /**
    * @description
@@ -320,24 +310,23 @@
    */
 
 
-  function bindReducersToCcContext(mergedStore, reducers, isModuleMode) {
+  function bindReducersToCcContext(reducers, isModuleMode) {
     var _reducers = ccContext.reducer._reducers;
 
     if (isModuleMode) {
       var moduleNames = Object.keys(reducers);
+      checkModuleNames(moduleNames);
       var len = moduleNames.length;
 
       for (var i = 0; i < len; i++) {
-        var moduleName = moduleNames[i];
-
-        if (!mergedStore[moduleName]) {
-          throw util.makeError(ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE, vbi("moduleName:" + moduleName + " is invalid!"));
-        }
+        var moduleName = moduleNames[i]; // if (!mergedStore[moduleName]) {
+        //   throw util.makeError(ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE, vbi(`moduleName:${moduleName} is invalid!`));
+        // }
 
         _reducers[moduleName] = reducers[moduleName];
       }
     } else {
-      _reducers[MODULE_GLOBAL] = reducers;
+      if (reducers.hasOwnProperty(MODULE_GLOBAL)) _reducers[MODULE_GLOBAL] = reducers[MODULE_GLOBAL];else _reducers[MODULE_GLOBAL] = reducers;
     }
   }
   /* 
@@ -406,8 +395,8 @@
     ccContext.isModuleMode = isModuleMode;
     ccContext.returnRootState = returnRootState;
     ccContext.isStrict = isStrict;
-    var mergedStore = bindStoreToCcContext(store, isModuleMode);
-    if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(mergedStore, reducers);else bindReducersToCcContext(mergedStore, reducers, isModuleMode);
+    bindStoreToCcContext(store, isModuleMode);
+    if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);else bindReducersToCcContext(reducers, isModuleMode);
     if (window) window.CC_CONTEXT = ccContext;
   }
 
@@ -628,11 +617,32 @@
     var _ref = _temp === void 0 ? {} : _temp,
         _ref$module = _ref.module,
         module = _ref$module === void 0 ? MODULE_GLOBAL : _ref$module,
+        reducerModule = _ref.reducerModule,
         _ref$sharedStateKeys = _ref.sharedStateKeys,
         sharedStateKeys = _ref$sharedStateKeys === void 0 ? [] : _ref$sharedStateKeys;
 
-    if (!ccContext.isModuleMode && module !== MODULE_GLOBAL) {
-      throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "module:" + module);
+    var _state = ccContext.store._state;
+    var _reducers = ccContext.reducer._reducers;
+
+    var _reducerModule = reducerModule || module; //if reducerModule not defined, will be equal module;
+
+
+    if (!ccContext.isModuleMode) {
+      if (module !== MODULE_GLOBAL) {
+        throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "module:" + module);
+      }
+
+      if (_reducerModule != MODULE_GLOBAL) {
+        throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "reducerModule:" + _reducerModule);
+      }
+    } else {
+      if (!_state[module]) {
+        throw util.makeError(ERR.CC_CLASS_STORE_MODULE_INVALID, "module:" + module);
+      }
+
+      if (!_reducers[_reducerModule]) {
+        throw util.makeError(ERR.CC_CLASS_REDUCER_MODULE_INVALID, "reducerModule:" + _reducerModule);
+      }
     }
 
     var contextMap = ccContext.ccClassKey_ccClassContext_;
@@ -674,7 +684,7 @@
 
           var reactSetState = _this.setState;
 
-          _this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, sharedStateKeys, reactSetState);
+          _this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys, reactSetState);
 
           return _this;
         } // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -725,7 +735,7 @@
           return classContext;
         };
 
-        _proto.mapCcToInstance = function mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, sharedStateKeys, reactSetState) {
+        _proto.mapCcToInstance = function mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, reducerModule, sharedStateKeys, reactSetState) {
           var _this2 = this;
 
           this.cc = {
@@ -736,6 +746,7 @@
               ccOption: ccOption,
               ccClassContext: ccClassContext,
               module: module,
+              reducerModule: reducerModule,
               sharedStateKeys: sharedStateKeys
             },
             ccUniqueKey: ccUniqueKey,
@@ -744,7 +755,7 @@
             setState: this.changeState,
             dispatch: function dispatch(_temp2) {
               var _ref2 = _temp2 === void 0 ? {} : _temp2,
-                  module = _ref2.module,
+                  reducerModule = _ref2.reducerModule,
                   type = _ref2.type,
                   payload = _ref2.payload,
                   cb = _ref2.cb;
@@ -752,11 +763,14 @@
               var _this2$cc$ccState = _this2.cc.ccState,
                   ccUniqueKey = _this2$cc$ccState.ccUniqueKey,
                   ccOption = _this2$cc$ccState.ccOption,
-                  currentModule = _this2$cc$ccState.module;
-              var toModule = module || currentModule; //if module not defined, will find currentModule's reducer
+                  module = _this2$cc$ccState.module,
+                  currentReducerModule = _this2$cc$ccState.reducerModule;
+              var targetModule = reducerModule || currentReducerModule; //if reducerModule not defined, will find currentReducerModule's reducer
 
-              var reducerFn = ccContext.reducer._reducers[toModule][type];
-              if (!reducerFn) return console.error("no reducer defined in ccContext for module:" + toModule + "/type:" + type);
+              var targetReducerMap = ccContext.reducer._reducers[targetModule];
+              if (!targetReducerMap) return console.error("no reducerMap found for module:" + targetModule);
+              var reducerFn = targetReducerMap[type];
+              if (!reducerFn) return console.error("no reducer defined in ccContext for module:" + targetModule + "/type:" + type);
               var errMsg = util.verifyCcAction({
                 type: type,
                 payload: payload
@@ -765,7 +779,8 @@
               var dispatchContext = {
                 ccUniqueKey: ccUniqueKey,
                 ccOption: ccOption,
-                toModule: toModule,
+                module: module,
+                reducerModule: targetModule,
                 type: type,
                 state: _this2.state
               }; // const mail = util.makeStateMail(ccUniqueKey, ccOption, toModule, type, cb);
@@ -806,7 +821,7 @@
         _proto.changeState = function changeState(state, cb) {
           var _this$cc$ccState2 = this.cc.ccState,
               module = _this$cc$ccState2.module,
-              ccOption = _this$cc$ccState2.ccOption; // who dispatch the action, who will receive the whole state
+              ccOption = _this$cc$ccState2.ccOption; // who dispatch the action, who will go to change the whole received state 
 
           this.cc.reactSetState(state, cb);
 
