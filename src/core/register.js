@@ -65,7 +65,7 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, sharedSta
         let ccUniqueKey;
         if (ccKey) {
           ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
-        }else{
+        } else {
           ccUniqueKey = uuid();
         }
 
@@ -149,10 +149,12 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, sharedSta
       }
 
       changeState(state, cb) {
-        const { module } = this.cc.ccState;
+        const { module, ccOption } = this.cc.ccState;
         // who dispatch the action, who will receive the whole state
         this.cc.reactSetState(state, cb);
-        this.broadcastState(module, state);
+        if (ccOption.syncState) {
+          this.broadcastState(module, state);
+        }
       }
 
       broadcastState(module, state) {

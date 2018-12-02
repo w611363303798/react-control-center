@@ -22,6 +22,14 @@ export default function (ccClassKey, ccInstanceKey, method) {
     return console.error(_err.message);
   }
 
+  var fn = ref[method];
+
+  if (!fn) {
+    var _err2 = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi(" method:" + method));
+
+    return console.error(_err2.message);
+  }
+
   for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
     args[_key - 3] = arguments[_key];
   }
