@@ -20,6 +20,7 @@ cc内置的store和reducer可以被模块化拆分，方便你的视图逻辑和
 
 - 示例项目: https://github.com/fantasticsoul/rcc-simple-demo
 - 更多信息请参考 待添加。
+- ![工作示意图](http://cdn.boldseas.com/img/cc-1.png)
 ---
 ## 核心api
 
