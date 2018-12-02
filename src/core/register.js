@@ -183,24 +183,28 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         }
       }
 
-      syncStateToOtherCcComponent(moduleName, state) {
+      syncStateToOtherCcComponent(moduleName, sourceSharedState) {
         const { ccUniqueKey: currentCcKey } = this.cc.ccState;
         const ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName];
 
         //these ccClass subscribe the same module's state
         ccClassKeys.forEach(classKey => {
           const classContext = ccContext.ccClassKey_ccClassContext_[classKey];
-          const { ccKeys, ccKey_componentRef_, ccKey_option_ } = classContext;
+          const { ccKeys, ccKey_componentRef_, ccKey_option_, sharedStateKeys } = classContext;
+          if (sharedStateKeys.length === 0) return;
+          const {
+            sharedState: sharedStateForCurrentCcClass, isStateEmpty
+          } = extractSharedState(sourceSharedState, sharedStateKeys);
+          if (isStateEmpty) return;
+
           ccKeys.forEach(ccKey => {
             if (ccKey !== currentCcKey) {//exclude currentCcKey, it's setState been invoked 
               const ref = ccKey_componentRef_[ccKey];
               if (ref) {
                 const option = ccKey_option_[ccKey];
-                if (option.syncState) ref.cc.reactSetState(state);
+                if (option.syncState) ref.cc.reactSetState(sharedStateForCurrentCcClass);
               }
-            } else {
-
-            }
+            } 
           });
         });
       }
