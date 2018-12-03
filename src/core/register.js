@@ -5,6 +5,9 @@ import util from '../support/util';
 import uuid from 'uuid';
 
 const vbi = util.verboseInfo;
+const { store: { _state }, reducer: { _reducers } } = ccContext;
+const cl = () => 'color:green;border:1px solid green';
+const ifo = (str) => `%c${str}`;
 
 function isStateValid(state) {
   if (!state || !util.isPlainJsonObject(state)) {
@@ -36,8 +39,6 @@ options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
 */
 export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerModule, sharedStateKeys = [] } = {}) {
-  const _state = ccContext.store._state;
-  const _reducers = ccContext.reducer._reducers;
   const _reducerModule = reducerModule || module;//if reducerModule not defined, will be equal module;
   if (!ccContext.isModuleMode) {
     if (module !== MODULE_GLOBAL) {
@@ -71,22 +72,25 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
 
       constructor(props, context) {
         super(props, context);
-        const { ccKey, ccOption = { syncState: true } } = props;
+        let { ccKey, ccOption = { syncState: true } } = props;
         util.bindThis(this, [
           'bindDataToCcClassContext', 'mapCcToInstance', 'broadcastState', 'changeState',
           'syncStateToOtherCcComponent', 'changeStateClosureReactCb',
         ]);
 
         let ccUniqueKey;
+        let isCcUniqueKeyFromUuid = false;
         if (ccKey) {
           ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
         } else {
           ccUniqueKey = uuid();
+          isCcUniqueKeyFromUuid = true;
+          ccKey = ccUniqueKey;
         }
 
         const ccClassContext = this.bindDataToCcClassContext(ccClassKey, ccUniqueKey, ccOption);
         const reactSetState = this.setState;
-        this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys, reactSetState);
+        this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys, reactSetState);
       }
 
       // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -110,22 +114,25 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         if (classContext.ccKeys.includes(ccUniqueKey)) {
           throw util.makeError(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi(`ccClass:${ccClassKey},ccKey:${ccUniqueKey}`));
         }
-        classContext.ccKey_componentRef_[ccUniqueKey] = this;
+        ccContext.ccKey_ref_[ccUniqueKey] = this;
+        if (ccContext.isDebug) {
+          console.log(ifo(`register ccKey ${ccUniqueKey} to CC_CONTEXT`), cl());
+        }
         classContext.ccKeys.push(ccUniqueKey);
 
-        if (!ccOption) classContext.ccKey_option_[ccUniqueKey] = { syncState: true };
+        if (!ccOption) ccContext.ccKey_option_[ccUniqueKey] = { syncState: true };
         else {
           if (!util.verifyCcOption(ccOption)) {
             throw util.makeError(ERR.CC_CLASS_INSTANCE_OPTION_INVALID);
           }
-          classContext.ccKey_option_[ccUniqueKey] = ccOption;
+          ccContext.ccKey_option_[ccUniqueKey] = ccOption;
         }
         return classContext;
       }
 
-      mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, reducerModule, sharedStateKeys, reactSetState) {
+      mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, reducerModule, sharedStateKeys, reactSetState) {
         this.cc = {
-          ccState: { ccClassKey, ccKey, ccUniqueKey, ccOption, ccClassContext, module, reducerModule, sharedStateKeys },
+          ccState: { ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, reducerModule, sharedStateKeys },
           ccUniqueKey,
           ccKey,
           reactSetState,
@@ -134,7 +141,7 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
             const { ccUniqueKey, ccOption, module, reducerModule: currentReducerModule } = this.cc.ccState;
             const targetModule = reducerModule || currentReducerModule;//if reducerModule not defined, will find currentReducerModule's reducer
 
-            const targetReducerMap = ccContext.reducer._reducers[targetModule];
+            const targetReducerMap = _reducers[targetModule];
             if (!targetReducerMap) return console.error(`no reducerMap found for module:${targetModule}`);
             const reducerFn = targetReducerMap[type];
             if (!reducerFn) return console.error(`no reducer defined in ccContext for module:${targetModule}/type:${type}`);
@@ -186,11 +193,13 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
       syncStateToOtherCcComponent(moduleName, sourceSharedState) {
         const { ccUniqueKey: currentCcKey } = this.cc.ccState;
         const ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName];
+        const ccKey_ref_ = ccContext.ccKey_ref_;
+        const ccKey_option_ = ccContext.ccKey_option_;
 
         //these ccClass subscribe the same module's state
         ccClassKeys.forEach(classKey => {
           const classContext = ccContext.ccClassKey_ccClassContext_[classKey];
-          const { ccKeys, ccKey_componentRef_, ccKey_option_, sharedStateKeys } = classContext;
+          const { ccKeys, sharedStateKeys } = classContext;
           if (sharedStateKeys.length === 0) return;
           const {
             sharedState: sharedStateForCurrentCcClass, isStateEmpty
@@ -199,12 +208,12 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
 
           ccKeys.forEach(ccKey => {
             if (ccKey !== currentCcKey) {//exclude currentCcKey, it's setState been invoked 
-              const ref = ccKey_componentRef_[ccKey];
+              const ref = ccKey_ref_[ccKey];
               if (ref) {
                 const option = ccKey_option_[ccKey];
                 if (option.syncState) ref.cc.reactSetState(sharedStateForCurrentCcClass);
               }
-            } 
+            }
           });
         });
       }
@@ -213,12 +222,13 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         //如果父组件实现了componentWillUnmount，要调用一遍
         if (super.componentWillUnmount) super.componentWillUnmount();
 
-        const { ccUniqueKey, ccClassContext: { ccKey_componentRef_, ccKeys, ccKey_option_ } } = this.cc.ccState;
+        const { ccUniqueKey, ccClassContext: { ccKeys } } = this.cc.ccState;
         console.log(`%c ${ccUniqueKey} unset ref`, 'color:blue;border:1px solid blue');
-        ccKey_componentRef_[ccUniqueKey] = null;
+        // ccContext.ccKey_ref_[ccUniqueKey] = null;
+        delete ccContext.ccKey_ref_[ccUniqueKey];
+        delete ccContext.ccKey_option_[ccUniqueKey];
         const ccKeyIdx = ccKeys.indexOf(ccUniqueKey);
         if (ccKeyIdx >= 0) ccKeys.splice(ccKeyIdx, 1);
-        delete ccKey_option_[ccUniqueKey];
       }
 
       render() {

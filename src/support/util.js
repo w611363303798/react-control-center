@@ -44,8 +44,6 @@ export function makeCcClassContext(module, sharedStateKeys) {
     module,
     sharedStateKeys,
     ccKeys: [],
-    ccKey_componentRef_: {},
-    ccKey_option_: {},
   }
 }
 

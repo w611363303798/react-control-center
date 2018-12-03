@@ -1,5 +1,7 @@
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 
+const refs = {};
+
 /**
  ccClassContext:{
   ccKeys: [],
@@ -11,6 +13,7 @@ const ccContext = {
   // if isStrict is true, every error will be throw out instead of console.error, 
   // but this may crash your app, make sure you have a nice error handling way,
   // like componentDidCatch in react 16.*
+  isDebug: false,
   isStrict: false,
   returnRootState: false,
   isModuleMode: false,
@@ -57,7 +60,14 @@ const ccContext = {
 
       }
     }
-  }
+  },
+  ccKey_ref_: refs,
+  ccKey_option_: {
+
+  },
+  refs
 }
+
+
 
 export default ccContext;

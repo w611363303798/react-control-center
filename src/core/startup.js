@@ -132,6 +132,7 @@ export default function ({
   returnRootState = true,
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,
+  isDebug = false,
 } = {}) {
   if (ccContext.isCcAlreadyStartup) {
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
@@ -139,11 +140,15 @@ export default function ({
   ccContext.isModuleMode = isModuleMode;
   ccContext.returnRootState = returnRootState;
   ccContext.isStrict = isStrict;
+  ccContext.isDebug = isDebug;
 
   bindStoreToCcContext(store, isModuleMode);
 
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);
   else bindReducersToCcContext(reducers, isModuleMode);
 
-  if (window) window.CC_CONTEXT = ccContext;
+  if (window) {
+    window.CC_CONTEXT = ccContext;
+    window.cc = ccContext;
+  }
 }
