@@ -2,10 +2,12 @@ import ccContext from '../cc-context';
 import util from '../support/util';
 import { ERR } from '../support/constant';
 var vbi = util.verboseInfo;
+var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
+    ccKey_ref_ = ccContext.ccKey_ref_;
 export default function (ccClassKey, ccInstanceKey, method) {
   var _ref$method;
 
-  var classContext = ccContext.ccClassKey_ccClassContext_[ccClassKey];
+  var classContext = ccClassKey_ccClassContext_[ccClassKey];
 
   if (!classContext) {
     var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi(" ccClassKey:" + ccClassKey));
@@ -13,7 +15,7 @@ export default function (ccClassKey, ccInstanceKey, method) {
   }
 
   var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
-  var ref = classContext.ccKey_componentRef_[ccKey];
+  var ref = ccKey_ref_[ccKey];
 
   if (!ref) {
     var _err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi(" ccClassKey:" + ccClassKey + "/ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!

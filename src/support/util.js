@@ -1,6 +1,10 @@
 
 import { ERR_MESSAGE, MODULE_GLOBAL } from './constant';
 
+export function isHotReloadMode(){
+  return window && window.webpackHotUpdate;
+}
+
 export function bindThis(_this, methods) {
   methods.forEach(method => _this[method] = _this[method].bind(_this));
 }
@@ -36,7 +40,7 @@ export function makeError(code, extraMessage) {
   if (!message) message = `undefined message for code:${code}`;
   const error = new Error(message);
   error.code = code;
-  throw error;
+  return error;
 }
 
 export function makeCcClassContext(module, sharedStateKeys) {
@@ -132,8 +136,13 @@ export function ccClassDisplayName(className) {
   return `CC${className}`
 }
 
+export function clone(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export default {
   makeError,
+  isHotReloadMode,
   makeCcClassContext,
   makeStateMail,
   makeUniqueCcKey,
@@ -148,4 +157,5 @@ export default {
   verboseInfo,
   bindThis,
   ccClassDisplayName,
+  clone,
 }

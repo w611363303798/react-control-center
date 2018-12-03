@@ -1,4 +1,7 @@
 import { ERR_MESSAGE, MODULE_GLOBAL } from './constant';
+export function isHotReloadMode() {
+  return window && window.webpackHotUpdate;
+}
 export function bindThis(_this, methods) {
   methods.forEach(function (method) {
     return _this[method] = _this[method].bind(_this);
@@ -35,15 +38,13 @@ export function makeError(code, extraMessage) {
   if (!message) message = "undefined message for code:" + code;
   var error = new Error(message);
   error.code = code;
-  throw error;
+  return error;
 }
 export function makeCcClassContext(module, sharedStateKeys) {
   return {
     module: module,
     sharedStateKeys: sharedStateKeys,
-    ccKeys: [],
-    ccKey_componentRef_: {},
-    ccKey_option_: {}
+    ccKeys: []
   };
 }
 export function makeStateMail(ccUniqueKey, ccOption, module, type, cb) {
@@ -169,8 +170,15 @@ export function disassembleActionType(namespacedActionType) {
 export function verboseInfo(info) {
   return " --verbose-info: " + info;
 }
+export function ccClassDisplayName(className) {
+  return "CC" + className;
+}
+export function clone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
 export default {
   makeError: makeError,
+  isHotReloadMode: isHotReloadMode,
   makeCcClassContext: makeCcClassContext,
   makeStateMail: makeStateMail,
   makeUniqueCcKey: makeUniqueCcKey,
@@ -183,5 +191,7 @@ export default {
   isValueNotNull: isValueNotNull,
   disassembleActionType: disassembleActionType,
   verboseInfo: verboseInfo,
-  bindThis: bindThis
+  bindThis: bindThis,
+  ccClassDisplayName: ccClassDisplayName,
+  clone: clone
 };

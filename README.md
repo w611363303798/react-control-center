@@ -160,8 +160,8 @@ export default class App extends react.Component{
       {/*每一个CC示例都要标记不重复的ccKey，如果不提供的话，cc会自动的生成一个，cc示例默认都拥有同步state的功能，在所有cc实例都销毁后，再次实例化的话，数据会从cc的store恢复回来*/}
       <BookMenu ccKey="bm1" />
       <BookMenu ccKey="bm2" />
-      {/*默认都是接受同步数据行为或者同步数据到其他组件，通过标记ccOption.syncData=false, 该实例不再产生数据同步行为，它的setState仅仅影响自己，它实例化时，cc不会的把store的数据注入到它的state*/}
-      <BookMenu ccKey="bm3" ccOption={{syncData:false}} />
+      {/*默认都是接受同步数据行为或者同步数据到其他组件，通过标记ccOption.syncState=false, 该实例不再产生数据同步行为，它的setState仅仅影响自己，它实例化时，cc不会的把store的数据注入到它的state*/}
+      <BookMenu ccKey="bm3" ccOption={{syncState:false}} />
     </div>
   }
 }

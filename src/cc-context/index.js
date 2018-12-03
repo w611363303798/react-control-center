@@ -65,9 +65,14 @@ const ccContext = {
   ccKey_option_: {
 
   },
-  refs
+  refs,
+  info: {
+    startupTime: Date.now(),
+  }
 }
 
-
+export function getCcContext() {
+  return ccContext;
+}
 
 export default ccContext;

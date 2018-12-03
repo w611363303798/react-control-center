@@ -3,6 +3,7 @@ import _extends from "@babel/runtime/helpers/esm/extends";
 var _state2, _reducers;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
+var refs = {};
 /**
  ccClassContext:{
   ccKeys: [],
@@ -15,6 +16,7 @@ var ccContext = {
   // if isStrict is true, every error will be throw out instead of console.error, 
   // but this may crash your app, make sure you have a nice error handling way,
   // like componentDidCatch in react 16.*
+  isDebug: false,
   isStrict: false,
   returnRootState: false,
   isModuleMode: false,
@@ -45,6 +47,15 @@ var ccContext = {
   },
   reducer: {
     _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
+  },
+  ccKey_ref_: refs,
+  ccKey_option_: {},
+  refs: refs,
+  info: {
+    startupTime: Date.now()
   }
 };
+export function getCcContext() {
+  return ccContext;
+}
 export default ccContext;

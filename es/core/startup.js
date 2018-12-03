@@ -151,7 +151,9 @@ export default function (_temp) {
       _ref$isReducerKeyMean = _ref.isReducerKeyMeanNamespacedActionType,
       isReducerKeyMeanNamespacedActionType = _ref$isReducerKeyMean === void 0 ? false : _ref$isReducerKeyMean,
       _ref$isStrict = _ref.isStrict,
-      isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict;
+      isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict,
+      _ref$isDebug = _ref.isDebug,
+      isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug;
 
   if (ccContext.isCcAlreadyStartup) {
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
@@ -160,7 +162,12 @@ export default function (_temp) {
   ccContext.isModuleMode = isModuleMode;
   ccContext.returnRootState = returnRootState;
   ccContext.isStrict = isStrict;
+  ccContext.isDebug = isDebug;
   bindStoreToCcContext(store, isModuleMode);
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);else bindReducersToCcContext(reducers, isModuleMode);
-  if (window) window.CC_CONTEXT = ccContext;
+
+  if (window) {
+    window.CC_CONTEXT = ccContext;
+    window.cc = ccContext;
+  }
 }
