@@ -5,8 +5,10 @@ import util from '../support/util';
 import uuid from 'uuid';
 
 const vbi = util.verboseInfo;
+const me = util.makeError;
+const ccClassDisplayName = util.ccClassDisplayName;
 const { store: { _state }, reducer: { _reducers } } = ccContext;
-const cl = () => 'color:green;border:1px solid green';
+const cl = (color = 'green') => `color:${color};border:1px solid ${color}`;
 const ifo = (str) => `%c${str}`;
 
 function isStateValid(state) {
@@ -33,6 +35,37 @@ function extractSharedState(state, sharedStateKeys) {
   return { sharedState: newState, isStateEmpty };
 }
 
+function handleError(err, throwError = true) {
+  if (throwError) throw err;
+  else {
+    console.error(' ------------ CC WARNING ------------');
+    console.error(err.message);
+  }
+}
+
+function checkStoreModule(module, throwError = true, cb) {
+  if (!ccContext.isModuleMode) {
+    if (module !== MODULE_GLOBAL) {
+      handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `module:${module}`), throwError);
+    } else if (cb) cb();
+  } else {
+    if (!_state[module]) {
+      handleError(me(ERR.CC_CLASS_STORE_MODULE_INVALID, `module:${module}`), throwError);
+    } else if (cb) cb();
+  }
+}
+
+function checkReducerModule(reducerModule, throwError = true) {
+  if (!ccContext.isModuleMode) {
+    if (reducerModule != MODULE_GLOBAL) {
+      handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `reducerModule:${reducerModule}`), throwError);
+    }
+  } else {
+    if (!_reducers[reducerModule]) {
+      handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, `reducerModule:${reducerModule}`), throwError);
+    }
+  }
+}
 
 /*
 options.module = 'xxx'
@@ -40,25 +73,12 @@ options.sharedStateKeys = ['aa', 'bbb']
 */
 export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerModule, sharedStateKeys = [] } = {}) {
   const _reducerModule = reducerModule || module;//if reducerModule not defined, will be equal module;
-  if (!ccContext.isModuleMode) {
-    if (module !== MODULE_GLOBAL) {
-      throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `module:${module}`);
-    }
-    if (_reducerModule != MODULE_GLOBAL) {
-      throw util.makeError(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `reducerModule:${_reducerModule}`);
-    }
-  } else {
-    if (!_state[module]) {
-      throw util.makeError(ERR.CC_CLASS_STORE_MODULE_INVALID, `module:${module}`);
-    }
-    if (!_reducers[_reducerModule]) {
-      throw util.makeError(ERR.CC_CLASS_REDUCER_MODULE_INVALID, `reducerModule:${_reducerModule}`);
-    }
-  }
+  checkStoreModule(module);
+  checkReducerModule(_reducerModule);
 
   const contextMap = ccContext.ccClassKey_ccClassContext_;
   if (contextMap[ccClassKey] !== undefined) {
-    throw util.makeError(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
+    throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
   } else {
     contextMap[ccClassKey] = util.makeCcClassContext(module, sharedStateKeys);
   }
@@ -89,8 +109,7 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         }
 
         const ccClassContext = this.bindDataToCcClassContext(ccClassKey, ccUniqueKey, ccOption);
-        const reactSetState = this.setState;
-        this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys, reactSetState);
+        this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys);
       }
 
       // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -112,7 +131,7 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         const classContext = contextMap[ccClassKey];
 
         if (classContext.ccKeys.includes(ccUniqueKey)) {
-          throw util.makeError(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi(`ccClass:${ccClassKey},ccKey:${ccUniqueKey}`));
+          throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi(`ccClass:${ccClassKey},ccKey:${ccUniqueKey}`));
         }
         ccContext.ccKey_ref_[ccUniqueKey] = this;
         if (ccContext.isDebug) {
@@ -123,22 +142,44 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         if (!ccOption) ccContext.ccKey_option_[ccUniqueKey] = { syncState: true };
         else {
           if (!util.verifyCcOption(ccOption)) {
-            throw util.makeError(ERR.CC_CLASS_INSTANCE_OPTION_INVALID);
+            throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID);
           }
           ccContext.ccKey_option_[ccUniqueKey] = ccOption;
         }
         return classContext;
       }
 
-      mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, reducerModule, sharedStateKeys, reactSetState) {
+      mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, currentModule, reducerModule, sharedStateKeys) {
+        const reactSetState = this.setState;
+        const executionContext = { ccUniqueKey, ccOption, module, reducerModule: targetModule, type, state: this.state };
         this.cc = {
-          ccState: { ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module, reducerModule, sharedStateKeys },
+          ccState: { ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyFromUuid, ccOption, ccClassContext, module: currentModule, reducerModule, sharedStateKeys },
           ccUniqueKey,
           ccKey,
           reactSetState,
           setState: this.changeState,
+          callWith: (userLogicFn, { module = currentModule, cb } = {}, ...args) => {
+            let targetCb = cb;
+            checkStoreModule(module, false, () => {
+              if (module != currentModule) {
+                if (cb) {
+                  handleError(
+                    me(
+                      ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID,
+                      vbi(`if you pass param reactCallback, param module must equal current CCInstance's module, module: ${module}, CCInstance's module:${currentModule} `)),
+                    false
+                  );
+                  targetCb = null;//let user's reactCallback has no change to be triggered
+                }
+              }
+              userLogicFn.call(this, this.changeStateClosureExecutionContext({ module, targetCb }), ...args);
+            });
+          },
+          call: (userLogicFn, ...args) => {
+            this.cc.callWith(userLogicFn, { module: currentModule }, ...args);
+          },
           dispatch: ({ reducerModule, type, payload, cb } = {}) => {
-            const { ccUniqueKey, ccOption, module, reducerModule: currentReducerModule } = this.cc.ccState;
+            const { reducerModule: currentReducerModule } = this.cc.ccState;
             const targetModule = reducerModule || currentReducerModule;//if reducerModule not defined, will find currentReducerModule's reducer
 
             const targetReducerMap = _reducers[targetModule];
@@ -148,22 +189,29 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
             const errMsg = util.verifyCcAction({ type, payload });
             if (errMsg) return console.error(errMsg);
 
-            const dispatchContext = { ccUniqueKey, ccOption, module, reducerModule: targetModule, type, state: this.state };
-            // const mail = util.makeStateMail(ccUniqueKey, ccOption, toModule, type, cb);
             if (cb) {
-              reducerFn(this.changeStateClosureReactCb(cb), payload, dispatchContext);
+              reducerFn(this.changeStateClosureReactCb(cb), payload, executionContext);
             } else {
-              reducerFn(this.changeState, payload, dispatchContext);
+              reducerFn(this.changeState, payload, executionContext);
             }
 
           },
           dispatchPayload: (type, payload, module = MODULE_GLOBAL, cb) => {
-            super.cc.dispatch({ module, type, payload, cb });
+            this.cc.dispatch({ module, type, payload, cb });
           }
         }
         this.cc.reactSetState = this.cc.reactSetState.bind(this);
         this.dispatch = this.cc.dispatch;//let CCComponent instance can call dispatch directly
         this.setState = this.cc.setState;//let setState call cc.setState
+        this.call = this.cc.call;
+        this.callWith = this.cc.callWith;
+      }
+
+      changeStateClosureExecutionContext({ module, cb }) {
+        return (state) => {
+          if (module === this.cc.ccState.module) this.cc.reactSetState(state, cb);
+          this.broadcastState(module, state);
+        }
       }
 
       changeStateClosureReactCb(cb) {
@@ -172,10 +220,10 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         }
       }
 
-      changeState(state, cb) {
+      changeState(state, reactCallback) {
         const { module, ccOption } = this.cc.ccState;
         // who dispatch the action, who will go to change the whole received state 
-        this.cc.reactSetState(state, cb);
+        this.cc.reactSetState(state, reactCallback);
         if (ccOption.syncState) {
           this.broadcastState(module, state);
         }
@@ -201,13 +249,14 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
           const classContext = ccContext.ccClassKey_ccClassContext_[classKey];
           const { ccKeys, sharedStateKeys } = classContext;
           if (sharedStateKeys.length === 0) return;
+          // extractSharedState again! because different class with a same module may have different sharedStateKeys!!!
           const {
             sharedState: sharedStateForCurrentCcClass, isStateEmpty
           } = extractSharedState(sourceSharedState, sharedStateKeys);
           if (isStateEmpty) return;
 
           ccKeys.forEach(ccKey => {
-            if (ccKey !== currentCcKey) {//exclude currentCcKey, it's setState been invoked 
+            if (ccKey !== currentCcKey) {//exclude currentCcKey, it's reactSetState may have been invoked 
               const ref = ccKey_ref_[ccKey];
               if (ref) {
                 const option = ccKey_option_[ccKey];
@@ -223,7 +272,9 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
         if (super.componentWillUnmount) super.componentWillUnmount();
 
         const { ccUniqueKey, ccClassContext: { ccKeys } } = this.cc.ccState;
-        console.log(`%c ${ccUniqueKey} unset ref`, 'color:blue;border:1px solid blue');
+        if (ccContext.isDebug) {
+          console.log(inf(`${ccUniqueKey} unset ref`), cl('red'));
+        }
         // ccContext.ccKey_ref_[ccUniqueKey] = null;
         delete ccContext.ccKey_ref_[ccUniqueKey];
         delete ccContext.ccKey_option_[ccUniqueKey];
@@ -232,12 +283,14 @@ export default function register(ccClassKey, { module = MODULE_GLOBAL, reducerMo
       }
 
       render() {
-        console.log(`%c@@@ CC  ${ccClassKey} render`, 'color:darkred;border:1px solid darkred;');
+        if (ccContext.isDebug) {
+          console.log(inf(`@@@ ${ccClassDisplayName(ccClassKey)} render`), cl());
+        }
         return super.render();
       }
     }
 
-    CcClass.displayName = `CC(${ccClassKey})`;
+    CcClass.displayName = ccClassDisplayName(ccClassKey);
     return CcClass;
   }
 }

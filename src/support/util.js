@@ -128,6 +128,10 @@ export function verboseInfo(info) {
   return ` --verbose-info: ${info}`;
 }
 
+export function ccClassDisplayName(className) {
+  return `CC${className}`
+}
+
 export default {
   makeError,
   makeCcClassContext,
@@ -143,4 +147,5 @@ export default {
   disassembleActionType,
   verboseInfo,
   bindThis,
+  ccClassDisplayName,
 }
