@@ -307,10 +307,10 @@ export default function register(ccClassKey, {
             reactForceUpdateRef(state, cb)
           },
           setState: (state, cb) => {
-            this.$$changeState(state, { module: this.cc.ccState.module, cb });
+            this.$$changeState(state, { module: currentModule, cb });
           },
           forceUpdate: (cb) => {
-            this.$$changeState(this.state, { module: this.cc.ccState.module, cb });
+            this.$$changeState(this.state, { module: currentModule, cb });
           },
           invoke: (userLogicFn, ...args) => {
             this.cc.invokeWith(userLogicFn, { module: currentModule }, ...args);
@@ -368,8 +368,9 @@ export default function register(ccClassKey, {
         }
         this.cc.reactSetState = this.cc.reactSetState.bind(this);
         this.cc.doReactSetState = this.cc.doReactSetState.bind(this);
+        this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
+        this.cc.doBroadcastState = this.cc.doBroadcastState.bind(this);
         this.$$dispatch = this.cc.dispatch;//let CCComponent instance can call dispatch directly
-        this.$$dispatchPayload = this.cc.dispatchPayload;//let CCComponent instance can call dispatchPayload directly
         this.setState = this.cc.setState;//let setState call cc.setState
         this.forceUpdate = this.cc.forceUpdate;//let forceUpdate call cc.forceUpdate
         this.$$invoke = this.cc.invoke;//commit state to cc directly, but userFn can be promise or generator both!
@@ -438,7 +439,7 @@ export default function register(ccClassKey, {
           if (isStateEmpty) return;
 
           ccKeys.forEach(ccKey => {
-            //exclude currentCcKey, whether it's reactSetState have been invoked or not, currentCcKey can't trigger doReactSetState here
+            //exclude currentCcKey, whether its reactSetState has been invoked or not, currentCcKey can't trigger doReactSetState here
             if (ccKey !== currentCcKey) {
               const ref = ccKey_ref_[ccKey];
               if (ref) {
