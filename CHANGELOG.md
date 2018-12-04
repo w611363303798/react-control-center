@@ -1,6 +1,11 @@
 
 # Change Log
 
+## 2018-12-05 8:00
+* rename cor api of ccIns! add prefix $$, and optimize their code
+* now reducer function can be can be any type of them (async, generator, normal);
+* add life cycle hook fo cc instance: $$beforeSetState , $$beforeBroadcastState
+
 ## 2018-12-04 14:00
 * attach $invoke and $invokeWith method to ccInstance, with co module, ccInstance.$invoke can invoke user's customize function which can be any type of them (async, generator, normal);
 
