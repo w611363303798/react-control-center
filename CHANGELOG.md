@@ -1,11 +1,11 @@
 
 # Change Log
 
-## 2018-12-04
-* 删除CC实例上原来的call，callWith函数，更新为$$call, $$callWith函数
-* 新增$callThunk, $callThunkWith, 方便调用thunk函数
-* 新增单例模式，单例模式CCClass只能实例化一次，ccUniqueKey就是CCClassName, refs可以直接通过CCClassName调用reactRef的方法
+## 2018-12-04 14:00
+* attach $invoke and $invokeWith method to ccInstance, with co module, ccInstance.$invoke can invoke user's customize function which can be any type of them (async, generator, normal);
+
+## 2018-12-04 09:00
+* CCClass can be declared as singleton by specify option.isSingle=true, once a CCClass is under singleton mode, it can only create one CCInstance in CC_CONTEXT, the CCInstance's ref name is the CCClassName,you can find it in window.cc.refs or window.CC_CONTEXT.refs
 
 ## 2018-12-03
-* 新增 ccIns.call, ccIns.callWith函数，方便更灵活的改变state
-* 修复在webpack 热加载模式下，CC_CONTEXT.refs 维护不正确的问题
+* optimize CCKey duplicate judgement while cc is run in hot reload mode;

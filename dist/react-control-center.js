@@ -602,6 +602,243 @@
 
   var uuid_1 = uuid;
 
+  /**
+   * slice() reference.
+   */
+
+  var slice = Array.prototype.slice;
+
+  /**
+   * Expose `co`.
+   */
+
+  var co_1 = co['default'] = co.co = co;
+
+  /**
+   * Wrap the given generator `fn` into a
+   * function that returns a promise.
+   * This is a separate function so that
+   * every `co()` call doesn't create a new,
+   * unnecessary closure.
+   *
+   * @param {GeneratorFunction} fn
+   * @return {Function}
+   * @api public
+   */
+
+  co.wrap = function (fn) {
+    createPromise.__generatorFunction__ = fn;
+    return createPromise;
+    function createPromise() {
+      return co.call(this, fn.apply(this, arguments));
+    }
+  };
+
+  /**
+   * Execute the generator function or a generator
+   * and return a promise.
+   *
+   * @param {Function} fn
+   * @return {Promise}
+   * @api public
+   */
+
+  function co(gen) {
+    var ctx = this;
+    var args = slice.call(arguments, 1);
+
+    // we wrap everything in a promise to avoid promise chaining,
+    // which leads to memory leak errors.
+    // see https://github.com/tj/co/issues/180
+    return new Promise(function(resolve, reject) {
+      if (typeof gen === 'function') gen = gen.apply(ctx, args);
+      if (!gen || typeof gen.next !== 'function') return resolve(gen);
+
+      onFulfilled();
+
+      /**
+       * @param {Mixed} res
+       * @return {Promise}
+       * @api private
+       */
+
+      function onFulfilled(res) {
+        var ret;
+        try {
+          ret = gen.next(res);
+        } catch (e) {
+          return reject(e);
+        }
+        next(ret);
+      }
+
+      /**
+       * @param {Error} err
+       * @return {Promise}
+       * @api private
+       */
+
+      function onRejected(err) {
+        var ret;
+        try {
+          ret = gen.throw(err);
+        } catch (e) {
+          return reject(e);
+        }
+        next(ret);
+      }
+
+      /**
+       * Get the next value in the generator,
+       * return a promise.
+       *
+       * @param {Object} ret
+       * @return {Promise}
+       * @api private
+       */
+
+      function next(ret) {
+        if (ret.done) return resolve(ret.value);
+        var value = toPromise.call(ctx, ret.value);
+        if (value && isPromise(value)) return value.then(onFulfilled, onRejected);
+        return onRejected(new TypeError('You may only yield a function, promise, generator, array, or object, '
+          + 'but the following object was passed: "' + String(ret.value) + '"'));
+      }
+    });
+  }
+
+  /**
+   * Convert a `yield`ed value into a promise.
+   *
+   * @param {Mixed} obj
+   * @return {Promise}
+   * @api private
+   */
+
+  function toPromise(obj) {
+    if (!obj) return obj;
+    if (isPromise(obj)) return obj;
+    if (isGeneratorFunction(obj) || isGenerator(obj)) return co.call(this, obj);
+    if ('function' == typeof obj) return thunkToPromise.call(this, obj);
+    if (Array.isArray(obj)) return arrayToPromise.call(this, obj);
+    if (isObject(obj)) return objectToPromise.call(this, obj);
+    return obj;
+  }
+
+  /**
+   * Convert a thunk to a promise.
+   *
+   * @param {Function}
+   * @return {Promise}
+   * @api private
+   */
+
+  function thunkToPromise(fn) {
+    var ctx = this;
+    return new Promise(function (resolve, reject) {
+      fn.call(ctx, function (err, res) {
+        if (err) return reject(err);
+        if (arguments.length > 2) res = slice.call(arguments, 1);
+        resolve(res);
+      });
+    });
+  }
+
+  /**
+   * Convert an array of "yieldables" to a promise.
+   * Uses `Promise.all()` internally.
+   *
+   * @param {Array} obj
+   * @return {Promise}
+   * @api private
+   */
+
+  function arrayToPromise(obj) {
+    return Promise.all(obj.map(toPromise, this));
+  }
+
+  /**
+   * Convert an object of "yieldables" to a promise.
+   * Uses `Promise.all()` internally.
+   *
+   * @param {Object} obj
+   * @return {Promise}
+   * @api private
+   */
+
+  function objectToPromise(obj){
+    var results = new obj.constructor();
+    var keys = Object.keys(obj);
+    var promises = [];
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var promise = toPromise.call(this, obj[key]);
+      if (promise && isPromise(promise)) defer(promise, key);
+      else results[key] = obj[key];
+    }
+    return Promise.all(promises).then(function () {
+      return results;
+    });
+
+    function defer(promise, key) {
+      // predefine the key in the result
+      results[key] = undefined;
+      promises.push(promise.then(function (res) {
+        results[key] = res;
+      }));
+    }
+  }
+
+  /**
+   * Check if `obj` is a promise.
+   *
+   * @param {Object} obj
+   * @return {Boolean}
+   * @api private
+   */
+
+  function isPromise(obj) {
+    return 'function' == typeof obj.then;
+  }
+
+  /**
+   * Check if `obj` is a generator.
+   *
+   * @param {Mixed} obj
+   * @return {Boolean}
+   * @api private
+   */
+
+  function isGenerator(obj) {
+    return 'function' == typeof obj.next && 'function' == typeof obj.throw;
+  }
+
+  /**
+   * Check if `obj` is a generator function.
+   *
+   * @param {Mixed} obj
+   * @return {Boolean}
+   * @api private
+   */
+  function isGeneratorFunction(obj) {
+    var constructor = obj.constructor;
+    if (!constructor) return false;
+    if ('GeneratorFunction' === constructor.name || 'GeneratorFunction' === constructor.displayName) return true;
+    return isGenerator(constructor.prototype);
+  }
+
+  /**
+   * Check for plain object.
+   *
+   * @param {Mixed} val
+   * @return {Boolean}
+   * @api private
+   */
+
+  function isObject(val) {
+    return Object == val.constructor;
+  }
+
   var vbi$1 = util.verboseInfo;
   var me = util.makeError;
   var ccClassDisplayName$1 = util.ccClassDisplayName;
@@ -670,9 +907,9 @@
     };
   }
 
-  function justWarning(message) {
+  function justWarning(err) {
     console.error(' ------------ CC WARNING ------------');
-    console.error(message);
+    if (err instanceof Error) console.error(err.message);else console.error(err);
   }
 
   function handleError(err, throwError) {
@@ -681,7 +918,7 @@
     }
 
     if (throwError) throw err;else {
-      justWarning(err.message);
+      justWarning(err);
     }
   }
 
@@ -748,7 +985,7 @@
     }
   }
 
-  function ifCallWillExecute(module, currentModule, reactCallback, cb) {
+  function canUserFnBeInvoked(module, currentModule, reactCallback, cb) {
     var targetCb = reactCallback;
 
     if (checkStoreModule(module, false)) {
@@ -831,7 +1068,7 @@
               ccOption = _props$ccOption === void 0 ? {
             syncState: true
           } : _props$ccOption;
-          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['bindDataToCcClassContext', 'mapCcToInstance', 'broadcastState', 'changeState', 'syncStateToOtherCcComponent', 'changeStateClosureReactCb']);
+          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['bindDataToCcClassContext', 'mapCcToInstance', 'broadcastState', 'changeState', 'changeStateWithExecutionContext', 'changeStateClosureExecutionContext', 'changeStateClosureReactCb', 'broadcastState', 'syncStateToOtherCcComponent']);
 
           var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
               ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
@@ -950,25 +1187,18 @@
             forceUpdate: function forceUpdate(cb) {
               _this2.changeState(_this2.state, cb);
             },
-            call: function call(userLogicFn) {
+            invoke: function invoke(userLogicFn) {
               var _this2$cc;
 
               for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
                 args[_key - 1] = arguments[_key];
               }
 
-              (_this2$cc = _this2.cc).callWith.apply(_this2$cc, [userLogicFn, {
+              (_this2$cc = _this2.cc).invokeWith.apply(_this2$cc, [userLogicFn, {
                 module: currentModule
               }].concat(args));
             },
-            // note! see changeStateClosureExecutionContext implement
-            // when ccIns's module != target module,
-            //        cc will only broadcast the state to target module and overwrite the target module's state
-            // when ccIns's module == target module,
-            //        if ccIns option.syncState is false, cc only change it's own state, 
-            //           but if you pass forceSync=true, cc also will broadcast the state to target module and >>> overwrite the target module's state !<<<
-            //        if ccIns option.syncState is true, change it's own state and broadcast the state to target module
-            callWith: function callWith(userLogicFn, _temp2) {
+            invokeWith: function invokeWith(userLogicFn, _temp2) {
               var _ref2 = _temp2 === void 0 ? {} : _temp2,
                   _ref2$module = _ref2.module,
                   module = _ref2$module === void 0 ? currentModule : _ref2$module,
@@ -980,26 +1210,28 @@
                 args[_key2 - 2] = arguments[_key2];
               }
 
-              ifCallWillExecute(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2, _this2.changeStateClosureExecutionContext({
-                  module: module,
-                  forceSync: forceSync,
-                  cb: newCb
-                })].concat(args));
+              canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
+                co_1.wrap(userLogicFn).apply(void 0, args).then(function (state) {
+                  _this2.changeStateWithExecutionContext(state, {
+                    module: module,
+                    forceSync: forceSync,
+                    newCb: newCb
+                  });
+                }).catch(justWarning);
               });
             },
-            callThunk: function callThunk(userLogicFn) {
+            call: function call(userLogicFn) {
               var _this2$cc2;
 
               for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
                 args[_key3 - 1] = arguments[_key3];
               }
 
-              (_this2$cc2 = _this2.cc).callThunkWith.apply(_this2$cc2, [userLogicFn, {
+              (_this2$cc2 = _this2.cc).callWith.apply(_this2$cc2, [userLogicFn, {
                 module: currentModule
               }].concat(args));
             },
-            callThunkWith: function callThunkWith(userLogicFn, _temp3) {
+            callWith: function callWith(userLogicFn, _temp3) {
               var _ref3 = _temp3 === void 0 ? {} : _temp3,
                   _ref3$module = _ref3.module,
                   module = _ref3$module === void 0 ? currentModule : _ref3$module,
@@ -1011,26 +1243,26 @@
                 args[_key4 - 2] = arguments[_key4];
               }
 
-              ifCallWillExecute(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.changeStateClosureExecutionContext({
+              canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
+                userLogicFn.call.apply(userLogicFn, [_this2, _this2.changeStateClosureExecutionContext({
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
-                }));
+                })].concat(args));
               });
             },
-            commit: function commit(userLogicFn) {
+            callThunk: function callThunk(userLogicFn) {
               var _this2$cc3;
 
               for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
                 args[_key5 - 1] = arguments[_key5];
               }
 
-              (_this2$cc3 = _this2.cc).commitWith.apply(_this2$cc3, [userLogicFn, {
+              (_this2$cc3 = _this2.cc).callThunkWith.apply(_this2$cc3, [userLogicFn, {
                 module: currentModule
               }].concat(args));
             },
-            commitWith: function commitWith(userLogicFn, _temp4) {
+            callThunkWith: function callThunkWith(userLogicFn, _temp4) {
               var _ref4 = _temp4 === void 0 ? {} : _temp4,
                   _ref4$module = _ref4.module,
                   module = _ref4$module === void 0 ? currentModule : _ref4$module,
@@ -1042,7 +1274,38 @@
                 args[_key6 - 2] = arguments[_key6];
               }
 
-              ifCallWillExecute(module, currentModule, cb, function (newCb) {
+              canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
+                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.changeStateClosureExecutionContext({
+                  module: module,
+                  forceSync: forceSync,
+                  cb: newCb
+                }));
+              });
+            },
+            commit: function commit(userLogicFn) {
+              var _this2$cc4;
+
+              for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+                args[_key7 - 1] = arguments[_key7];
+              }
+
+              (_this2$cc4 = _this2.cc).commitWith.apply(_this2$cc4, [userLogicFn, {
+                module: currentModule
+              }].concat(args));
+            },
+            commitWith: function commitWith(userLogicFn, _temp5) {
+              var _ref5 = _temp5 === void 0 ? {} : _temp5,
+                  _ref5$module = _ref5.module,
+                  module = _ref5$module === void 0 ? currentModule : _ref5$module,
+                  _ref5$forceSync = _ref5.forceSync,
+                  forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
+                  cb = _ref5.cb;
+
+              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+                args[_key8 - 2] = arguments[_key8];
+              }
+
+              canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
                 var state = userLogicFn.call.apply(userLogicFn, [_this2].concat(args));
 
                 _this2.changeStateWithExecutionContext(state, {
@@ -1052,12 +1315,12 @@
                 });
               });
             },
-            dispatch: function dispatch(_temp5) {
-              var _ref5 = _temp5 === void 0 ? {} : _temp5,
-                  reducerModule = _ref5.reducerModule,
-                  type = _ref5.type,
-                  payload = _ref5.payload,
-                  cb = _ref5.cb;
+            dispatch: function dispatch(_temp6) {
+              var _ref6 = _temp6 === void 0 ? {} : _temp6,
+                  reducerModule = _ref6.reducerModule,
+                  type = _ref6.type,
+                  payload = _ref6.payload,
+                  cb = _ref6.cb;
 
               var currentReducerModule = _this2.cc.ccState.reducerModule;
               var targetModule = reducerModule || currentReducerModule; //if reducerModule not defined, will find currentReducerModule's reducer
@@ -1108,18 +1371,31 @@
 
           this.forceUpdate = this.cc.forceUpdate; //let forceUpdate call cc.forceUpdate
 
-          this.$call = this.cc.call;
-          this.$callWith = this.cc.callWith;
-          this.$callThunk = this.cc.callThunk;
-          this.$callThunkWith = this.cc.callThunkWith;
-          this.$commit = this.cc.commit;
-          this.$commitWith = this.cc.commitWith;
-        };
+          this.$invoke = this.cc.invoke; //commit state to cc directly, but userFn can be promise or generator both!
 
-        _proto.changeStateWithExecutionContext = function changeStateWithExecutionContext(state, _ref6) {
-          var module = _ref6.module,
-              forceSync = _ref6.forceSync,
-              cb = _ref6.cb;
+          this.$invokeWith = this.cc.invokeWith;
+          this.$call = this.cc.call; // commit state by setState handler
+
+          this.$callWith = this.cc.callWith;
+          this.$callThunk = this.cc.callThunk; // commit state by setState handler
+
+          this.$callThunkWith = this.cc.callThunkWith;
+          this.$commit = this.cc.commit; // commit state to cc directly, userFn can only be normal function
+
+          this.$commitWith = this.cc.commitWith;
+        }; // note!!!
+        // when ccIns's module != target module,
+        //        cc will only broadcast the state to target module and overwrite the target module's state
+        // when ccIns's module == target module,
+        //        if ccIns option.syncState is false, cc only change it's own state, 
+        //           but if you pass forceSync=true, cc also will broadcast the state to target module and >>> overwrite the target module's state !<<<
+        //        if ccIns option.syncState is true, change it's own state and broadcast the state to target module
+
+
+        _proto.changeStateWithExecutionContext = function changeStateWithExecutionContext(state, _ref7) {
+          var module = _ref7.module,
+              forceSync = _ref7.forceSync,
+              cb = _ref7.cb;
 
           if (module === this.cc.ccState.module) {
             this.cc.reactSetState(state, cb);
@@ -1134,12 +1410,12 @@
           }
         };
 
-        _proto.changeStateClosureExecutionContext = function changeStateClosureExecutionContext(_ref7) {
+        _proto.changeStateClosureExecutionContext = function changeStateClosureExecutionContext(_ref8) {
           var _this3 = this;
 
-          var module = _ref7.module,
-              forceSync = _ref7.forceSync,
-              cb = _ref7.cb;
+          var module = _ref8.module,
+              forceSync = _ref8.forceSync,
+              cb = _ref8.cb;
           return function (state) {
             _this3.changeStateWithExecutionContext(state, {
               module: module,
@@ -1224,7 +1500,7 @@
 
         _proto.render = function render() {
           if (ccContext.isDebug) {
-            console.log(info("@@@ " + ccClassDisplayName$1(ccClassKey) + " render"), cl());
+            console.log(info("@@@ render " + ccClassDisplayName$1(ccClassKey)), cl());
           }
 
           return _ReactClass.prototype.render.call(this);

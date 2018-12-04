@@ -4,6 +4,7 @@ import { MODULE_GLOBAL, ERR } from '../support/constant';
 import ccContext, { getCcContext } from '../cc-context';
 import util from '../support/util';
 import uuid from 'uuid';
+import co from 'co';
 var vbi = util.verboseInfo;
 var me = util.makeError;
 var ccClassDisplayName = util.ccClassDisplayName;
@@ -72,9 +73,9 @@ function extractSharedState(state, sharedStateKeys) {
   };
 }
 
-function justWarning(message) {
+function justWarning(err) {
   console.error(' ------------ CC WARNING ------------');
-  console.error(message);
+  if (err instanceof Error) console.error(err.message);else console.error(err);
 }
 
 function handleError(err, throwError) {
@@ -83,7 +84,7 @@ function handleError(err, throwError) {
   }
 
   if (throwError) throw err;else {
-    justWarning(err.message);
+    justWarning(err);
   }
 }
 
@@ -150,7 +151,7 @@ function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
   }
 }
 
-function ifCallWillExecute(module, currentModule, reactCallback, cb) {
+function canUserFnBeInvoked(module, currentModule, reactCallback, cb) {
   var targetCb = reactCallback;
 
   if (checkStoreModule(module, false)) {
@@ -233,7 +234,7 @@ export default function register(ccClassKey, _temp) {
             ccOption = _props$ccOption === void 0 ? {
           syncState: true
         } : _props$ccOption;
-        util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['bindDataToCcClassContext', 'mapCcToInstance', 'broadcastState', 'changeState', 'syncStateToOtherCcComponent', 'changeStateClosureReactCb']);
+        util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['bindDataToCcClassContext', 'mapCcToInstance', 'broadcastState', 'changeState', 'changeStateWithExecutionContext', 'changeStateClosureExecutionContext', 'changeStateClosureReactCb', 'broadcastState', 'syncStateToOtherCcComponent']);
 
         var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
             ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
@@ -352,25 +353,18 @@ export default function register(ccClassKey, _temp) {
           forceUpdate: function forceUpdate(cb) {
             _this2.changeState(_this2.state, cb);
           },
-          call: function call(userLogicFn) {
+          invoke: function invoke(userLogicFn) {
             var _this2$cc;
 
             for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
               args[_key - 1] = arguments[_key];
             }
 
-            (_this2$cc = _this2.cc).callWith.apply(_this2$cc, [userLogicFn, {
+            (_this2$cc = _this2.cc).invokeWith.apply(_this2$cc, [userLogicFn, {
               module: currentModule
             }].concat(args));
           },
-          // note! see changeStateClosureExecutionContext implement
-          // when ccIns's module != target module,
-          //        cc will only broadcast the state to target module and overwrite the target module's state
-          // when ccIns's module == target module,
-          //        if ccIns option.syncState is false, cc only change it's own state, 
-          //           but if you pass forceSync=true, cc also will broadcast the state to target module and >>> overwrite the target module's state !<<<
-          //        if ccIns option.syncState is true, change it's own state and broadcast the state to target module
-          callWith: function callWith(userLogicFn, _temp2) {
+          invokeWith: function invokeWith(userLogicFn, _temp2) {
             var _ref2 = _temp2 === void 0 ? {} : _temp2,
                 _ref2$module = _ref2.module,
                 module = _ref2$module === void 0 ? currentModule : _ref2$module,
@@ -382,26 +376,28 @@ export default function register(ccClassKey, _temp) {
               args[_key2 - 2] = arguments[_key2];
             }
 
-            ifCallWillExecute(module, currentModule, cb, function (newCb) {
-              userLogicFn.call.apply(userLogicFn, [_this2, _this2.changeStateClosureExecutionContext({
-                module: module,
-                forceSync: forceSync,
-                cb: newCb
-              })].concat(args));
+            canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
+              co.wrap(userLogicFn).apply(void 0, args).then(function (state) {
+                _this2.changeStateWithExecutionContext(state, {
+                  module: module,
+                  forceSync: forceSync,
+                  newCb: newCb
+                });
+              }).catch(justWarning);
             });
           },
-          callThunk: function callThunk(userLogicFn) {
+          call: function call(userLogicFn) {
             var _this2$cc2;
 
             for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
               args[_key3 - 1] = arguments[_key3];
             }
 
-            (_this2$cc2 = _this2.cc).callThunkWith.apply(_this2$cc2, [userLogicFn, {
+            (_this2$cc2 = _this2.cc).callWith.apply(_this2$cc2, [userLogicFn, {
               module: currentModule
             }].concat(args));
           },
-          callThunkWith: function callThunkWith(userLogicFn, _temp3) {
+          callWith: function callWith(userLogicFn, _temp3) {
             var _ref3 = _temp3 === void 0 ? {} : _temp3,
                 _ref3$module = _ref3.module,
                 module = _ref3$module === void 0 ? currentModule : _ref3$module,
@@ -413,26 +409,26 @@ export default function register(ccClassKey, _temp) {
               args[_key4 - 2] = arguments[_key4];
             }
 
-            ifCallWillExecute(module, currentModule, cb, function (newCb) {
-              userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.changeStateClosureExecutionContext({
+            canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
+              userLogicFn.call.apply(userLogicFn, [_this2, _this2.changeStateClosureExecutionContext({
                 module: module,
                 forceSync: forceSync,
                 cb: newCb
-              }));
+              })].concat(args));
             });
           },
-          commit: function commit(userLogicFn) {
+          callThunk: function callThunk(userLogicFn) {
             var _this2$cc3;
 
             for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
               args[_key5 - 1] = arguments[_key5];
             }
 
-            (_this2$cc3 = _this2.cc).commitWith.apply(_this2$cc3, [userLogicFn, {
+            (_this2$cc3 = _this2.cc).callThunkWith.apply(_this2$cc3, [userLogicFn, {
               module: currentModule
             }].concat(args));
           },
-          commitWith: function commitWith(userLogicFn, _temp4) {
+          callThunkWith: function callThunkWith(userLogicFn, _temp4) {
             var _ref4 = _temp4 === void 0 ? {} : _temp4,
                 _ref4$module = _ref4.module,
                 module = _ref4$module === void 0 ? currentModule : _ref4$module,
@@ -444,7 +440,38 @@ export default function register(ccClassKey, _temp) {
               args[_key6 - 2] = arguments[_key6];
             }
 
-            ifCallWillExecute(module, currentModule, cb, function (newCb) {
+            canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
+              userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.changeStateClosureExecutionContext({
+                module: module,
+                forceSync: forceSync,
+                cb: newCb
+              }));
+            });
+          },
+          commit: function commit(userLogicFn) {
+            var _this2$cc4;
+
+            for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+              args[_key7 - 1] = arguments[_key7];
+            }
+
+            (_this2$cc4 = _this2.cc).commitWith.apply(_this2$cc4, [userLogicFn, {
+              module: currentModule
+            }].concat(args));
+          },
+          commitWith: function commitWith(userLogicFn, _temp5) {
+            var _ref5 = _temp5 === void 0 ? {} : _temp5,
+                _ref5$module = _ref5.module,
+                module = _ref5$module === void 0 ? currentModule : _ref5$module,
+                _ref5$forceSync = _ref5.forceSync,
+                forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
+                cb = _ref5.cb;
+
+            for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+              args[_key8 - 2] = arguments[_key8];
+            }
+
+            canUserFnBeInvoked(module, currentModule, cb, function (newCb) {
               var state = userLogicFn.call.apply(userLogicFn, [_this2].concat(args));
 
               _this2.changeStateWithExecutionContext(state, {
@@ -454,12 +481,12 @@ export default function register(ccClassKey, _temp) {
               });
             });
           },
-          dispatch: function dispatch(_temp5) {
-            var _ref5 = _temp5 === void 0 ? {} : _temp5,
-                reducerModule = _ref5.reducerModule,
-                type = _ref5.type,
-                payload = _ref5.payload,
-                cb = _ref5.cb;
+          dispatch: function dispatch(_temp6) {
+            var _ref6 = _temp6 === void 0 ? {} : _temp6,
+                reducerModule = _ref6.reducerModule,
+                type = _ref6.type,
+                payload = _ref6.payload,
+                cb = _ref6.cb;
 
             var currentReducerModule = _this2.cc.ccState.reducerModule;
             var targetModule = reducerModule || currentReducerModule; //if reducerModule not defined, will find currentReducerModule's reducer
@@ -510,18 +537,31 @@ export default function register(ccClassKey, _temp) {
 
         this.forceUpdate = this.cc.forceUpdate; //let forceUpdate call cc.forceUpdate
 
-        this.$call = this.cc.call;
-        this.$callWith = this.cc.callWith;
-        this.$callThunk = this.cc.callThunk;
-        this.$callThunkWith = this.cc.callThunkWith;
-        this.$commit = this.cc.commit;
-        this.$commitWith = this.cc.commitWith;
-      };
+        this.$invoke = this.cc.invoke; //commit state to cc directly, but userFn can be promise or generator both!
 
-      _proto.changeStateWithExecutionContext = function changeStateWithExecutionContext(state, _ref6) {
-        var module = _ref6.module,
-            forceSync = _ref6.forceSync,
-            cb = _ref6.cb;
+        this.$invokeWith = this.cc.invokeWith;
+        this.$call = this.cc.call; // commit state by setState handler
+
+        this.$callWith = this.cc.callWith;
+        this.$callThunk = this.cc.callThunk; // commit state by setState handler
+
+        this.$callThunkWith = this.cc.callThunkWith;
+        this.$commit = this.cc.commit; // commit state to cc directly, userFn can only be normal function
+
+        this.$commitWith = this.cc.commitWith;
+      }; // note!!!
+      // when ccIns's module != target module,
+      //        cc will only broadcast the state to target module and overwrite the target module's state
+      // when ccIns's module == target module,
+      //        if ccIns option.syncState is false, cc only change it's own state, 
+      //           but if you pass forceSync=true, cc also will broadcast the state to target module and >>> overwrite the target module's state !<<<
+      //        if ccIns option.syncState is true, change it's own state and broadcast the state to target module
+
+
+      _proto.changeStateWithExecutionContext = function changeStateWithExecutionContext(state, _ref7) {
+        var module = _ref7.module,
+            forceSync = _ref7.forceSync,
+            cb = _ref7.cb;
 
         if (module === this.cc.ccState.module) {
           this.cc.reactSetState(state, cb);
@@ -536,12 +576,12 @@ export default function register(ccClassKey, _temp) {
         }
       };
 
-      _proto.changeStateClosureExecutionContext = function changeStateClosureExecutionContext(_ref7) {
+      _proto.changeStateClosureExecutionContext = function changeStateClosureExecutionContext(_ref8) {
         var _this3 = this;
 
-        var module = _ref7.module,
-            forceSync = _ref7.forceSync,
-            cb = _ref7.cb;
+        var module = _ref8.module,
+            forceSync = _ref8.forceSync,
+            cb = _ref8.cb;
         return function (state) {
           _this3.changeStateWithExecutionContext(state, {
             module: module,
@@ -626,7 +666,7 @@ export default function register(ccClassKey, _temp) {
 
       _proto.render = function render() {
         if (ccContext.isDebug) {
-          console.log(info("@@@ " + ccClassDisplayName(ccClassKey) + " render"), cl());
+          console.log(info("@@@ render " + ccClassDisplayName(ccClassKey)), cl());
         }
 
         return _ReactClass.prototype.render.call(this);
