@@ -5,6 +5,16 @@ import { ERR } from '../support/constant';
 const vbi = util.verboseInfo;
 const { ccClassKey_ccClassContext_, ccKey_ref_ } = ccContext;
 
+/**
+ * @description
+ * @author zzk
+ * @export
+ * @param {*} ccClassKey must pass to invoke!
+ * @param {*} ccInstanceKey must pass to invoke but you can pass null or undefined or '', cc will pick one instance of this CcClass
+ * @param {*} method
+ * @param {*} args
+ * @returns
+ */
 export default function (ccClassKey, ccInstanceKey, method, ...args) {
   const classContext = ccClassKey_ccClassContext_[ccClassKey];
   if (!classContext) {
@@ -13,10 +23,17 @@ export default function (ccClassKey, ccInstanceKey, method, ...args) {
     else return console.error(err);
   }
 
-  const ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
-  const ref = ccKey_ref_[ccKey];
+  let ref;
+  if (ccInstanceKey) {
+    const ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
+    ref = ccKey_ref_[ccKey];
+  } else {
+    const ccKeys = classContext.ccKeys;
+    ref = ccKey_ref_[ccKeys[0]];// pick first one
+  }
+
   if (!ref) {
-    const err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi(` ccClassKey:${ccClassKey}/ccKey:${ccInstanceKey}`));
+    const err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi(` ccClassKey:${ccClassKey} ccKey:${ccInstanceKey}`));
     // only error, the target instance may has been unmounted really!
     return console.error(err.message);
   }
@@ -24,6 +41,7 @@ export default function (ccClassKey, ccInstanceKey, method, ...args) {
   var fn = ref[method];
   if (!fn) {
     const err = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi(` method:${method}`));
+    // only error
     return console.error(err.message);
   }
   ref[method].call(ref, ...args);
