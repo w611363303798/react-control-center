@@ -262,20 +262,20 @@ export default function register(ccClassKey, {
           ccState,
           ccUniqueKey,
           ccKey,
-          beforeSetState: this.$$beforeSetSate,
+          beforeSetState: this.$$beforeSetState,
           beforeBroadcastState: this.$$beforeBroadcastState,
           afterSetState: this.$$afterSetState,
           doReactSetState: (changeWay, state, next, reactCallback) => {
-            if (this.$$beforeSetSate) {
+            if (this.$$beforeSetState) {
               if (asyncLifeCycleHook) {
-                // if user don't call next in ccIns's $$beforeSetSate,reactSetState will never been invoked
-                // $$beforeSetSate(context, next){}
-                this.$$beforeSetSate({ changeWay }, () => {
+                // if user don't call next in ccIns's $$beforeSetState,reactSetState will never been invoked
+                // $$beforeSetState(context, next){}
+                this.$$beforeSetState({ changeWay }, () => {
                   this.cc.reactSetState(state, reactCallback);
                   if (next) next();
                 });
               } else {
-                this.$$beforeSetSate({ changeWay });
+                this.$$beforeSetState({ changeWay });
                 this.cc.reactSetState(state, reactCallback);
                 if (next) next();
               }
