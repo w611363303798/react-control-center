@@ -26,6 +26,8 @@
     CC_CLASS_INSTANCE_NOT_FOUND: 1008,
     CC_CLASS_INSTANCE_METHOD_NOT_FOUND: 1009,
     CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID: 1010,
+    CC_CLASS_INSTANCE_MORE_THAN_ONE: 1011,
+    CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE: 1012,
     MODULE_KEY_CC_FOUND: 1100,
     STORE_KEY_NAMING_INVALID: 1101,
     STORE_MODULE_VALUE_INVALID: 1102,
@@ -33,7 +35,7 @@
     REDUCER_ACTION_TYPE_NO_MODULE: 1202 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store or reducers! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store or reducers! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
 
   function isHotReloadMode() {
     return window && window.webpackHotUpdate;
@@ -668,14 +670,18 @@
     };
   }
 
+  function justWarning(message) {
+    console.error(' ------------ CC WARNING ------------');
+    console.error(message);
+  }
+
   function handleError(err, throwError) {
     if (throwError === void 0) {
       throwError = true;
     }
 
     if (throwError) throw err;else {
-      console.error(' ------------ CC WARNING ------------');
-      console.error(err.message);
+      justWarning(err.message);
     }
   }
 
@@ -756,6 +762,28 @@
       cb(targetCb);
     }
   }
+
+  function computeCcUniqueKey(isClassSingle, ccClassKey, ccKey) {
+    var ccUniqueKey;
+    var isCcUniqueKeyAutoGenerated = false;
+
+    if (isClassSingle) {
+      if (ccKey) justWarning("now thd ccClass is singleton, you needn't supply ccKey to instance props, cc will ignore the ccKey:" + ccKey);
+      ccUniqueKey = ccClassKey;
+    } else {
+      if (ccKey) {
+        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
+      } else {
+        ccUniqueKey = ccClassKey + "/" + uuid_1();
+        isCcUniqueKeyAutoGenerated = true;
+      }
+    }
+
+    return {
+      ccUniqueKey: ccUniqueKey,
+      isCcUniqueKeyAutoGenerated: isCcUniqueKeyAutoGenerated
+    };
+  }
   /*
   options.module = 'xxx'
   options.sharedStateKeys = ['aa', 'bbb']
@@ -764,6 +792,8 @@
 
   function register(ccClassKey, _temp) {
     var _ref = _temp === void 0 ? {} : _temp,
+        _ref$isSingle = _ref.isSingle,
+        isSingle = _ref$isSingle === void 0 ? false : _ref$isSingle,
         _ref$module = _ref.module,
         module = _ref$module === void 0 ? MODULE_GLOBAL : _ref$module,
         reducerModule = _ref.reducerModule,
@@ -802,20 +832,14 @@
             syncState: true
           } : _props$ccOption;
           util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['bindDataToCcClassContext', 'mapCcToInstance', 'broadcastState', 'changeState', 'syncStateToOtherCcComponent', 'changeStateClosureReactCb']);
-          var ccUniqueKey;
-          var isCcUniqueKeyAutoGenerated = false;
 
-          if (ccKey) {
-            ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
-          } else {
-            ccUniqueKey = ccClassKey + "/" + uuid_1();
-            isCcUniqueKeyAutoGenerated = true;
-            ccKey = ccUniqueKey;
-          }
+          var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
+              ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
+              isCcUniqueKeyAutoGenerated = _computeCcUniqueKey.isCcUniqueKeyAutoGenerated;
 
-          var ccClassContext = _this.bindDataToCcClassContext(ccClassKey, ccKey, ccUniqueKey, ccOption);
+          var ccClassContext = _this.bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption);
 
-          _this.mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys);
+          _this.mapCcToInstance(isSingle, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys);
 
           return _this;
         } // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -825,10 +849,6 @@
 
         _proto.shouldComponentUpdate = function shouldComponentUpdate(nextProps, nextState) {
           return this.state !== nextState;
-        };
-
-        _proto.componentDidCatch = function componentDidCatch() {
-          console.log('componentDidCatch');
         };
 
         _proto.componentDidMount = function componentDidMount() {
@@ -849,7 +869,7 @@
           }
         };
 
-        _proto.bindDataToCcClassContext = function bindDataToCcClassContext(ccClassKey, ccKey, ccUniqueKey, ccOption) {
+        _proto.bindDataToCcClassContext = function bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
           var classContext = contextMap[ccClassKey];
           var ccKeys = classContext.ccKeys;
 
@@ -870,7 +890,10 @@
 
           if (ccKeys.includes(ccUniqueKey)) {
             if (util.isHotReloadMode()) {
-              if (getCcKeyInsCount(ccUniqueKey) > 2) {
+              var insCount = getCcKeyInsCount(ccUniqueKey);
+              if (isSingle && insCount > 1) throw me(ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE, vbi$1("ccClass:" + ccClassKey));
+
+              if (insCount > 2) {
                 // now cc can make sure the ccKey duplicate
                 throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi$1("ccClass:" + ccClassKey + ",ccKey:" + ccUniqueKey));
               } // just warning
@@ -893,13 +916,14 @@
           return classContext;
         };
 
-        _proto.mapCcToInstance = function mapCcToInstance(ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, ccOption, ccClassContext, currentModule, reducerModule, sharedStateKeys) {
+        _proto.mapCcToInstance = function mapCcToInstance(isSingle, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, ccOption, ccClassContext, currentModule, reducerModule, sharedStateKeys) {
           var _this2 = this;
 
           var reactSetStateRef = this.setState.bind(this);
           var reactForceUpdateRef = this.forceUpdate.bind(this);
           var ccState = {
-            renderCount: 0,
+            renderCount: 1,
+            isSingle: isSingle,
             ccClassKey: ccClassKey,
             ccKey: ccKey,
             ccUniqueKey: ccUniqueKey,
@@ -939,7 +963,7 @@
             },
             // note! see changeStateClosureExecutionContext implement
             // when ccIns's module != target module,
-            //         cc will only broadcast the state to target module and overwrite the target module's state
+            //        cc will only broadcast the state to target module and overwrite the target module's state
             // when ccIns's module == target module,
             //        if ccIns option.syncState is false, cc only change it's own state, 
             //           but if you pass forceSync=true, cc also will broadcast the state to target module and >>> overwrite the target module's state !<<<
@@ -1217,6 +1241,17 @@
   var vbi$2 = util.verboseInfo;
   var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
       ccKey_ref_ = ccContext.ccKey_ref_;
+  /**
+   * @description
+   * @author zzk
+   * @export
+   * @param {*} ccClassKey must pass to invoke!
+   * @param {*} ccInstanceKey must pass to invoke but you can pass null or undefined or '', cc will pick one instance of this CcClass
+   * @param {*} method
+   * @param {*} args
+   * @returns
+   */
+
   function invoke (ccClassKey, ccInstanceKey, method) {
     var _ref$method;
 
@@ -1227,11 +1262,18 @@
       if (ccContext.isStrict) throw err;else return console.error(err);
     }
 
-    var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
-    var ref = ccKey_ref_[ccKey];
+    var ref;
+
+    if (ccInstanceKey) {
+      var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
+      ref = ccKey_ref_[ccKey];
+    } else {
+      var ccKeys = classContext.ccKeys;
+      ref = ccKey_ref_[ccKeys[0]]; // pick first one
+    }
 
     if (!ref) {
-      var _err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey + "/ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!
+      var _err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey + " ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!
 
 
       return console.error(_err.message);
@@ -1240,7 +1282,8 @@
     var fn = ref[method];
 
     if (!fn) {
-      var _err2 = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi$2(" method:" + method));
+      var _err2 = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi$2(" method:" + method)); // only error
+
 
       return console.error(_err2.message);
     }
