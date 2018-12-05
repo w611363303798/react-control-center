@@ -1,7 +1,7 @@
 
 # Change Log
 ## 2018-12-05 10:00
-* now ccInstance can declare storedStateKeys in ccOption if you want to hold the state back while the ccInstance destroyed and mount again! note that any key of storedStateKeys can not be duplicate with any key of sharedStateKeys
+* now ccInstance can declare storedStateKeys in ccOption if you want to hold the state back while the ccInstance destroyed and mount again! note that any key of storedStateKeys can not be duplicate with any key of sharedStateKeys， and you must explicitly specify a ccKey if you want to use storedStateKeys
 * add life cycle hook $$afterSetState
 
 ## 2018-12-05 8:00
