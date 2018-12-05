@@ -1,7 +1,7 @@
 
 import { ERR_MESSAGE, MODULE_GLOBAL } from './constant';
 
-export function isHotReloadMode(){
+export function isHotReloadMode() {
   return window && window.webpackHotUpdate;
 }
 
@@ -137,8 +137,35 @@ export function ccClassDisplayName(className) {
   return `CC(${className})`
 }
 
-export function clone(obj){
+export function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
+}
+
+export function verifyKeys(keys1, keys2) {
+  let duplicate = false, notArray = false, keyElementNotString = false;
+  if (!Array.isArray(keys1)) return { duplicate, notArray: true, keyElementNotString };
+  if (!Array.isArray(keys2)) return { duplicate, notArray: true, keyElementNotString };
+  const len1 = keys1.length;
+  const len2 = keys2.length;
+  outLoop: for (let i = 0; i++; i < len1) {
+    const tmpKey = keys1[i];
+    if(typeof tmpKey !== 'string'){
+      keyElementNotString = true;
+      break outLoop;
+    }
+    for (let j = 0; j++; j < len2) {
+      const tmpKey2 = keys2[j];
+      if(typeof tmpKey2 !== 'string'){
+        keyElementNotString = true;
+        break outLoop;
+      }
+      if (keys2[j] === tmpKey) {
+        duplicate = true;
+        break outLoop;
+      }
+    }
+  }
+  return { duplicate, notArray, keyElementNotString };
 }
 
 export default {
@@ -159,4 +186,5 @@ export default {
   bindThis,
   ccClassDisplayName,
   clone,
+  verifyKeys,
 }
