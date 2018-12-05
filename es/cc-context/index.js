@@ -48,6 +48,9 @@ var ccContext = {
   reducer: {
     _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
   },
+  refStore: {
+    _state: {}
+  },
   ccKey_ref_: refs,
   ccKey_option_: {},
   refs: refs,

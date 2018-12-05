@@ -15,8 +15,10 @@
   var MODULE_CC = '$$cc';
   var MODULE_CC_LIKE = [MODULE_CC, '$$cC', '$$Cc', '$$CC'];
   var CHANGE_BY_SELF = 1;
-  var SYNC_FROM_CC_INSTANCE = 2;
-  var SYNC_FROM_CC_STORE = 3;
+  var SYNC_FROM_CC_INSTANCE_STATE = 2;
+  var SYNC_FROM_CC_CLASS_STORE = 3;
+  var SYNC_FROM_CC_REF_STORE = 4;
+  var SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE = 5;
   var BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD = 1;
 
   var ERR = {
@@ -33,6 +35,9 @@
     CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID: 1010,
     CC_CLASS_INSTANCE_MORE_THAN_ONE: 1011,
     CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE: 1012,
+    CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS: 1013,
+    CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY: 1014,
+    CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT: 1015,
     MODULE_KEY_CC_FOUND: 1100,
     STORE_KEY_NAMING_INVALID: 1101,
     STORE_MODULE_VALUE_INVALID: 1102,
@@ -40,7 +45,7 @@
     REDUCER_ACTION_TYPE_NO_MODULE: 1202 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store or reducers! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store or reducers! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
 
   function isHotReloadMode() {
     return window && window.webpackHotUpdate;
@@ -140,6 +145,7 @@
   function verifyModuleValue(value) {
     return isPlainJsonObject(value);
   }
+
   function verifyCcOption(ccOption) {
     return isPlainJsonObject(ccOption);
   }
@@ -184,10 +190,56 @@
     return " --verbose-info: " + info;
   }
   function ccClassDisplayName(className) {
-    return "CC" + className;
+    return "CC(" + className + ")";
   }
   function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
+  }
+  function verifyKeys(keys1, keys2) {
+    var duplicate = false,
+        notArray = false,
+        keyElementNotString = false;
+    if (!Array.isArray(keys1)) return {
+      duplicate: duplicate,
+      notArray: true,
+      keyElementNotString: keyElementNotString
+    };
+    if (!Array.isArray(keys2)) return {
+      duplicate: duplicate,
+      notArray: true,
+      keyElementNotString: keyElementNotString
+    };
+    var len1 = keys1.length;
+    var len2 = keys2.length;
+
+    outLoop: for (var i = 0; i++; i < len1) {
+      var tmpKey = keys1[i];
+
+      if (typeof tmpKey !== 'string') {
+        keyElementNotString = true;
+        break outLoop;
+      }
+
+      for (var j = 0; j++; j < len2) {
+        var tmpKey2 = keys2[j];
+
+        if (typeof tmpKey2 !== 'string') {
+          keyElementNotString = true;
+          break outLoop;
+        }
+
+        if (keys2[j] === tmpKey) {
+          duplicate = true;
+          break outLoop;
+        }
+      }
+    }
+
+    return {
+      duplicate: duplicate,
+      notArray: notArray,
+      keyElementNotString: keyElementNotString
+    };
   }
   var util = {
     makeError: makeError,
@@ -206,7 +258,8 @@
     verboseInfo: verboseInfo,
     bindThis: bindThis,
     ccClassDisplayName: ccClassDisplayName,
-    clone: clone
+    clone: clone,
+    verifyKeys: verifyKeys
   };
 
   var _state2, _reducers;
@@ -254,6 +307,9 @@
     },
     reducer: {
       _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
+    },
+    refStore: {
+      _state: {}
     },
     ccKey_ref_: refs,
     ccKey_option_: {},
@@ -846,7 +902,8 @@
 
   var vbi$1 = util.verboseInfo;
   var me = util.makeError;
-  var ccClassDisplayName$1 = util.ccClassDisplayName;
+  var verifyKeys$1 = util.verifyKeys,
+      ccClassDisplayName$1 = util.ccClassDisplayName;
   var _state = ccContext.store._state,
       _reducers$1 = ccContext.reducer._reducers;
 
@@ -888,7 +945,7 @@
     }
   }
 
-  function extractSharedState(state, sharedStateKeys) {
+  function extractStateByKeys(state, sharedStateKeys) {
     if (!isStateValid(state)) {
       return {
         sharedState: {},
@@ -907,7 +964,7 @@
       }
     });
     return {
-      sharedState: newState,
+      newState: newState,
       isStateEmpty: isStateEmpty
     };
   }
@@ -1011,7 +1068,7 @@
     var isCcUniqueKeyAutoGenerated = false;
 
     if (isClassSingle) {
-      if (ccKey) justWarning("now thd ccClass is singleton, you needn't supply ccKey to instance props, cc will ignore the ccKey:" + ccKey);
+      if (ccKey) justWarning("now the ccClass is singleton, you needn't supply ccKey to instance props, cc will ignore the ccKey:" + ccKey);
       ccUniqueKey = ccClassKey;
     } else {
       if (ccKey) {
@@ -1075,20 +1132,21 @@
           _this = _ReactClass.call(this, props, context) || this;
           var ccKey = props.ccKey,
               _props$ccOption = props.ccOption,
-              ccOption = _props$ccOption === void 0 ? {
-            syncState: true,
-            asyncLifeCycleHook: asyncLifeCycleHook
-          } : _props$ccOption;
-          if (asyncLifeCycleHook === undefined) asyncLifeCycleHook = _asyncLifeCycleHook;
-          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['$$bindDataToCcClassContext', '$$mapCcToInstance', '$$changeStateWithClosure', '$$changeState', '$$broadcastState']);
+              ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
+          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState']);
+          if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
+          if (ccOption.syncState === undefined) ccOption.syncState = true;
+          if (ccOption.asyncLifeCycleHook === undefined) ccOption.asyncLifeCycleHook = _asyncLifeCycleHook;
+          var asyncLifeCycleHook = ccOption.asyncLifeCycleHook,
+              storedStateKeys = ccOption.storedStateKeys;
 
           var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
               ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
               isCcUniqueKeyAutoGenerated = _computeCcUniqueKey.isCcUniqueKeyAutoGenerated;
 
-          var ccClassContext = _this.$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption);
+          var ccClassContext = _this.__$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption);
 
-          _this.$$mapCcToInstance(isSingle, asyncLifeCycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys);
+          _this.__$$mapCcToInstance(isSingle, asyncLifeCycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys);
 
           return _this;
         } // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -1101,25 +1159,40 @@
         };
 
         _proto.componentDidMount = function componentDidMount() {
+          if (_ReactClass.prototype.componentDidMount) _ReactClass.prototype.componentDidMount.call(this);
           var _this$cc$ccState = this.cc.ccState,
               module = _this$cc$ccState.module,
               sharedStateKeys = _this$cc$ccState.sharedStateKeys,
-              ccOption = _this$cc$ccState.ccOption;
-          var state = ccContext.store._state[module];
+              storedStateKeys = _this$cc$ccState.storedStateKeys,
+              ccOption = _this$cc$ccState.ccOption,
+              ccUniqueKey = _this$cc$ccState.ccUniqueKey;
+          var selfState = ccContext.refStore._state[ccUniqueKey];
 
-          var _extractSharedState = extractSharedState(state, sharedStateKeys),
-              sharedState = _extractSharedState.sharedState,
-              isStateEmpty = _extractSharedState.isStateEmpty;
+          var _extractStateByKeys = extractStateByKeys(selfState, storedStateKeys),
+              newSelfState = _extractStateByKeys.newState,
+              isSelfStateEmpty = _extractStateByKeys.isStateEmpty;
 
-          if (!isStateEmpty && ccOption.syncState) {
+          if (ccOption.syncState) {
             //sync store's state to instance
-            this.cc.doReactSetState(SYNC_FROM_CC_STORE, sharedState);
-          }
+            var sharedState = ccContext.store._state[module];
 
-          if (_ReactClass.prototype.componentDidMount) _ReactClass.prototype.componentDidMount.call(this);
+            var _extractStateByKeys2 = extractStateByKeys(sharedState, sharedStateKeys),
+                newSharedState = _extractStateByKeys2.newState,
+                isSharedStateEmpty = _extractStateByKeys2.isStateEmpty;
+
+            if (!isSharedStateEmpty && isSelfStateEmpty) {
+              this.cc.prepareReactSetState(SYNC_FROM_CC_CLASS_STORE, newSharedState);
+            } else if (isSharedStateEmpty && !isSelfStateEmpty) {
+              this.cc.prepareReactSetState(SYNC_FROM_CC_REF_STORE, newSelfState);
+            } else if (!isSharedStateEmpty && !isSelfStateEmpty) {
+              this.cc.prepareReactSetState(SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE, _extends({}, newSharedState, newSelfState));
+            }
+          } else if (!isSelfStateEmpty) {
+            this.cc.prepareReactSetState(SYNC_FROM_CC_REF_STORE, newSelfState);
+          }
         };
 
-        _proto.$$bindDataToCcClassContext = function $$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
+        _proto.__$$bindDataToCcClassContext = function __$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
           var classContext = contextMap[ccClassKey];
           var ccKeys = classContext.ccKeys;
 
@@ -1127,15 +1200,8 @@
             console.log(info("register ccKey " + ccUniqueKey + " to CC_CONTEXT"), cl());
           }
 
-          var option;
-          if (!ccOption) option = {
-            syncState: true
-          };else {
-            if (!util.verifyCcOption(ccOption)) {
-              throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID);
-            }
-
-            option = ccOption;
+          if (!util.verifyCcOption(ccOption)) {
+            throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi$1("a standard default ccOption may like: {\"syncState\": true, \"asyncLifeCycleHook\":false, \"storedStateKeys\": []}"));
           }
 
           if (ccKeys.includes(ccUniqueKey)) {
@@ -1150,23 +1216,23 @@
 
 
               console.error("found ccKey " + ccKey + " may duplicate, but now is in hot reload mode, cc can't throw the error, please make sure your ccKey is unique manually");
-              console.error(vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " ccUniqueKey:" + ccUniqueKey)); // in webpack hot reload mode, cc works not well,
+              console.error(vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " ccUniqueKey:" + ccUniqueKey)); // in webpack hot reload mode, cc works not very well,
               // cc can't set ref immediately, because the ccInstance of ccKey will ummount right now, in unmount func, 
               // cc call unsetCcInstanceRef will lost the right ref in CC_CONTEXT.refs
               // so cc set ref later
 
-              setCcInstanceRef(ccUniqueKey, this, ccKeys, option, 600);
+              setCcInstanceRef(ccUniqueKey, this, ccKeys, ccOption, 600);
             } else {
               throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi$1("ccClass:" + ccClassKey + ",ccKey:" + ccUniqueKey));
             }
           } else {
-            setCcInstanceRef(ccUniqueKey, this, ccKeys, option);
+            setCcInstanceRef(ccUniqueKey, this, ccKeys, ccOption);
           }
 
           return classContext;
         };
 
-        _proto.$$mapCcToInstance = function $$mapCcToInstance(isSingle, asyncLifeCycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, ccOption, ccClassContext, currentModule, reducerModule, sharedStateKeys) {
+        _proto.__$$mapCcToInstance = function __$$mapCcToInstance(isSingle, asyncLifeCycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, currentModule, reducerModule, sharedStateKeys) {
           var _this2 = this;
 
           var reactSetStateRef = this.setState.bind(this);
@@ -1179,12 +1245,31 @@
             ccKey: ccKey,
             ccUniqueKey: ccUniqueKey,
             isCcUniqueKeyAutoGenerated: isCcUniqueKeyAutoGenerated,
+            storedStateKeys: storedStateKeys,
             ccOption: ccOption,
             ccClassContext: ccClassContext,
             module: currentModule,
             reducerModule: reducerModule,
             sharedStateKeys: sharedStateKeys
           };
+
+          var _verifyKeys = verifyKeys$1(sharedStateKeys, storedStateKeys),
+              duplicate = _verifyKeys.duplicate,
+              notArray = _verifyKeys.notArray,
+              keyElementNotString = _verifyKeys.keyElementNotString;
+
+          if (notArray) {
+            throw me(ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY, vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey));
+          }
+
+          if (keyElementNotString) {
+            throw me(ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT, vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey));
+          }
+
+          if (duplicate) {
+            throw me(ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS, vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " sharedStateKeys:" + sharedStateKeys + " storedStateKeys:" + storedStateKeys));
+          }
+
           this.cc = {
             ccState: ccState,
             ccUniqueKey: ccUniqueKey,
@@ -1192,7 +1277,17 @@
             beforeSetState: this.$$beforeSetState,
             beforeBroadcastState: this.$$beforeBroadcastState,
             afterSetState: this.$$afterSetState,
-            doReactSetState: function doReactSetState(changeWay, state, next, reactCallback) {
+            prepareReactSetState: function prepareReactSetState(changeWay, state, next, reactCallback) {
+              if (storedStateKeys.length > 0) {
+                var _extractStateByKeys3 = extractStateByKeys(state, storedStateKeys),
+                    newState = _extractStateByKeys3.newState,
+                    isStateEmpty = _extractStateByKeys3.isStateEmpty;
+
+                if (!isStateEmpty) {
+                  ccContext.refStore._state[ccUniqueKey] = newState;
+                }
+              }
+
               if (_this2.$$beforeSetState) {
                 if (asyncLifeCycleHook) {
                   // if user don't call next in ccIns's $$beforeSetState,reactSetState will never been invoked
@@ -1219,23 +1314,23 @@
                 if (next) next();
               }
             },
-            doBroadcastState: function doBroadcastState(triggerType, moduleName, sourceSharedState, needClone) {
+            prepareBroadcastState: function prepareBroadcastState(triggerType, moduleName, sourceSharedState, needClone) {
               if (_this2.$$beforeBroadcastState) {
                 if (asyncLifeCycleHook) {
                   _this2.$$beforeBroadcastState({
                     triggerType: triggerType
                   }, function () {
-                    _this2.$$broadcastState(moduleName, sourceSharedState, needClone);
+                    _this2.cc.broadcastState(moduleName, sourceSharedState, needClone);
                   });
                 } else {
                   _this2.$$beforeBroadcastState({
                     triggerType: triggerType
                   });
 
-                  _this2.$$broadcastState(moduleName, sourceSharedState, needClone);
+                  _this2.cc.broadcastState(moduleName, sourceSharedState, needClone);
                 }
               } else {
-                _this2.$$broadcastState(moduleName, sourceSharedState, needClone);
+                _this2.cc.broadcastState(moduleName, sourceSharedState, needClone);
               }
             },
             reactSetState: function reactSetState(state, cb) {
@@ -1248,13 +1343,13 @@
             },
             setState: function setState(state, cb) {
               _this2.$$changeState(state, {
-                module: _this2.cc.ccState.module,
+                module: currentModule,
                 cb: cb
               });
             },
             forceUpdate: function forceUpdate(cb) {
               _this2.$$changeState(_this2.state, {
-                module: _this2.cc.ccState.module,
+                module: currentModule,
                 cb: cb
               });
             },
@@ -1315,7 +1410,7 @@
               }
 
               isInputModuleInvalid(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2, _this2.$$changeStateWithClosure({
+                userLogicFn.call.apply(userLogicFn, [_this2, _this2.$$getChangeStateHandler({
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
@@ -1346,7 +1441,7 @@
               }
 
               isInputModuleInvalid(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.$$changeStateWithClosure({
+                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.$$getChangeStateHandler({
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
@@ -1423,17 +1518,51 @@
 
                 _this2.cc.invokeWith(reducerFn, (_ref7 = {}, inputModule = _ref7.inputModule, forceSync = _ref7.forceSync, newCb = _ref7.cb, _ref7), executionContext);
               });
+            },
+            broadcastState: function broadcastState(moduleName, sourceSharedState, needClone) {
+              var _sourceSharedState = sourceSharedState;
+              if (needClone) _sourceSharedState = util.clone(sourceSharedState); // this clone may cause performance issue, if sourceSharedState is too big!!
+
+              ccContext.store.setState(module, _sourceSharedState);
+              var currentCcKey = _this2.cc.ccState.ccUniqueKey;
+              var ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName];
+              if (!ccClassKeys) return;
+              var ccKey_ref_ = ccContext.ccKey_ref_;
+              var ccKey_option_ = ccContext.ccKey_option_; //these ccClass subscribe the same module's state
+
+              ccClassKeys.forEach(function (classKey) {
+                var classContext = ccContext.ccClassKey_ccClassContext_[classKey];
+                var ccKeys = classContext.ccKeys,
+                    sharedStateKeys = classContext.sharedStateKeys;
+                if (sharedStateKeys.length === 0) return; // extractStateByKeys again! because different class with a same module may have different sharedStateKeys!!!
+
+                var _extractStateByKeys4 = extractStateByKeys(_sourceSharedState, sharedStateKeys),
+                    sharedStateForCurrentCcClass = _extractStateByKeys4.newState,
+                    isStateEmpty = _extractStateByKeys4.isStateEmpty;
+
+                if (isStateEmpty) return;
+                ccKeys.forEach(function (ccKey) {
+                  //exclude currentCcKey, whether its reactSetState has been invoked or not, currentCcKey can't trigger prepareReactSetState here
+                  if (ccKey !== currentCcKey) {
+                    var ref = ccKey_ref_[ccKey];
+
+                    if (ref) {
+                      var option = ccKey_option_[ccKey];
+
+                      if (option.syncState) {
+                        ref.cc.prepareReactSetState(SYNC_FROM_CC_INSTANCE_STATE, sharedStateForCurrentCcClass);
+                      }
+                    }
+                  }
+                });
+              });
             }
           };
           this.cc.reactSetState = this.cc.reactSetState.bind(this);
-          this.cc.doReactSetState = this.cc.doReactSetState.bind(this);
+          this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
+          this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
+          this.cc.prepareBroadcastState = this.cc.prepareBroadcastState.bind(this);
           this.$$dispatch = this.cc.dispatch; //let CCComponent instance can call dispatch directly
-
-          this.$$dispatchPayload = this.cc.dispatchPayload; //let CCComponent instance can call dispatchPayload directly
-
-          this.setState = this.cc.setState; //let setState call cc.setState
-
-          this.forceUpdate = this.cc.forceUpdate; //let forceUpdate call cc.forceUpdate
 
           this.$$invoke = this.cc.invoke; //commit state to cc directly, but userFn can be promise or generator both!
 
@@ -1447,6 +1576,9 @@
           this.$$commit = this.cc.commit; // commit state to cc directly, userFn can only be normal function
 
           this.$$commitWith = this.cc.commitWith;
+          this.setState = this.cc.setState; //let setState call cc.setState
+
+          this.forceUpdate = this.cc.forceUpdate; //let forceUpdate call cc.forceUpdate
         }; // note!!! changeState do two thing, decide if change self's state or not, if broadcast state or not;
         // when ccIns's module != target module,
         //        cc will only broadcast the state to target module, caution: it will overwrite the target module's state!!
@@ -1469,22 +1601,22 @@
 
           if (module === currentModule) {
             // who trigger $$changeState, who will go to change the whole received state 
-            this.cc.doReactSetState(CHANGE_BY_SELF, state, function () {
+            this.cc.prepareReactSetState(CHANGE_BY_SELF, state, function () {
               if (_this3.cc.ccState.ccOption.syncState) {
                 // note!!! if syncState == false, other ccIns will have not change to receive new state
-                _this3.cc.doBroadcastState(BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, false);
+                _this3.cc.prepareBroadcastState(BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, false);
               } else if (forceSync) {
-                _this3.cc.doBroadcastState(BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, true);
+                _this3.cc.prepareBroadcastState(BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, true);
               }
             }, reactCallback);
           } else {
             if (forceSync) justWarning("you are trying change another module's state, forceSync=true in not allowed, cc will ignore it!" + vbi$1("module:" + module + " currentModule" + currentModule));
-            this.cc.doBroadcastState(BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, true);
+            this.cc.prepareBroadcastState(BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, true);
           }
         }; //{ module, forceSync, cb }
 
 
-        _proto.$$changeStateWithClosure = function $$changeStateWithClosure(executionContext) {
+        _proto.$$getChangeStateHandler = function $$getChangeStateHandler(executionContext) {
           var _this4 = this;
 
           return function (state) {
@@ -1492,51 +1624,18 @@
           };
         };
 
-        _proto.$$broadcastState = function $$broadcastState(moduleName, sourceSharedState, needClone) {
-          var _sourceSharedState = sourceSharedState;
-          if (needClone) _sourceSharedState = util.clone(sourceSharedState); // this clone may cause performance issue, if sourceSharedState is too big!!
-
-          ccContext.store.setState(module, _sourceSharedState);
-          var currentCcKey = this.cc.ccState.ccUniqueKey;
-          var ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName];
-          var ccKey_ref_ = ccContext.ccKey_ref_;
-          var ccKey_option_ = ccContext.ccKey_option_; //these ccClass subscribe the same module's state
-
-          ccClassKeys.forEach(function (classKey) {
-            var classContext = ccContext.ccClassKey_ccClassContext_[classKey];
-            var ccKeys = classContext.ccKeys,
-                sharedStateKeys = classContext.sharedStateKeys;
-            if (sharedStateKeys.length === 0) return; // extractSharedState again! because different class with a same module may have different sharedStateKeys!!!
-
-            var _extractSharedState2 = extractSharedState(_sourceSharedState, sharedStateKeys),
-                sharedStateForCurrentCcClass = _extractSharedState2.sharedState,
-                isStateEmpty = _extractSharedState2.isStateEmpty;
-
-            if (isStateEmpty) return;
-            ccKeys.forEach(function (ccKey) {
-              //exclude currentCcKey, whether it's reactSetState have been invoked or not, currentCcKey can't trigger doReactSetState here
-              if (ccKey !== currentCcKey) {
-                var ref = ccKey_ref_[ccKey];
-
-                if (ref) {
-                  var option = ccKey_option_[ccKey];
-
-                  if (option.syncState) {
-                    ref.cc.doReactSetState(SYNC_FROM_CC_INSTANCE, sharedStateForCurrentCcClass);
-                  }
-                }
-              }
-            });
-          });
+        _proto.componentDidUpdate = function componentDidUpdate() {
+          if (_ReactClass.prototype.componentDidUpdate) _ReactClass.prototype.componentDidUpdate.call(this);
+          if (this.$$afterSetState) this.$$afterSetState();
         };
 
         _proto.componentWillUnmount = function componentWillUnmount() {
-          //如果父组件实现了componentWillUnmount，要调用一遍
-          if (_ReactClass.prototype.componentWillUnmount) _ReactClass.prototype.componentWillUnmount.call(this);
           var _this$cc$ccState2 = this.cc.ccState,
               ccUniqueKey = _this$cc$ccState2.ccUniqueKey,
               ccKeys = _this$cc$ccState2.ccClassContext.ccKeys;
-          unsetCcInstanceRef(ccKeys, ccUniqueKey);
+          unsetCcInstanceRef(ccKeys, ccUniqueKey); //如果父组件实现了componentWillUnmount，要调用一遍
+
+          if (_ReactClass.prototype.componentWillUnmount) _ReactClass.prototype.componentWillUnmount.call(this);
         };
 
         _proto.render = function render() {

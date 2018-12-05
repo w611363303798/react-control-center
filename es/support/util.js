@@ -126,7 +126,8 @@ export function verifyNamespacedActionType(actionType, allowSlashCountZero) {
   } else {
     return false;
   }
-}
+} // todo, modify verify rule
+
 export function verifyCcOption(ccOption) {
   return isPlainJsonObject(ccOption);
 }
@@ -171,10 +172,56 @@ export function verboseInfo(info) {
   return " --verbose-info: " + info;
 }
 export function ccClassDisplayName(className) {
-  return "CC" + className;
+  return "CC(" + className + ")";
 }
 export function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
+}
+export function verifyKeys(keys1, keys2) {
+  var duplicate = false,
+      notArray = false,
+      keyElementNotString = false;
+  if (!Array.isArray(keys1)) return {
+    duplicate: duplicate,
+    notArray: true,
+    keyElementNotString: keyElementNotString
+  };
+  if (!Array.isArray(keys2)) return {
+    duplicate: duplicate,
+    notArray: true,
+    keyElementNotString: keyElementNotString
+  };
+  var len1 = keys1.length;
+  var len2 = keys2.length;
+
+  outLoop: for (var i = 0; i++; i < len1) {
+    var tmpKey = keys1[i];
+
+    if (typeof tmpKey !== 'string') {
+      keyElementNotString = true;
+      break outLoop;
+    }
+
+    for (var j = 0; j++; j < len2) {
+      var tmpKey2 = keys2[j];
+
+      if (typeof tmpKey2 !== 'string') {
+        keyElementNotString = true;
+        break outLoop;
+      }
+
+      if (keys2[j] === tmpKey) {
+        duplicate = true;
+        break outLoop;
+      }
+    }
+  }
+
+  return {
+    duplicate: duplicate,
+    notArray: notArray,
+    keyElementNotString: keyElementNotString
+  };
 }
 export default {
   makeError: makeError,
@@ -193,5 +240,6 @@ export default {
   verboseInfo: verboseInfo,
   bindThis: bindThis,
   ccClassDisplayName: ccClassDisplayName,
-  clone: clone
+  clone: clone,
+  verifyKeys: verifyKeys
 };
