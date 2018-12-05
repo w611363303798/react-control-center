@@ -51,17 +51,17 @@ function isStateValid(state) {
   }
 }
 
-function extractStateByKeys(state, sharedStateKeys) {
+function extractStateByKeys(state, targetKeys) {
   if (!isStateValid(state)) {
     return {
-      sharedState: {},
+      newState: {},
       isStateEmpty: true
     };
   }
 
   var newState = {};
   var isStateEmpty = true;
-  sharedStateKeys.forEach(function (key) {
+  targetKeys.forEach(function (key) {
     var value = state[key];
 
     if (util.isValueNotNull(value)) {
