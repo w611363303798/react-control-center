@@ -117,11 +117,11 @@ class BookMenu extends react.Component{
   }
   addBookByDispatch = ()=>{
     const books = makeBooks();
-    this.dispatch({type:'setBooks',payload:books});
+    this.$$dispatch({type:'setBooks',payload:books});
     //如果是模块化的cc，需要传入module
-    //this.dispatch({module:'book',type:'setBooks',payload:books});
+    //this.$$dispatch({module:'book',type:'setBooks',payload:books});
     //支持传入回调，最终触发的是 reactSetState(state, cb);
-    //this.dispatch({module:'book',type:'setBooks',payload:books,cb=>{this.setState({color:'yellow'})}});
+    //this.$$dispatch({module:'book',type:'setBooks',payload:books,cb=>{this.setState({color:'yellow'})}});
   }
   addBookByInvoke = ()=>{
     //cc的CC_CONTEXT管理着所有cc实例的引用，可以直接调用实例的任何方法
