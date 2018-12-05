@@ -42,13 +42,13 @@ function isStateValid(state) {
   }
 }
 
-function extractStateByKeys(state, sharedStateKeys) {
+function extractStateByKeys(state, targetKeys) {
   if (!isStateValid(state)) {
-    return { sharedState: {}, isStateEmpty: true };
+    return { newState: {}, isStateEmpty: true };
   }
   const newState = {};
   let isStateEmpty = true;
-  sharedStateKeys.forEach(key => {
+  targetKeys.forEach(key => {
     const value = state[key];
     if (util.isValueNotNull(value)) {
       newState[key] = value;
