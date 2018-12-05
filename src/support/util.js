@@ -133,7 +133,7 @@ export function verboseInfo(info) {
 }
 
 export function ccClassDisplayName(className) {
-  return `CC${className}`
+  return `CC(${className})`
 }
 
 export function clone(obj){
