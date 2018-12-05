@@ -99,6 +99,7 @@ export function verifyNamespacedActionType(actionType, allowSlashCountZero = tru
   }
 }
 
+// todo, modify verify rule
 export function verifyCcOption(ccOption) {
   return isPlainJsonObject(ccOption);
 }

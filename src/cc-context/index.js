@@ -61,6 +61,11 @@ const ccContext = {
       }
     }
   },
+  refStore: {
+    _state: {
+
+    },
+  },
   ccKey_ref_: refs,
   ccKey_option_: {
 
