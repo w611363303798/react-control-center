@@ -4,6 +4,8 @@ import {
   SYNC_FROM_CC_CLASS_STORE, SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD,
   SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE,
   SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE,
+  SYNC_FROM_GLOBAL_STORE,
+  SYNC_FROM_GLOBAL_STORE_AND_REF_STORE,
 } from '../support/constant';
 import ccContext, { getCcContext } from '../cc-context';
 import util from '../support/util';
@@ -226,36 +228,74 @@ export default function register(ccClassKey, {
         const selfState = ccContext.refStore._state[ccUniqueKey];
         const { partialState: newSelfState, isStateEmpty: isSelfStateEmpty } = extractStateByKeys(selfState, storedStateKeys);
 
+        const sharedState = ccContext.store._state[module];
+        const globalState = ccContext.store._state[MODULE_GLOBAL];
         const { syncState, syncGlobalState } = ccOption;
-        if (syncState || syncGlobalState) {//sync store's state to instance
-          const sharedState = ccContext.store._state[module];
-          const globalState = ccContext.store._state[MODULE_GLOBAL];
 
-          if (syncState && syncGlobalState) {
-            const { partialState: newSharedState, isStateEmpty: isSharedStateEmpty } = extractStateByKeys(sharedState, sharedStateKeys);
-            const { partialState: newGlobalState, isStateEmpty: isGlobalStateEmpty } = extractStateByKeys(globalState, globalStateKeys);
-            if (!isGlobalStateEmpty && !isSharedStateEmpty && !isSelfStateEmpty) {
-              this.cc.prepareReactSetState(SYNC_FROM_CC_CLASS_STORE, { ...newGlobalState, ...newSharedState, ...newSelfState });
-            }
-          } else if (syncState) {
-            const { partialState: newSharedState, isStateEmpty: isSharedStateEmpty } = extractStateByKeys(sharedState, sharedStateKeys);
-            if (!isSharedStateEmpty && isSelfStateEmpty) {
-              this.cc.prepareReactSetState(SYNC_FROM_CC_CLASS_STORE, newSharedState);
-            } else if (isSharedStateEmpty && !isSelfStateEmpty) {
-              this.cc.prepareReactSetState(SYNC_FROM_CC_REF_STORE, newSelfState);
-            } else if (!isSharedStateEmpty && !isSelfStateEmpty) {
-              this.cc.prepareReactSetState(SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE, { ...newSharedState, ...newSelfState });
-            }
-          } else if (syncGlobalState) {
-            const { partialState: newGlobalState, isStateEmpty: isGlobalStateEmpty } = extractStateByKeys(globalState, globalStateKeys);
-            if (!isGlobalStateEmpty) {
-              this.cc.prepareReactSetState(SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE, { ...newGlobalState, ...newSelfState });
-            }
+        const { partialState: newSharedState, isStateEmpty: isSharedStateEmpty } = extractStateByKeys(sharedState, sharedStateKeys);
+        const { partialState: newGlobalState, isStateEmpty: isGlobalStateEmpty } = extractStateByKeys(globalState, globalStateKeys);
+
+        let changeWay = -1, toSet = null;
+        function mergeSharedStateToSelfState() {
+          if (!isSharedStateEmpty && isSelfStateEmpty) {
+            changeWay = SYNC_FROM_CC_CLASS_STORE;
+            toSet = newSharedState;
+          } else if (isSharedStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_CC_REF_STORE;
+            toSet = newSelfState;
+          } else if (!isSharedStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE;
+            toSet = { ...newSharedState, ...newSelfState };
           }
-
-        } else if (!isSelfStateEmpty) {
-          this.cc.prepareReactSetState(SYNC_FROM_CC_REF_STORE, newSelfState);
         }
+
+        function mergeGlobalStateAndSyncStateToSelfState() {
+          if (!isGlobalStateEmpty && !isSharedStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE;
+            toSet = { ...newGlobalState, ...newSharedState, ...newSelfState };
+          } else if (!isGlobalStateEmpty && !isSharedStateEmpty && isSelfStateEmpty) {
+            changeWay = SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE;
+            toSet = { ...newGlobalState, ...newSharedState };
+          } else if (!isGlobalStateEmpty && isSharedStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_GLOBAL_STORE_AND_REF_STORE;
+            toSet = { ...newGlobalState, ...newSelfState };
+          } else if (!isGlobalStateEmpty && isSharedStateEmpty && isSelfStateEmpty) {
+            changeWay = SYNC_FROM_GLOBAL_STORE;
+            toSet = newGlobalState;
+          } else if (isGlobalStateEmpty && !isSharedStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE;
+            toSet = { ...newSharedState, ...newSelfState };
+          } else if (isGlobalStateEmpty && isSharedStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_CC_REF_STORE;
+            toSet = newSelfState;
+          }
+        }
+
+        function mergeGlobalStateToSelfState() {
+          if (!isGlobalStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_GLOBAL_STORE_AND_REF_STORE;
+            toSet = { ...newGlobalState, ...newSelfState };
+          } else if (isGlobalStateEmpty && !isSelfStateEmpty) {
+            changeWay = SYNC_FROM_CC_REF_STORE;
+            toSet = newSelfState;
+          } else if (!isGlobalStateEmpty && isSelfStateEmpty) {
+            changeWay = SYNC_FROM_GLOBAL_STORE;
+            toSet = newGlobalState;
+          }
+        }
+
+        if (syncState && syncGlobalState) {
+          mergeGlobalStateAndSyncStateToSelfState();
+        } else if (syncGlobalState) {
+          mergeGlobalStateToSelfState();
+        } else if (syncState) {
+          mergeSharedStateToSelfState();
+        } else {
+          changeWay = SYNC_FROM_CC_REF_STORE;
+          toSet = newSelfState;
+        }
+
+        if (toSet) this.cc.prepareBroadcastState(changeWay, toSet);
       }
 
       __$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
