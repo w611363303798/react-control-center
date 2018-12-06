@@ -1,5 +1,9 @@
 
 # Change Log
+## 2018-12-06 13:00
+* every CCClass automatically watch $$global state 's change, if you give CCClass a globalStateKeys to let cc know this CCClass want to know which keys it want to watch watch, then any state of these keys changed will trigger this CCClass's all instance render, if you want to reject render triggered by global state change in some CCInstance, you can specify syncGlobalState=false in these CCInstance
+* now ccInstance can call setGlobalState, your can also call cc.setGlobalState in any where;
+
 ## 2018-12-05 10:00
 * now ccInstance can declare storedStateKeys in ccOption if you want to hold the state back while the ccInstance destroyed and mount again! note that any key of storedStateKeys can not be duplicate with any key of sharedStateKeys， and you must explicitly specify a ccKey if you want to use storedStateKeys
 * add life cycle hook $$afterSetState
