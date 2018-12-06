@@ -148,19 +148,19 @@ export function verifyKeys(keys1, keys2) {
   if (!Array.isArray(keys2)) return { duplicate, notArray: true, keyElementNotString };
   const len1 = keys1.length;
   const len2 = keys2.length;
-  outLoop: for (let i = 0; i++; i < len1) {
+  outLoop: for (let i = 0; i < len1; i++) {
     const tmpKey = keys1[i];
     if (typeof tmpKey !== 'string') {
       keyElementNotString = true;
       break outLoop;
     }
-    for (let j = 0; j++; j < len2) {
+    for (let j = 0; j < len2; j++ ) {
       const tmpKey2 = keys2[j];
       if (typeof tmpKey2 !== 'string') {
         keyElementNotString = true;
         break outLoop;
       }
-      if (keys2[j] === tmpKey) {
+      if (tmpKey2 === tmpKey) {
         duplicate = true;
         break outLoop;
       }

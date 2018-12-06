@@ -34,21 +34,22 @@ const ccContext = {
       }
     },
     getState: function () {
-      if (ccContext.returnRootState) {
-        return ccContext.store._state;
-      } else {
-        if (ccContext.isModuleMode) {
-          return ccContext.store._state;
-        } else {
-          return ccContext.store._state[MODULE_GLOBAL];
-        }
-      }
+      return ccContext.store._state;
     },
     setState: function (module, partialModuleState) {
       const _state = ccContext.store._state;
       const fullModuleState = _state[module];
       const mergedState = { ...fullModuleState, ...partialModuleState };
       _state[module] = mergedState;
+    },
+    setGlobalState: function (partialGlobalState) {
+      const _state = ccContext.store._state;
+      const fullGlobalState = _state[MODULE_GLOBAL];
+      const mergedState = { ...fullGlobalState, ...partialGlobalState };
+      _state[MODULE_GLOBAL] = mergedState;
+    },
+    getGlobalState: function(){
+      return ccContext.store._state[MODULE_GLOBAL];
     }
   },
   reducer: {

@@ -197,7 +197,6 @@ export default function ({
   store = {},
   reducers = {},
   isModuleMode = false,
-  returnRootState = true,
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
@@ -206,7 +205,6 @@ export default function ({
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
   }
   ccContext.isModuleMode = isModuleMode;
-  ccContext.returnRootState = returnRootState;
   ccContext.isStrict = isStrict;
   ccContext.isDebug = isDebug;
 
