@@ -1830,12 +1830,18 @@
               reactCallback = _ref8.cb;
 
           //executionContext
-          var currentModule = this.cc.ccState.module;
+          var ccState = this.cc.ccState;
+          var currentModule = ccState.module;
 
           if (module === currentModule) {
             // who trigger $$changeState, who will go to change the whole received state 
             this.cc.prepareReactSetState(changeWay || CHANGE_BY_SELF, state, function () {
-              _this3.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, forceSync);
+              //if forceSync=true, cc clone the input state
+              if (forceSync) {
+                _this3.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, forceSync);
+              } else if (ccState.ccOption.syncState) {
+                _this3.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, false);
+              }
             }, reactCallback);
           } else {
             if (forceSync) justWarning$1("you are trying change another module's state, forceSync=true in not allowed, cc will ignore it!" + vbi$1("module:" + module + " currentModule" + currentModule));
