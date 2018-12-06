@@ -1,5 +1,5 @@
-# react-control-center
-##without redux、mobx, writing react app with cc mode is a funny, it's definitely worth doing!
+# react-control-center [C_C]
+## without redux、mobx, writing react app with cc is a funny way also, it's definitely worth doing!
 
 <h1 style="text-align:center;color:#4EB899">react-control-center</h1>
 <ul>
