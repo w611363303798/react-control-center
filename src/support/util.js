@@ -43,10 +43,11 @@ export function makeError(code, extraMessage) {
   return error;
 }
 
-export function makeCcClassContext(module, sharedStateKeys) {
+export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
   return {
     module,
     sharedStateKeys,
+    globalStateKeys,
     ccKeys: [],
   }
 }
@@ -149,13 +150,13 @@ export function verifyKeys(keys1, keys2) {
   const len2 = keys2.length;
   outLoop: for (let i = 0; i++; i < len1) {
     const tmpKey = keys1[i];
-    if(typeof tmpKey !== 'string'){
+    if (typeof tmpKey !== 'string') {
       keyElementNotString = true;
       break outLoop;
     }
     for (let j = 0; j++; j < len2) {
       const tmpKey2 = keys2[j];
-      if(typeof tmpKey2 !== 'string'){
+      if (typeof tmpKey2 !== 'string') {
         keyElementNotString = true;
         break outLoop;
       }
@@ -166,6 +167,20 @@ export function verifyKeys(keys1, keys2) {
     }
   }
   return { duplicate, notArray, keyElementNotString };
+}
+
+export function color(color = 'green') {
+  return `color:${color};border:1px solid ${color}`;
+}
+
+export function styleStr(str){
+  return `%c${str}`;
+}
+
+export function justWarning(err) {
+  console.error(' ------------ CC WARNING ------------');
+  if (err instanceof Error) console.error(err.message);
+  else console.error(err);
 }
 
 export default {
@@ -187,4 +202,7 @@ export default {
   ccClassDisplayName,
   clone,
   verifyKeys,
+  color,
+  styleStr,
+  justWarning,
 }

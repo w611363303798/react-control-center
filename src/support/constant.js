@@ -1,6 +1,7 @@
 
 
 export const MODULE_GLOBAL = '$$global';
+export const MODULE_DEFAULT = '$$default';
 export const MODULE_CC = '$$cc';
 export const MODULE_CC_LIKE = [MODULE_CC, '$$cC', '$$Cc', '$$CC'];
 
@@ -9,6 +10,10 @@ export const SYNC_FROM_CC_INSTANCE_STATE = 2;
 export const SYNC_FROM_CC_CLASS_STORE = 3;
 export const SYNC_FROM_CC_REF_STORE = 4;
 export const SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE = 5;
+export const SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE = 6;
+export const SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE = 7;
+export const SYNC_FROM_GLOBAL_STORE_AND_REF_STORE = 8;
+export const SYNC_FROM_GLOBAL_STORE = 9;
 export const BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD = 1;
 export const BROADCAST_TRIGGERED_BY_CC_TOP_METHOD = 2;//to be add!
 
@@ -30,6 +35,9 @@ export const ERR = {
   CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY: 1014,
   CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT: 1015,
   CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS: 1016,
+  CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS: 1017,
+  CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY: 1018,
+  CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT: 1019,
   MODULE_KEY_CC_FOUND: 1100,
   STORE_KEY_NAMING_INVALID: 1101,
   STORE_MODULE_VALUE_INVALID: 1102,
@@ -56,7 +64,10 @@ export const ERR_MESSAGE = {
   [ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY]: 'storedStateKeys or sharedStateKeys is not an Array!',
   [ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT]: 'storedStateKeys or sharedStateKeys include non string element',
   [ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS]: 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!',
-  [ERR.MODULE_KEY_CC_FOUND]: 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it in you store or reducers! ',
+  [ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS]: 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!',
+  [ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY]: 'globalStateKeys or sharedStateKeys is not an Array!',
+  [ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT]: 'globalStateKeys or sharedStateKeys include non string element!',
+  [ERR.MODULE_KEY_CC_FOUND]: 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducers! ',
   [ERR.STORE_KEY_NAMING_INVALID]: `module name is invalid, /^[\$\#\&a-zA-Z0-9_-]+$/.test() is false. `,
   [ERR.STORE_MODULE_VALUE_INVALID]: `module state of store must be a plain json object! `,
   [ERR.REDUCER_ACTION_TYPE_NAMING_INVALID]: `action type's naming is invalid, correct one may like: fooModule/fooType. `,
@@ -66,6 +77,7 @@ export const ERR_MESSAGE = {
 
 export default {
   MODULE_GLOBAL,
+  MODULE_DEFAULT,
   MODULE_CC,
   MODULE_CC_LIKE,
   ERR,
@@ -75,6 +87,10 @@ export default {
   SYNC_FROM_CC_CLASS_STORE,
   SYNC_FROM_CC_REF_STORE,
   SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE,
+  SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE,
+  SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE,
+  SYNC_FROM_GLOBAL_STORE_AND_REF_STORE,
+  SYNC_FROM_GLOBAL_STORE,
   BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD,
   BROADCAST_TRIGGERED_BY_CC_TOP_METHOD,
 }
