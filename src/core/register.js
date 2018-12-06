@@ -424,11 +424,11 @@ export default function register(ccClassKey, {
           },
           reactSetState: (state, cb) => {
             ccState.renderCount += 1;
-            reactSetStateRef(state, cb)
+            reactSetStateRef(state, cb);
           },
           reactForceUpdate: (state, cb) => {
             ccState.renderCount += 1;
-            reactForceUpdateRef(state, cb)
+            reactForceUpdateRef(state, cb);
           },
           setState: (state, cb) => {
             this.$$changeState(state, { module: currentModule, cb });
