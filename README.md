@@ -8,7 +8,15 @@ cc内建了一个CC_CONTEXT管理所有的CC组件，可以方便你直接呼叫
 <li style="font-size:16px;color:#4EB899">全局状态同步，高效渲染</li>
  受控于cc管理的组件，可以选择共享的state key，所有共享了相同state key的组件，能够自动同步state并触发渲染，从而达到更优的渲染效率
 <li style="font-size:16px;color:#4EB899">state就是唯一的数据源</li>
-忘记props吧，组件的state就是唯一的数据源，不需要层层穿透数据
+忘记props吧，组件的state就是唯一的数据源，不需要层层穿透数据. cc实例一共可以拥有四种状态，
+> temporaryState,随着CC组件销毁就丢失
+> storedState,即refState,在ccOption里设置了storedStateKeys里的每一cc实例拥有的属于自己的state，组件销毁再次挂载也会被cc还原
+> sharedState,如果在CCClass里设置了module并指定了sharedStateKeys(备注：sharedStateKeys最好根据需求制定模块名字，如果不指定的话，cc默认使用的是$$default模块的数据)，表示该CCClass的所以实例都关注此state的变化，大家会共享此state，任何一个实例改变了此state，cc都会将这份state传播到此CCClass类其他CC实例，除非某个CCInstance在ccOption设置了syncState=false,则该CCInstance不会受到影响
+> globalState,可以为所有CCClass根据自己的需求设置需要关心的globalStateKeys,任何CCInstance关心的globalStateKeys里发生变化时，会被cc触发渲染
+> 简而言之，四种状态根据自己需求组合使用，一种属于CC实例的临时状态，一种属于CC实例的可持久化状态，一种属于单个CC类的可持久化状态，一种属于所有CC类的可持久化状态
+> by using sharedStateKeys,不同的CC实例可以关注不同模块(register CCClass时不指定模块但是设置了sharedStateKeys，表示关注$$default模块)的key的值变化
+> by using storedState,不同的CC实例可以存储管理自己的状态
+> by using globalStateKeys,不同的CC实例实例可以关注$$global模块里不同的key的值变化
 <li style="font-size:16px;color:#4EB899">类redux的变成体验</li>
 支持类redux模式的store、reducer、action、dispatch等概念的编程体验，但是更容易与现有项目集成，不需要顶层包裹Provider来提供redux上下文，但是如果你的项目不需要这些概念的引入，你仅仅只需要setState，数据从this.state获取，其他的都交给cc去完成吧,cc本身也可以在redux使用，并不会入侵redux现有的模式，可以局部引入cc，渐进式的体验它的优雅。
 <li style="font-size:16px;color:#4EB899">可模块化管理的store、reducer</li>
