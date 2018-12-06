@@ -26,15 +26,7 @@ var ccContext = {
   store: {
     _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
     getState: function getState() {
-      if (ccContext.returnRootState) {
-        return ccContext.store._state;
-      } else {
-        if (ccContext.isModuleMode) {
-          return ccContext.store._state;
-        } else {
-          return ccContext.store._state[MODULE_GLOBAL];
-        }
-      }
+      return ccContext.store._state;
     },
     setState: function setState(module, partialModuleState) {
       var _state = ccContext.store._state;
@@ -43,6 +35,17 @@ var ccContext = {
       var mergedState = _extends({}, fullModuleState, partialModuleState);
 
       _state[module] = mergedState;
+    },
+    setGlobalState: function setGlobalState(partialGlobalState) {
+      var _state = ccContext.store._state;
+      var fullGlobalState = _state[MODULE_GLOBAL];
+
+      var mergedState = _extends({}, fullGlobalState, partialGlobalState);
+
+      _state[MODULE_GLOBAL] = mergedState;
+    },
+    getGlobalState: function getGlobalState() {
+      return ccContext.store._state[MODULE_GLOBAL];
     }
   },
   reducer: {

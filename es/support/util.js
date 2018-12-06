@@ -40,10 +40,11 @@ export function makeError(code, extraMessage) {
   error.code = code;
   return error;
 }
-export function makeCcClassContext(module, sharedStateKeys) {
+export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
   return {
     module: module,
     sharedStateKeys: sharedStateKeys,
+    globalStateKeys: globalStateKeys,
     ccKeys: []
   };
 }
@@ -194,7 +195,7 @@ export function verifyKeys(keys1, keys2) {
   var len1 = keys1.length;
   var len2 = keys2.length;
 
-  outLoop: for (var i = 0; i++; i < len1) {
+  outLoop: for (var i = 0; i < len1; i++) {
     var tmpKey = keys1[i];
 
     if (typeof tmpKey !== 'string') {
@@ -202,7 +203,7 @@ export function verifyKeys(keys1, keys2) {
       break outLoop;
     }
 
-    for (var j = 0; j++; j < len2) {
+    for (var j = 0; j < len2; j++) {
       var tmpKey2 = keys2[j];
 
       if (typeof tmpKey2 !== 'string') {
@@ -210,7 +211,7 @@ export function verifyKeys(keys1, keys2) {
         break outLoop;
       }
 
-      if (keys2[j] === tmpKey) {
+      if (tmpKey2 === tmpKey) {
         duplicate = true;
         break outLoop;
       }
@@ -222,6 +223,20 @@ export function verifyKeys(keys1, keys2) {
     notArray: notArray,
     keyElementNotString: keyElementNotString
   };
+}
+export function color(color) {
+  if (color === void 0) {
+    color = 'green';
+  }
+
+  return "color:" + color + ";border:1px solid " + color;
+}
+export function styleStr(str) {
+  return "%c" + str;
+}
+export function justWarning(err) {
+  console.error(' ------------ CC WARNING ------------');
+  if (err instanceof Error) console.error(err.message);else console.error(err);
 }
 export default {
   makeError: makeError,
@@ -241,5 +256,8 @@ export default {
   bindThis: bindThis,
   ccClassDisplayName: ccClassDisplayName,
   clone: clone,
-  verifyKeys: verifyKeys
+  verifyKeys: verifyKeys,
+  color: color,
+  styleStr: styleStr,
+  justWarning: justWarning
 };
