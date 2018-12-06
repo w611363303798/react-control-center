@@ -249,7 +249,7 @@ export default function register(ccClassKey, {
           }
         }
 
-        function mergeGlobalStateAndSyncStateToSelfState() {
+        function mergeGlobalStateAndSharedStateToSelfState() {
           if (!isGlobalStateEmpty && !isSharedStateEmpty && !isSelfStateEmpty) {
             changeWay = SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE;
             toSet = { ...newGlobalState, ...newSharedState, ...newSelfState };
@@ -285,7 +285,7 @@ export default function register(ccClassKey, {
         }
 
         if (syncState && syncGlobalState) {
-          mergeGlobalStateAndSyncStateToSelfState();
+          mergeGlobalStateAndSharedStateToSelfState();
         } else if (syncGlobalState) {
           mergeGlobalStateToSelfState();
         } else if (syncState) {
