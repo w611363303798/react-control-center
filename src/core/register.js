@@ -581,11 +581,19 @@ export default function register(ccClassKey, {
       //           but if you pass forceSync=true, cc also will broadcast the state to target module and caution: it will overwrite the target module's state !!!
       //        if ccIns option.syncState is true, change it's own state and broadcast the state to target module
       $$changeState(state, { module, changeWay, forceSync, cb: reactCallback } = {}) {//executionContext
-        const currentModule = this.cc.ccState.module;
+        const ccState = this.cc.ccState;
+        const currentModule = ccState.module;
         if (module === currentModule) {
           // who trigger $$changeState, who will go to change the whole received state 
           this.cc.prepareReactSetState(changeWay || CHANGE_BY_SELF, state, () => {
-            this.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, forceSync);
+            //if forceSync=true, cc clone the input state
+            if (forceSync) {
+              this.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, forceSync);
+            } else if (ccState.ccOption.syncState) {
+              this.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, false);
+            } else {
+              // stop broadcast state!
+            }
           }, reactCallback);
         } else {
           if (forceSync) justWarning(`you are trying change another module's state, forceSync=true in not allowed, cc will ignore it!` + vbi(`module:${module} currentModule${currentModule}`));
