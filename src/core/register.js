@@ -80,12 +80,16 @@ function handleError(err, throwError = true) {
 function checkStoreModule(module, throwError = true) {
   if (!ccContext.isModuleMode) {
     if (module !== MODULE_DEFAULT) {
-      handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `module:${module}`), throwError);
+      handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, vbi(`module:${module}`)), throwError);
       return false;
     } else return true;
   } else {
+    if (module === MODULE_GLOBAL) {
+      handleError(me(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED, vbi(`module:${module}`)), throwError);
+      return false;
+    }
     if (!_state[module]) {
-      handleError(me(ERR.CC_CLASS_STORE_MODULE_INVALID, `module:${module}`), throwError);
+      handleError(me(ERR.CC_CLASS_STORE_MODULE_INVALID, vbi(`module:${module} is not configured in cc's store`)), throwError);
       return false;
     } else return true;
   }
@@ -212,27 +216,25 @@ export default function register(ccClassKey, {
   checkReducerModule(_reducerModule);
   checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys);
 
-  //tell cc this ccClass is watching some of globalStateKeys
+  //tell cc this ccClass is watching some globalStateKeys of global module
   if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
 
   const contextMap = ccContext.ccClassKey_ccClassContext_;
   if (contextMap[ccClassKey] !== undefined) {
     throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
   } else {
+    //tell cc this ccClass is watching some sharedStateKeys of a module
     contextMap[ccClassKey] = util.makeCcClassContext(module, sharedStateKeys, globalStateKeys);
   }
 
-  let ccClassKeys_ = ccContext.moduleName_ccClassKeys_[module];
-  if (!ccClassKeys_) ccClassKeys_ = ccContext.moduleName_ccClassKeys_[module] = [];
+  let ccClassKeys_ = moduleName_ccClassKeys_[module];
+  if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_[module] = [];
   ccClassKeys_.push(ccClassKey);
 
   return function (ReactClass) {
     const CcClass = class extends ReactClass {
 
       constructor(props, context) {
-        if (ccClassKey === 'BookList') {
-          console.log('BookList');
-        }
         super(props, context);
         if (!this.state) this.state = {};
         const { ccKey, ccOption = {} } = props;
