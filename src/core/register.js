@@ -204,6 +204,7 @@ export default function register(ccClassKey, {
 
       constructor(props, context) {
         super(props, context);
+        if(!this.state) this.state = {};
         const { ccKey, ccOption = {} } = props;
         util.bindThis(this, [
           '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState',
