@@ -18,13 +18,6 @@
   var SYNC_FROM_CC_INSTANCE_SHARED_STATE = 2;
   var SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE = 3;
   var SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE = 4;
-  var SYNC_FROM_CC_CLASS_STORE = 5;
-  var SYNC_FROM_CC_REF_STORE = 6;
-  var SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE = 7;
-  var SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE = 8;
-  var SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE = 9;
-  var SYNC_FROM_GLOBAL_STORE_AND_REF_STORE = 10;
-  var SYNC_FROM_GLOBAL_STORE = 11;
   var BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD = 1;
   var BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE = 2;
   var BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE = 3;
@@ -302,26 +295,27 @@
    */
 
   var ccContext = {
+    isDebug: false,
     // if isStrict is true, every error will be throw out instead of console.error, 
     // but this may crash your app, make sure you have a nice error handling way,
     // like componentDidCatch in react 16.*
-    isDebug: false,
     isStrict: false,
     returnRootState: false,
     isModuleMode: false,
     isCcAlreadyStartup: false,
     moduleName_ccClassKeys_: {},
+    globalCcClassKeys: [],
     ccClassKey_ccClassContext_: {},
     store: {
       _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
       getState: function getState() {
         return ccContext.store._state;
       },
-      setState: function setState(module, partialModuleState) {
+      setState: function setState(module, _partialSharedState) {
         var _state = ccContext.store._state;
-        var fullModuleState = _state[module];
+        var fullSharedState = _state[module];
 
-        var mergedState = _extends({}, fullModuleState, partialModuleState);
+        var mergedState = _extends({}, fullSharedState, _partialSharedState);
 
         _state[module] = mergedState;
       },
@@ -341,7 +335,15 @@
       _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
     },
     refStore: {
-      _state: {}
+      _state: {},
+      setState: function setState(ccUniqueKey, partialStoredState) {
+        var _state = ccContext.refStore._state;
+        var fullStoredState = _state[ccUniqueKey];
+
+        var mergedState = _extends({}, fullStoredState, partialStoredState);
+
+        _state[ccUniqueKey] = mergedState;
+      }
     },
     ccKey_ref_: refs,
     ccKey_option_: {},
@@ -1007,7 +1009,12 @@
       makeError$1 = util.makeError,
       justWarning$1 = util.justWarning;
   var _state = ccContext.store._state,
-      _reducers$1 = ccContext.reducer._reducers;
+      _reducers$1 = ccContext.reducer._reducers,
+      ccKey_ref_ = ccContext.ccKey_ref_,
+      ccKey_option_ = ccContext.ccKey_option_,
+      globalCcClassKeys = ccContext.globalCcClassKeys,
+      moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
+      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
   var cl$1 = color$1;
   var ss$1 = styleStr$1;
   var me = makeError$1;
@@ -1191,6 +1198,38 @@
       throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS, vbi$1("ccClassKey:" + ccClassKey + " globalStateKeys:" + globalStateKeys + " sharedStateKeys:" + sharedStateKeys));
     }
   }
+
+  function extractStateToBeBroadcasted(sourceState, sharedStateKeys, globalStateKeys) {
+    var partialSharedState = null,
+        partialGlobalState = null;
+
+    if (sharedStateKeys.length > 0) {
+      var _extractStateByKeys = extractStateByKeys(sourceState, sharedStateKeys),
+          partialState = _extractStateByKeys.partialState,
+          isPartialSharedStateEmpty = _extractStateByKeys.isStateEmpty;
+
+      if (!isPartialSharedStateEmpty) {
+        ccContext.store.setState(module, partialState);
+        partialSharedState = partialState;
+      }
+    }
+
+    if (globalStateKeys.length > 0) {
+      var _extractStateByKeys2 = extractStateByKeys(sourceState, globalStateKeys),
+          _partialState = _extractStateByKeys2.partialState,
+          isPartialGlobalStateEmpty = _extractStateByKeys2.isStateEmpty;
+
+      if (!isPartialGlobalStateEmpty) {
+        ccContext.store.setGlobalState(_partialState);
+        partialGlobalState = _partialState;
+      }
+    }
+
+    return {
+      partialSharedState: partialSharedState,
+      partialGlobalState: partialGlobalState
+    };
+  }
   /*
   options.module = 'xxx'
   options.sharedStateKeys = ['aa', 'bbb']
@@ -1218,7 +1257,9 @@
 
     checkStoreModule(module);
     checkReducerModule(_reducerModule);
-    checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys);
+    checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys); //tell cc this ccClass is watching some of globalStateKeys
+
+    if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
     var contextMap = ccContext.ccClassKey_ccClassContext_;
 
     if (contextMap[ccClassKey] !== undefined) {
@@ -1239,11 +1280,16 @@
         function CcClass(props, context) {
           var _this;
 
+          if (ccClassKey === 'BookList') {
+            console.log('BookList');
+          }
+
           _this = _ReactClass.call(this, props, context) || this;
+          if (!_this.state) _this.state = {};
           var ccKey = props.ccKey,
               _props$ccOption = props.ccOption,
               ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
-          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState']);
+          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState', '__$$recoverState']);
           if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
           if (ccOption.syncState === undefined) ccOption.syncState = true;
           if (ccOption.syncGlobalState === undefined) ccOption.syncGlobalState = true;
@@ -1259,6 +1305,8 @@
 
           _this.__$$mapCcToInstance(isSingle, asyncLifeCycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, module, _reducerModule, sharedStateKeys, globalStateKeys);
 
+          _this.__$$recoverState();
+
           return _this;
         } // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
 
@@ -1269,101 +1317,37 @@
           return this.state !== nextState;
         };
 
-        _proto.componentDidMount = function componentDidMount() {
-          if (_ReactClass.prototype.componentDidMount) _ReactClass.prototype.componentDidMount.call(this);
+        _proto.__$$recoverState = function __$$recoverState() {
           var _this$cc$ccState = this.cc.ccState,
-              module = _this$cc$ccState.module,
+              currentModule = _this$cc$ccState.module,
               globalStateKeys = _this$cc$ccState.globalStateKeys,
               sharedStateKeys = _this$cc$ccState.sharedStateKeys,
-              storedStateKeys = _this$cc$ccState.storedStateKeys,
               ccOption = _this$cc$ccState.ccOption,
               ccUniqueKey = _this$cc$ccState.ccUniqueKey;
-          var selfState = ccContext.refStore._state[ccUniqueKey];
-
-          var _extractStateByKeys = extractStateByKeys(selfState, storedStateKeys),
-              newSelfState = _extractStateByKeys.partialState,
-              isSelfStateEmpty = _extractStateByKeys.isStateEmpty;
-
-          var sharedState = ccContext.store._state[module];
-          var globalState = ccContext.store._state[MODULE_GLOBAL];
+          var refState = ccContext.refStore._state[ccUniqueKey] || {};
+          var sharedState = _state[currentModule];
+          var globalState = _state[MODULE_GLOBAL];
           var syncState = ccOption.syncState,
               syncGlobalState = ccOption.syncGlobalState;
+          var partialSharedState = {},
+              partialGlobalState = {};
 
-          var _extractStateByKeys2 = extractStateByKeys(sharedState, sharedStateKeys),
-              newSharedState = _extractStateByKeys2.partialState,
-              isSharedStateEmpty = _extractStateByKeys2.isStateEmpty;
+          if (syncState) {
+            var _extractStateByKeys3 = extractStateByKeys(sharedState, sharedStateKeys),
+                partialState = _extractStateByKeys3.partialState;
 
-          var _extractStateByKeys3 = extractStateByKeys(globalState, globalStateKeys),
-              newGlobalState = _extractStateByKeys3.partialState,
-              isGlobalStateEmpty = _extractStateByKeys3.isStateEmpty;
-
-          var changeWay = -1,
-              toSet = null;
-
-          function mergeSharedStateToSelfState() {
-            if (!isSharedStateEmpty && isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_CLASS_STORE;
-              toSet = newSharedState;
-            } else if (isSharedStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_REF_STORE;
-              toSet = newSelfState;
-            } else if (!isSharedStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE;
-              toSet = _extends({}, newSharedState, newSelfState);
-            }
+            partialSharedState = partialState;
           }
 
-          function mergeGlobalStateAndSharedStateToSelfState() {
-            if (!isGlobalStateEmpty && !isSharedStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE;
-              toSet = _extends({}, newGlobalState, newSharedState, newSelfState);
-            } else if (!isGlobalStateEmpty && !isSharedStateEmpty && isSelfStateEmpty) {
-              changeWay = SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE;
-              toSet = _extends({}, newGlobalState, newSharedState);
-            } else if (!isGlobalStateEmpty && isSharedStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_GLOBAL_STORE_AND_REF_STORE;
-              toSet = _extends({}, newGlobalState, newSelfState);
-            } else if (!isGlobalStateEmpty && isSharedStateEmpty && isSelfStateEmpty) {
-              changeWay = SYNC_FROM_GLOBAL_STORE;
-              toSet = newGlobalState;
-            } else if (isGlobalStateEmpty && !isSharedStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE;
-              toSet = _extends({}, newSharedState, newSelfState);
-            } else if (isGlobalStateEmpty && isSharedStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_REF_STORE;
-              toSet = newSelfState;
-            } else if (isGlobalStateEmpty && !isSharedStateEmpty && isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_CLASS_STORE;
-              toSet = newSharedState;
-            }
+          if (syncGlobalState) {
+            var _extractStateByKeys4 = extractStateByKeys(globalState, globalStateKeys),
+                _partialState2 = _extractStateByKeys4.partialState;
+
+            partialGlobalState = _partialState2;
           }
 
-          function mergeGlobalStateToSelfState() {
-            if (!isGlobalStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_GLOBAL_STORE_AND_REF_STORE;
-              toSet = _extends({}, newGlobalState, newSelfState);
-            } else if (isGlobalStateEmpty && !isSelfStateEmpty) {
-              changeWay = SYNC_FROM_CC_REF_STORE;
-              toSet = newSelfState;
-            } else if (!isGlobalStateEmpty && isSelfStateEmpty) {
-              changeWay = SYNC_FROM_GLOBAL_STORE;
-              toSet = newGlobalState;
-            }
-          }
-
-          if (syncState && syncGlobalState) {
-            mergeGlobalStateAndSharedStateToSelfState();
-          } else if (syncGlobalState) {
-            mergeGlobalStateToSelfState();
-          } else if (syncState) {
-            mergeSharedStateToSelfState();
-          } else {
-            changeWay = SYNC_FROM_CC_REF_STORE;
-            toSet = newSelfState;
-          } // here just change self state
-
-
-          if (toSet) this.cc.prepareReactSetState(changeWay, toSet);
+          var selfState = this.state;
+          this.state = _extends({}, selfState, refState, partialSharedState, partialGlobalState);
         };
 
         _proto.__$$bindDataToCcClassContext = function __$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
@@ -1458,21 +1442,13 @@
             afterSetState: this.$$afterSetState,
             prepareReactSetState: function prepareReactSetState(changeWay, state, next, reactCallback) {
               if (storedStateKeys.length > 0) {
-                var _extractStateByKeys4 = extractStateByKeys(state, storedStateKeys),
-                    partialState = _extractStateByKeys4.partialState,
-                    isStateEmpty = _extractStateByKeys4.isStateEmpty;
+                var _extractStateByKeys5 = extractStateByKeys(state, storedStateKeys),
+                    partialState = _extractStateByKeys5.partialState,
+                    isStateEmpty = _extractStateByKeys5.isStateEmpty;
 
                 if (!isStateEmpty) {
-                  ccContext.refStore._state[ccUniqueKey] = partialState;
+                  ccContext.refStore.setState(ccUniqueKey, partialState);
                 }
-              }
-
-              if (globalStateKeys.length > 0) {
-                var _extractStateByKeys5 = extractStateByKeys(state, globalStateKeys),
-                    _partialState = _extractStateByKeys5.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys5.isStateEmpty;
-
-                if (!isPartialGlobalStateEmpty) ccContext.store.setGlobalState(_partialState);
               }
 
               if (_this2.$$beforeSetState) {
@@ -1501,23 +1477,34 @@
                 if (next) next();
               }
             },
-            prepareBroadcastState: function prepareBroadcastState(triggerType, moduleName, sourceSharedState, needClone) {
-              if (_this2.$$beforeBroadcastState) {
-                if (asyncLifeCycleHook) {
-                  _this2.$$beforeBroadcastState({
-                    triggerType: triggerType
-                  }, function () {
-                    _this2.cc.broadcastState(moduleName, sourceSharedState, needClone);
-                  });
-                } else {
-                  _this2.$$beforeBroadcastState({
-                    triggerType: triggerType
-                  });
+            prepareBroadcastState: function prepareBroadcastState(triggerType, moduleName, originalState, needClone) {
+              var _this2$cc$ccState = _this2.cc.ccState,
+                  sharedStateKeys = _this2$cc$ccState.sharedStateKeys,
+                  globalStateKeys = _this2$cc$ccState.globalStateKeys;
 
-                  _this2.cc.broadcastState(moduleName, sourceSharedState, needClone);
+              var _extractStateToBeBroa = extractStateToBeBroadcasted(originalState, sharedStateKeys, globalStateKeys),
+                  partialSharedState = _extractStateToBeBroa.partialSharedState,
+                  partialGlobalState = _extractStateToBeBroa.partialGlobalState;
+
+              if (partialSharedState || partialGlobalState) {
+                if (_this2.$$beforeBroadcastState) {
+                  //user define life cycle hook $$beforeBroadcastState
+                  if (asyncLifeCycleHook) {
+                    _this2.$$beforeBroadcastState({
+                      triggerType: triggerType
+                    }, function () {
+                      _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                    });
+                  } else {
+                    _this2.$$beforeBroadcastState({
+                      triggerType: triggerType
+                    });
+
+                    _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                  }
+                } else {
+                  _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
                 }
-              } else {
-                _this2.cc.broadcastState(moduleName, sourceSharedState, needClone);
               }
             },
             reactSetState: function reactSetState(state, cb) {
@@ -1719,73 +1706,100 @@
                 _this2.cc.invokeWith(reducerFn, (_ref7 = {}, inputModule = _ref7.inputModule, forceSync = _ref7.forceSync, newCb = _ref7.cb, _ref7), executionContext);
               });
             },
-            broadcastState: function broadcastState(moduleName, sourceSharedState, needClone, excludeTriggerRef) {
+            broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, needClone, excludeTriggerRef) {
               if (excludeTriggerRef === void 0) {
                 excludeTriggerRef = true;
               }
 
-              var _sourceSharedState = sourceSharedState;
-              if (needClone) _sourceSharedState = util.clone(sourceSharedState); // this clone may cause performance issue, if sourceSharedState is too big!!
+              var _partialSharedState = partialSharedState;
+              if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone may cause performance issue, if partialSharedState is too big!!
 
-              ccContext.store.setState(module, _sourceSharedState);
+              ccContext.store.setState(moduleName, _partialSharedState);
               var currentCcKey = _this2.cc.ccState.ccUniqueKey;
-              var ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName];
-              if (!ccClassKeys) return;
-              var ccKey_ref_ = ccContext.ccKey_ref_;
-              var ccKey_option_ = ccContext.ccKey_option_; //these ccClass subscribe the same module's state
+              var ccClassKey_beenCheck_ = {}; //record which ccKey has triggered setState
 
-              ccClassKeys.forEach(function (classKey) {
-                var classContext = ccContext.ccClassKey_ccClassContext_[classKey];
-                var ccKeys = classContext.ccKeys,
-                    sharedStateKeys = classContext.sharedStateKeys,
-                    globalStateKeys = classContext.globalStateKeys;
-                if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; // extract sourceSharedState! because different class with a same module may have different sharedStateKeys!!!
+              var ccClassKeys = moduleName_ccClassKeys_[moduleName];
 
-                var _extractStateByKeys6 = extractStateByKeys(_sourceSharedState, sharedStateKeys),
-                    sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                    isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys
+              if (ccClassKeys) {
+                //these ccClass subscribe the same module's state
+                ccClassKeys.forEach(function (ccClassKey) {
+                  ccClassKey_beenCheck_[ccClassKey] = true;
+                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                  var ccKeys = classContext.ccKeys,
+                      sharedStateKeys = classContext.sharedStateKeys,
+                      globalStateKeys = classContext.globalStateKeys;
+                  if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; // extract _partialSharedState! because different class with a same module may have different sharedStateKeys!!!
+
+                  var _extractStateByKeys6 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                      sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
+                      isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys
 
 
-                var _extractStateByKeys7 = extractStateByKeys(_sourceSharedState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+                  var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
 
-                if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
-                var mergedStateForCurrentCcClass;
+                  if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
+                  var mergedStateForCurrentCcClass;
 
-                if (isSharedStateEmpty && !isPartialGlobalStateEmpty) {
-                  mergedStateForCurrentCcClass = globalStateForCurrentCcClass;
-                } else if (!isSharedStateEmpty && isPartialGlobalStateEmpty) {
-                  mergedStateForCurrentCcClass = sharedStateForCurrentCcClass;
-                } else {
-                  // !isSharedStateEmpty && !isPartialGlobalStateEmpty
-                  mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
-                }
-
-                ccKeys.forEach(function (ccKey) {
-                  if (excludeTriggerRef && ccKey === currentCcKey) return;
-                  var ref = ccKey_ref_[ccKey];
-
-                  if (ref) {
-                    var option = ccKey_option_[ccKey];
-                    var toSet = null,
-                        changeWay = -1;
-
-                    if (option.syncState && option.syncGlobalState) {
-                      changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE;
-                      toSet = mergedStateForCurrentCcClass;
-                    } else if (option.syncState) {
-                      changeWay = SYNC_FROM_CC_INSTANCE_SHARED_STATE;
-                      toSet = sharedStateForCurrentCcClass;
-                    } else if (option.syncGlobalState) {
-                      changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE;
-                      toSet = globalStateForCurrentCcClass;
-                    }
-
-                    if (toSet) ref.cc.prepareReactSetState(changeWay, toSet);
+                  if (isSharedStateEmpty && !isPartialGlobalStateEmpty) {
+                    mergedStateForCurrentCcClass = globalStateForCurrentCcClass;
+                  } else if (!isSharedStateEmpty && isPartialGlobalStateEmpty) {
+                    mergedStateForCurrentCcClass = sharedStateForCurrentCcClass;
+                  } else {
+                    // !isSharedStateEmpty && !isPartialGlobalStateEmpty
+                    mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
                   }
+
+                  ccKeys.forEach(function (ccKey) {
+                    if (excludeTriggerRef && ccKey === currentCcKey) return;
+                    var ref = ccKey_ref_[ccKey];
+
+                    if (ref) {
+                      var option = ccKey_option_[ccKey];
+                      var toSet = null,
+                          changeWay = -1;
+
+                      if (option.syncState && option.syncGlobalState) {
+                        changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE;
+                        toSet = mergedStateForCurrentCcClass;
+                      } else if (option.syncState) {
+                        changeWay = SYNC_FROM_CC_INSTANCE_SHARED_STATE;
+                        toSet = sharedStateForCurrentCcClass;
+                      } else if (option.syncGlobalState) {
+                        changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE;
+                        toSet = globalStateForCurrentCcClass;
+                      }
+
+                      if (toSet) ref.cc.prepareReactSetState(changeWay, toSet);
+                    }
+                  });
                 });
-              });
+              }
+
+              if (partialGlobalState) {
+                globalCcClassKeys.forEach(function (ccClassKey) {
+                  if (ccClassKey_beenCheck_[ccClassKey]) return;
+                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                  var watchingGlobalStateCcKeys = classContext.ccKeys,
+                      globalStateKeys = classContext.globalStateKeys;
+                  if (globalStateKeys.length === 0) return;
+
+                  var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
+
+                  if (isPartialGlobalStateEmpty) return;
+                  watchingGlobalStateCcKeys.forEach(function (ccKey) {
+                    if (excludeTriggerRef && ccKey === currentCcKey) return;
+                    var ref = ccKey_ref_[ccKey];
+
+                    if (ref) {
+                      ref.cc.prepareReactSetState(SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE, globalStateForCurrentCcClass);
+                    }
+                  });
+                });
+              }
             }
           };
           this.cc.reactSetState = this.cc.reactSetState.bind(this);
@@ -1889,8 +1903,8 @@
   }
 
   var vbi$2 = util.verboseInfo;
-  var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
-      ccKey_ref_ = ccContext.ccKey_ref_;
+  var ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_,
+      ccKey_ref_$1 = ccContext.ccKey_ref_;
   /**
    * @description
    * @author zzk
@@ -1905,7 +1919,7 @@
   function invoke (ccClassKey, ccInstanceKey, method) {
     var _ref$method;
 
-    var classContext = ccClassKey_ccClassContext_[ccClassKey];
+    var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
 
     if (!classContext) {
       var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey));
@@ -1916,10 +1930,10 @@
 
     if (ccInstanceKey) {
       var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
-      ref = ccKey_ref_[ccKey];
+      ref = ccKey_ref_$1[ccKey];
     } else {
       var ccKeys = classContext.ccKeys;
-      ref = ccKey_ref_[ccKeys[0]]; // pick first one
+      ref = ccKey_ref_$1[ccKeys[0]]; // pick first one
     }
 
     if (!ref) {
@@ -1945,15 +1959,15 @@
     (_ref$method = ref[method]).call.apply(_ref$method, [ref].concat(args));
   }
 
-  var ccKey_ref_$1 = ccContext.ccKey_ref_;
+  var ccKey_ref_$2 = ccContext.ccKey_ref_;
   function setGlobalState (state) {
-    var refKeys = Object.keys(ccKey_ref_$1);
+    var refKeys = Object.keys(ccKey_ref_$2);
 
     if (refKeys.length === 0) {
       return util.justWarning('no CCInstance found for any CCClass!');
     }
 
-    var oneRef = ccKey_ref_$1[refKeys[0]];
+    var oneRef = ccKey_ref_$2[refKeys[0]];
 
     if (!oneRef) {
       return util.justWarning('cc found no ref!');

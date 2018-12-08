@@ -1,5 +1,9 @@
 
 # Change Log
+## 2018-12-08 13:00
+* optimize ccInstance state recovering logic, fix bugs of broadcasting state.
+  
+
 ## 2018-12-06 13:00
 * every CCClass automatically watch $$global state 's change, if you give CCClass a globalStateKeys to let cc know this CCClass want to know which keys it want to watch, then any state of these keys changed will trigger this CCClass's all instance render, if you want to reject render triggered by global state change in some CCInstance, you can specify syncGlobalState=false in these CCInstance
 * now ccInstance can call setGlobalState, your can also call cc.setGlobalState in any where;
