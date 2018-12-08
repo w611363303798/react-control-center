@@ -10,10 +10,10 @@ const refs = {};
  }
  */
 const ccContext = {
+  isDebug: false,
   // if isStrict is true, every error will be throw out instead of console.error, 
   // but this may crash your app, make sure you have a nice error handling way,
   // like componentDidCatch in react 16.*
-  isDebug: false,
   isStrict: false,
   returnRootState: false,
   isModuleMode: false,
@@ -21,6 +21,7 @@ const ccContext = {
   moduleName_ccClassKeys_: {
 
   },
+  globalCcClassKeys: [],
   ccClassKey_ccClassContext_: {
 
   },
@@ -36,10 +37,10 @@ const ccContext = {
     getState: function () {
       return ccContext.store._state;
     },
-    setState: function (module, partialModuleState) {
+    setState: function (module, _partialSharedState) {
       const _state = ccContext.store._state;
-      const fullModuleState = _state[module];
-      const mergedState = { ...fullModuleState, ...partialModuleState };
+      const fullSharedState = _state[module];
+      const mergedState = { ...fullSharedState, ..._partialSharedState };
       _state[module] = mergedState;
     },
     setGlobalState: function (partialGlobalState) {
@@ -48,7 +49,7 @@ const ccContext = {
       const mergedState = { ...fullGlobalState, ...partialGlobalState };
       _state[MODULE_GLOBAL] = mergedState;
     },
-    getGlobalState: function(){
+    getGlobalState: function () {
       return ccContext.store._state[MODULE_GLOBAL];
     }
   },
@@ -65,6 +66,12 @@ const ccContext = {
   refStore: {
     _state: {
 
+    },
+    setState: function (ccUniqueKey, partialStoredState) {
+      const _state = ccContext.refStore._state;
+      const fullStoredState = _state[ccUniqueKey];
+      const mergedState = { ...fullStoredState, ...partialStoredState };
+      _state[ccUniqueKey] = mergedState;
     },
   },
   ccKey_ref_: refs,

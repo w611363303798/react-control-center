@@ -19,7 +19,10 @@ import uuid from 'uuid';
 import co from 'co';
 
 const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning } = util;
-const { store: { _state }, reducer: { _reducers } } = ccContext;
+const {
+  store: { _state }, reducer: { _reducers },
+  ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_
+} = ccContext;
 const cl = color;
 const ss = styleStr;
 const me = makeError;
@@ -53,7 +56,7 @@ function isStateValid(state) {
 
 function extractStateByKeys(state, targetKeys) {
   if (!isStateValid(state)) {
-    return { partialState: {}, isStateEmpty: true };
+    return { partialState: null, isStateEmpty: true };
   }
   const partialState = {};
   let isStateEmpty = true;
@@ -170,6 +173,27 @@ function checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKe
   }
 }
 
+function extractStateToBeBroadcasted(sourceState, sharedStateKeys, globalStateKeys) {
+  let partialSharedState = null, partialGlobalState = null;
+  if (sharedStateKeys.length > 0) {
+    const { partialState, isStateEmpty: isPartialSharedStateEmpty } = extractStateByKeys(sourceState, sharedStateKeys);
+    if (!isPartialSharedStateEmpty) {
+      ccContext.store.setState(module, partialState);
+      partialSharedState = partialState;
+    }
+  }
+
+  if (globalStateKeys.length > 0) {
+    const { partialState, isStateEmpty: isPartialGlobalStateEmpty } = extractStateByKeys(sourceState, globalStateKeys);
+    if (!isPartialGlobalStateEmpty) {
+      ccContext.store.setGlobalState(partialState);
+      partialGlobalState = partialState;
+    }
+  }
+
+  return { partialSharedState, partialGlobalState };
+}
+
 /*
 options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
@@ -188,6 +212,9 @@ export default function register(ccClassKey, {
   checkReducerModule(_reducerModule);
   checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys);
 
+  //tell cc this ccClass is watching some of globalStateKeys
+  if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
+
   const contextMap = ccContext.ccClassKey_ccClassContext_;
   if (contextMap[ccClassKey] !== undefined) {
     throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
@@ -204,7 +231,7 @@ export default function register(ccClassKey, {
 
       constructor(props, context) {
         super(props, context);
-        if(!this.state) this.state = {};
+        if (!this.state) this.state = {};
         const { ccKey, ccOption = {} } = props;
         util.bindThis(this, [
           '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState',
@@ -382,13 +409,8 @@ export default function register(ccClassKey, {
             if (storedStateKeys.length > 0) {
               const { partialState, isStateEmpty } = extractStateByKeys(state, storedStateKeys);
               if (!isStateEmpty) {
-                ccContext.refStore._state[ccUniqueKey] = partialState;
+                ccContext.refStore.setState(ccUniqueKey, partialState);
               }
-            }
-
-            if (globalStateKeys.length > 0) {
-              const { partialState, isStateEmpty: isPartialGlobalStateEmpty } = extractStateByKeys(state, globalStateKeys);
-              if (!isPartialGlobalStateEmpty) ccContext.store.setGlobalState(partialState);
             }
 
             if (this.$$beforeSetState) {
@@ -409,18 +431,22 @@ export default function register(ccClassKey, {
               if (next) next();
             }
           },
-          prepareBroadcastState: (triggerType, moduleName, sourceSharedState, needClone) => {
-            if (this.$$beforeBroadcastState) {
-              if (asyncLifeCycleHook) {
-                this.$$beforeBroadcastState({ triggerType }, () => {
-                  this.cc.broadcastState(moduleName, sourceSharedState, needClone);
-                });
+          prepareBroadcastState: (triggerType, moduleName, originalState, needClone) => {
+            const { sharedStateKeys, globalStateKeys } = this.cc.ccState;
+            const { partialSharedState, partialGlobalState } = extractStateToBeBroadcasted(originalState, sharedStateKeys, globalStateKeys);
+            if (partialSharedState || partialGlobalState) {
+              if (this.$$beforeBroadcastState) {//user define life cycle hook $$beforeBroadcastState
+                if (asyncLifeCycleHook) {
+                  this.$$beforeBroadcastState({ triggerType }, () => {
+                    this.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                  });
+                } else {
+                  this.$$beforeBroadcastState({ triggerType });
+                  this.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                }
               } else {
-                this.$$beforeBroadcastState({ triggerType });
-                this.cc.broadcastState(moduleName, sourceSharedState, needClone);
+                this.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
               }
-            } else {
-              this.cc.broadcastState(moduleName, sourceSharedState, needClone);
             }
           },
           reactSetState: (state, cb) => {
@@ -495,64 +521,92 @@ export default function register(ccClassKey, {
               this.cc.invokeWith(reducerFn, { inputModule, forceSync, cb: newCb } = {}, executionContext);
             });
           },
-          broadcastState: (moduleName, sourceSharedState, needClone, excludeTriggerRef = true) => {
-            let _sourceSharedState = sourceSharedState;
-            if (needClone) _sourceSharedState = util.clone(sourceSharedState);// this clone may cause performance issue, if sourceSharedState is too big!!
+          broadcastState: (moduleName, partialSharedState, partialGlobalState, needClone, excludeTriggerRef = true) => {
+            let _partialSharedState = partialSharedState;
+            if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone may cause performance issue, if partialSharedState is too big!!
 
-            ccContext.store.setState(module, _sourceSharedState);
+            ccContext.store.setState(moduleName, _partialSharedState);
 
             const { ccUniqueKey: currentCcKey } = this.cc.ccState;
-            const ccClassKeys = ccContext.moduleName_ccClassKeys_[moduleName];
-            if (!ccClassKeys) return;
-            const ccKey_ref_ = ccContext.ccKey_ref_;
-            const ccKey_option_ = ccContext.ccKey_option_;
 
-            //these ccClass subscribe the same module's state
-            ccClassKeys.forEach(classKey => {
-              const classContext = ccContext.ccClassKey_ccClassContext_[classKey];
-              const { ccKeys, sharedStateKeys, globalStateKeys } = classContext;
-              if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return;
-              // extract sourceSharedState! because different class with a same module may have different sharedStateKeys!!!
-              const {
-                partialState: sharedStateForCurrentCcClass, isStateEmpty: isSharedStateEmpty
-              } = extractStateByKeys(_sourceSharedState, sharedStateKeys);
-              // extract sourcePartialGlobalState! because different class watch different globalStateKeys
-              const {
-                partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
-              } = extractStateByKeys(_sourceSharedState, globalStateKeys);
-              if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
+            const ccClassKey_beenCheck_ = {};//record which ccKey has triggered setState
 
-              let mergedStateForCurrentCcClass;
-              if (isSharedStateEmpty && !isPartialGlobalStateEmpty) {
-                mergedStateForCurrentCcClass = globalStateForCurrentCcClass;
-              } else if (!isSharedStateEmpty && isPartialGlobalStateEmpty) {
-                mergedStateForCurrentCcClass = sharedStateForCurrentCcClass;
-              } else {// !isSharedStateEmpty && !isPartialGlobalStateEmpty
-                mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };
-              }
+            const ccClassKeys = moduleName_ccClassKeys_[moduleName];
+            if (ccClassKeys) {
+              //these ccClass subscribe the same module's state
+              ccClassKeys.forEach(ccClassKey => {
+                ccClassKey_beenCheck_[ccClassKey] = true;
+                const classContext = ccClassKey_ccClassContext_[ccClassKey];
+                const { ccKeys, sharedStateKeys, globalStateKeys } = classContext;
+                if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return;
 
-              ccKeys.forEach(ccKey => {
-                if (excludeTriggerRef && ccKey === currentCcKey) return;
-                const ref = ccKey_ref_[ccKey];
-                if (ref) {
-                  const option = ccKey_option_[ccKey];
-                  let toSet = null, changeWay = -1;
-                  if (option.syncState && option.syncGlobalState) {
-                    changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE;
-                    toSet = mergedStateForCurrentCcClass;
-                  } else if (option.syncState) {
-                    changeWay = SYNC_FROM_CC_INSTANCE_SHARED_STATE;
-                    toSet = sharedStateForCurrentCcClass;
-                  } else if (option.syncGlobalState) {
-                    changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE;
-                    toSet = globalStateForCurrentCcClass;
-                  }
+                // extract _partialSharedState! because different class with a same module may have different sharedStateKeys!!!
+                const {
+                  partialState: sharedStateForCurrentCcClass, isStateEmpty: isSharedStateEmpty
+                } = extractStateByKeys(_partialSharedState, sharedStateKeys);
+                // extract sourcePartialGlobalState! because different class watch different globalStateKeys
+                const {
+                  partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
+                } = extractStateByKeys(partialGlobalState, globalStateKeys);
+                if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
-                  if (toSet) ref.cc.prepareReactSetState(changeWay, toSet);
+                let mergedStateForCurrentCcClass;
+                if (isSharedStateEmpty && !isPartialGlobalStateEmpty) {
+                  mergedStateForCurrentCcClass = globalStateForCurrentCcClass;
+                } else if (!isSharedStateEmpty && isPartialGlobalStateEmpty) {
+                  mergedStateForCurrentCcClass = sharedStateForCurrentCcClass;
+                } else {// !isSharedStateEmpty && !isPartialGlobalStateEmpty
+                  mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };
                 }
-              });
 
-            });
+                ccKeys.forEach(ccKey => {
+                  if (excludeTriggerRef && ccKey === currentCcKey) return;
+                  const ref = ccKey_ref_[ccKey];
+                  if (ref) {
+                    const option = ccKey_option_[ccKey];
+                    let toSet = null, changeWay = -1;
+                    if (option.syncState && option.syncGlobalState) {
+                      changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE;
+                      toSet = mergedStateForCurrentCcClass;
+                    } else if (option.syncState) {
+                      changeWay = SYNC_FROM_CC_INSTANCE_SHARED_STATE;
+                      toSet = sharedStateForCurrentCcClass;
+                    } else if (option.syncGlobalState) {
+                      changeWay = SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE;
+                      toSet = globalStateForCurrentCcClass;
+                    }
+
+                    if (toSet) ref.cc.prepareReactSetState(changeWay, toSet);
+                  }
+                });
+
+              });
+            }
+
+            if (partialGlobalState) {
+              globalCcClassKeys.forEach(ccClassKey => {
+                if (ccClassKey_beenCheck_[ccClassKey]) return;
+
+                const classContext = ccClassKey_ccClassContext_[ccClassKey];
+                const { ccKeys: watchingGlobalStateCcKeys, globalStateKeys } = classContext;
+                if (globalStateKeys.length === 0) return;
+
+                const {
+                  partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
+                } = extractStateByKeys(partialGlobalState, globalStateKeys);
+                if (isPartialGlobalStateEmpty) return;
+
+                watchingGlobalStateCcKeys.forEach(ccKey => {
+                  if (excludeTriggerRef && ccKey === currentCcKey) return;
+                  const ref = ccKey_ref_[ccKey];
+                  if (ref) {
+                    ref.cc.prepareReactSetState(SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE, globalStateForCurrentCcClass);
+                  }
+                });
+
+              });
+            }
+
           }
         }
         this.cc.reactSetState = this.cc.reactSetState.bind(this);
