@@ -1,4 +1,4 @@
-import util, { verifyModuleValue, verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
+import util, { isValueNotNull, isModuleStateValid, verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
 import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT, MODULE_CC_LIKE } from '../support/constant';
 import ccContext from '../cc-context';
 
@@ -14,58 +14,94 @@ function checkModuleNames(moduleNames) {
   }
 }
 
-function bindStoreToCcContext(store, isModuleMode) {
-  if (!isPlainJsonObject) {
+function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
+  if (!isPlainJsonObject(store)) {
     throw new Error(`the store is not a plain json object!`);
+  }
+  if (!isPlainJsonObject(sharedToGlobalMapping)) {
+    throw new Error(`the sharedToGlobalMapping is not a plain json object!`);
   }
 
   const _state = ccContext.store._state;
   _state[MODULE_CC] = {};
 
   if (isModuleMode) {
+    const globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
     const moduleNames = Object.keys(store);
     checkModuleNames(moduleNames, isModuleMode);
 
-    const len = moduleNames.length;
-    let isDefaultModuleExist = false, isGlobalModuleExist = false;
-    for (let i = 0; i < len; i++) {
-      const moduleName = moduleNames[i];
-      if (!util.verifyModuleName(moduleName)) {
-        throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(` moduleName:${moduleName} is invalid!`));
-      }
-
-      const moduleValue = store[moduleName];
-      if (!verifyModuleValue(moduleValue)) {
-        throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi(`moduleName:${moduleName}'s value is invalid!`));
-      }
-      if (moduleName === MODULE_DEFAULT) {
-        isDefaultModuleExist = true;
-        console.log(ss('$$default module state found while startup cc!'), cl());
-      }
-      if (moduleName === MODULE_GLOBAL) {
-        isGlobalModuleExist = true;
+    let globalState = store[MODULE_GLOBAL];
+    if (globalState) {
+      if (!util.isModuleStateValid(globalState)) {
+        throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi(`moduleName:${MODULE_GLOBAL}'s value is invalid!`));
+      } else {
         console.log(ss('$$global module state found while startup cc!'), cl());
       }
+    } else {
+      console.log(ss('$$global module state not found,cc will generate one for user automatically!'), cl());
+      globalState = {};
+    }
+    _state[MODULE_GLOBAL] = globalState;
 
-      _state[moduleName] = moduleValue;
+    const len = moduleNames.length;
+    let isDefaultModuleExist = false;
+    for (let i = 0; i < len; i++) {
+      const moduleName = moduleNames[i];
+      if (moduleName !== MODULE_GLOBAL) {
+        if (!util.isModuleNameValid(moduleName)) {
+          throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(` moduleName:${moduleName} is invalid!`));
+        }
+
+        const moduleState = store[moduleName];
+        if (!isModuleStateValid(moduleState)) {
+          throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi(`moduleName:${moduleName}'s value is invalid!`));
+        }
+        if (moduleName === MODULE_DEFAULT) {
+          isDefaultModuleExist = true;
+          console.log(ss('$$default module state found while startup cc!'), cl());
+        }
+        _state[moduleName] = moduleState;
+
+        //analyze sharedToGlobalMapping
+        const sharedKey_globalKey_ = sharedToGlobalMapping[moduleName];
+        if (sharedKey_globalKey_) {//this module's some key will been mapped to global module
+          const sharedKeys = Object.keys(sharedKey_globalKey_);
+          const sLen = sharedKeys.length;
+          for (let k = 0; k < sLen; k++) {
+            const sharedKey = sharedKeys[k];
+            if (!moduleState.hasOwnProperty(sharedKey)) {
+              throw new Error(`the module:${moduleName} don't have a key named ${sharedKey}, check your sharedToGlobalMapping`);
+            }
+
+            const globalMappingKey = sharedKey_globalKey_[sharedKey];
+            if (globalState.hasOwnProperty(globalMappingKey)) {
+              throw new Error(`the key:${globalMappingKey} is already declared in globalState, you can not use it to map the sharedStateKey:${sharedKey} to global state, try rename your mappingKey in sharedToGlobalMapping!`);
+            } else {
+              globalState[globalMappingKey] = moduleState[sharedKey];
+              globalMappingKey_sharedKey_[globalMappingKey] = { module: moduleName, key: sharedKey };
+            }
+          }
+        }
+
+      }
     }
 
     if (!isDefaultModuleExist) {
       _state[MODULE_DEFAULT] = {};
       console.log(ss('$$default module state not found,cc will generate one for user automatically!'), cl());
     }
-    if (!isGlobalModuleExist) {
-      _state[MODULE_GLOBAL] = {};
-      console.log(ss('$$global module state not found,cc will generate one for user automatically!'), cl());
-    }
   } else {
+    if (sharedToGlobalMapping) {
+      throw util.makeError(ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
+    }
+
     const includeDefaultModule = store.hasOwnProperty(MODULE_DEFAULT);
     const includeGlobalModule = store.hasOwnProperty(MODULE_GLOBAL);
     let invalidKeyCount = 0;
 
     if (includeDefaultModule || includeGlobalModule) {
-      if (includeDefaultModule) {
-        if (!util.verifyModuleValue(store[MODULE_DEFAULT])) {
+      if (includeDefaultModule && !includeGlobalModule) {
+        if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
           throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
         } else {
           _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
@@ -76,8 +112,8 @@ function bindStoreToCcContext(store, isModuleMode) {
         _state[MODULE_DEFAULT] = {};
       }
 
-      if (includeGlobalModule) {
-        if (!util.verifyModuleValue(store[MODULE_GLOBAL])) {
+      if (includeGlobalModule && !includeDefaultModule) {
+        if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
           throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
         } else {
           _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
@@ -93,7 +129,7 @@ function bindStoreToCcContext(store, isModuleMode) {
         justWarning(`now cc is startup with non module mode, cc only allow you define store like {"$$default":{}, "$$global":{}}, cc will ignore other module keys`);
       }
     } else {
-      if (!util.verifyModuleValue(store)) {
+      if (!util.isModuleStateValid(store)) {
         throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(` moduleName:${moduleName} is invalid!`));
       }
       _state[MODULE_DEFAULT] = store;
@@ -141,8 +177,8 @@ function bindReducersToCcContext(reducers, isModuleMode) {
       if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
       if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
     }
-    if(!isDefaultReducerExist)_reducers[MODULE_DEFAULT] = {};
-    if(!isGlobalReducerExist)_reducers[MODULE_GLOBAL] = {};
+    if (!isDefaultReducerExist) _reducers[MODULE_DEFAULT] = {};
+    if (!isGlobalReducerExist) _reducers[MODULE_GLOBAL] = {};
   } else {
     if (reducers.hasOwnProperty(MODULE_DEFAULT)) _reducers[MODULE_DEFAULT] = reducers[MODULE_DEFAULT];
     else _reducers[MODULE_DEFAULT] = reducers;
@@ -193,6 +229,13 @@ init = {
   global:(setState)=>{}
 }
 */
+/*
+  {
+    vip:{
+      books:'vipBooks'
+    }
+  }
+*/
 export default function ({
   store = {},
   reducers = {},
@@ -200,6 +243,7 @@ export default function ({
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
+  sharedToGlobalMapping = {}
 } = {}) {
   if (ccContext.isCcAlreadyStartup) {
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
@@ -208,7 +252,7 @@ export default function ({
   ccContext.isStrict = isStrict;
   ccContext.isDebug = isDebug;
 
-  bindStoreToCcContext(store, isModuleMode);
+  bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
 
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);
   else bindReducersToCcContext(reducers, isModuleMode);

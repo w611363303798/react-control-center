@@ -9,13 +9,6 @@ export const CHANGE_BY_SELF = 1;
 export const SYNC_FROM_CC_INSTANCE_SHARED_STATE = 2;
 export const SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE = 3;
 export const SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE = 4;
-export const SYNC_FROM_CC_CLASS_STORE = 5;
-export const SYNC_FROM_CC_REF_STORE = 6;
-export const SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE = 7;
-export const SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE = 8;
-export const SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE = 9;
-export const SYNC_FROM_GLOBAL_STORE_AND_REF_STORE = 10;
-export const SYNC_FROM_GLOBAL_STORE = 11;
 export const BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD = 1;
 export const BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE = 2;
 export const BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE = 3;
@@ -45,6 +38,7 @@ export const ERR = {
   MODULE_KEY_CC_FOUND: 1100,
   STORE_KEY_NAMING_INVALID: 1101,
   STORE_MODULE_VALUE_INVALID: 1102,
+  STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE: 1103,
   REDUCER_ACTION_TYPE_NAMING_INVALID: 1201,
   REDUCER_ACTION_TYPE_NO_MODULE: 1202,
   // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
@@ -56,7 +50,7 @@ export const ERR_MESSAGE = {
   [ERR.CC_CLASS_KEY_DUPLICATE]: 'ccClassKey duplicate while you register a react class!  ',
   [ERR.CC_CLASS_NOT_FOUND]: 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ',
   [ERR.CC_CLASS_STORE_MODULE_INVALID]: 'ccClass ccOption module value is invalid, can not match it in store! ',
-  [ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED]: 'ccClass module is not allowed assign $$global ! ',
+  [ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED]:`$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!`,
   [ERR.CC_CLASS_REDUCER_MODULE_INVALID]: 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ',
   [ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE]: `ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   `,
   [ERR.CC_CLASS_INSTANCE_OPTION_INVALID]: 'ccOption must be a plain json object! ',
@@ -75,6 +69,7 @@ export const ERR_MESSAGE = {
   [ERR.MODULE_KEY_CC_FOUND]: 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducers! ',
   [ERR.STORE_KEY_NAMING_INVALID]: `module name is invalid, /^[\$\#\&a-zA-Z0-9_-]+$/.test() is false. `,
   [ERR.STORE_MODULE_VALUE_INVALID]: `module state of store must be a plain json object! `,
+  [ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE]: `sharedToGlobalMapping is not allowed to supply to startup's options in non module, `,
   [ERR.REDUCER_ACTION_TYPE_NAMING_INVALID]: `action type's naming is invalid, correct one may like: fooModule/fooType. `,
   [ERR.REDUCER_ACTION_TYPE_NO_MODULE]: `action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!`,
   // [ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE]: `reducer key is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in reducer keys!`,
@@ -91,13 +86,6 @@ export default {
   SYNC_FROM_CC_INSTANCE_SHARED_STATE,
   SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE,
   SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE,
-  SYNC_FROM_CC_CLASS_STORE,
-  SYNC_FROM_CC_REF_STORE,
-  SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE,
-  SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE,
-  SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE,
-  SYNC_FROM_GLOBAL_STORE_AND_REF_STORE,
-  SYNC_FROM_GLOBAL_STORE,
   BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD,
   BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE,
   BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE,

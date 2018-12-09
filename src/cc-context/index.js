@@ -25,6 +25,10 @@ const ccContext = {
   ccClassKey_ccClassContext_: {
 
   },
+  //[globalKey]:{module:'xxx',key:'yyy'}
+  globalMappingKey_sharedKey_: {
+
+  },
   store: {
     _state: {
       [MODULE_GLOBAL]: {

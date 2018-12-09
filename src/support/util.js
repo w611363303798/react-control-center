@@ -25,7 +25,7 @@ export function isPlainJsonObject(obj, canBeArray = false) {
   }
 }
 
-export function verifyActionType(type) {
+export function isActionTypeValid(type) {
   if (typeof type !== 'string') {
     return false
   } else {
@@ -68,12 +68,12 @@ export function makeUniqueCcKey(ccClassKey, ccKey) {
   return `${ccClassKey}/${ccKey}`;
 }
 
-export function verifyModuleName(moduleName) {
+export function isModuleNameValid(moduleName) {
   return /^[\$\#\&a-zA-Z0-9_-]+$/.test(moduleName);
 }
 
-export function verifyModuleValue(value) {
-  return isPlainJsonObject(value);
+export function isModuleStateValid(state) {
+  return isPlainJsonObject(state);
 }
 
 export function verifyNamespacedActionType(actionType, allowSlashCountZero = true) {
@@ -101,17 +101,17 @@ export function verifyNamespacedActionType(actionType, allowSlashCountZero = tru
 }
 
 // todo, modify verify rule
-export function verifyCcOption(ccOption) {
+export function isCcOptionValid(ccOption) {
   return isPlainJsonObject(ccOption);
 }
 
-export function verifyCcAction(action) {
+export function isCcActionValid(action) {
   let errMessage = '';
   if (!action) {
     errMessage = 'trying to dispatch an null action is meaningless!';
   } else {
     const { type, payload } = action;
-    if (!verifyActionType(type)) {
+    if (!isActionTypeValid(type)) {
       errMessage += 'action type must be string and length must LTE 1! ';
     }
     if (!isPlainJsonObject(payload, true)) {
@@ -189,11 +189,11 @@ export default {
   makeCcClassContext,
   makeStateMail,
   makeUniqueCcKey,
-  verifyActionType,
-  verifyModuleName,
-  verifyModuleValue,
-  verifyCcOption,
-  verifyCcAction,
+  isActionTypeValid,
+  isModuleNameValid,
+  isModuleStateValid,
+  isCcOptionValid,
+  isCcActionValid,
   isPlainJsonObject,
   isValueNotNull,
   disassembleActionType,
