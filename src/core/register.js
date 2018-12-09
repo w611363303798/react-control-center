@@ -14,7 +14,7 @@ import co from 'co';
 
 const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning } = util;
 const {
-  store: { _state }, reducer: { _reducers }, refStore, globalMappingKey_sharedKey_,
+  store: { _state, getState }, reducer: { _reducers }, refStore, globalMappingKey_sharedKey_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_
 } = ccContext;
 const cl = color;
@@ -443,11 +443,21 @@ export default function register(ccClassKey, {
           forceUpdate: (cb) => {
             this.$$changeState(this.state, { module: currentModule, cb });
           },
+          // always change self module's state
           invoke: (userLogicFn, ...args) => {
             this.cc.invokeWith(userLogicFn, { module: currentModule }, ...args);
           },
-          invokeWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
+          // change other module's state
+          effect: (targetModule, userLogicFn, ...args) => {
+            this.cc.invokeWith(userLogicFn, { module: targetModule, context: true }, ...args);
+          },
+          // change other module's state, cc will give userLogicFn first param = module context
+          effectCtx: (targetModule, userLogicFn, ...args) => {
+            this.cc.invokeWith(userLogicFn, { context: true, module: targetModule }, ...args);
+          },
+          invokeWith: (userLogicFn, { module = currentModule, context = false, forceSync = false, cb } = {}, ...args) => {
             isInputModuleInvalid(module, currentModule, cb, (newCb) => {
+              if (context) args.unshift({ module, state: getState(module), effect: this.$$effect, effectCtx: this.$$effectCtx });
               co.wrap(userLogicFn)(...args).then(state => {
                 this.$$changeState(state, { module, forceSync, cb: newCb });
               }).catch(justWarning);
@@ -588,15 +598,17 @@ export default function register(ccClassKey, {
         this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
         this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
         this.cc.prepareBroadcastState = this.cc.prepareBroadcastState.bind(this);
-        this.$$dispatch = this.cc.dispatch;//let CCComponent instance can call dispatch directly
-        this.$$invoke = this.cc.invoke;//commit state to cc directly, but userFn can be promise or generator both!
-        this.$$invokeWith = this.cc.invokeWith;
-        this.$$call = this.cc.call;// commit state by setState handler
-        this.$$callWith = this.cc.callWith;
-        this.$$callThunk = this.cc.callThunk;// commit state by setState handler
-        this.$$callThunkWith = this.cc.callThunkWith;
-        this.$$commit = this.cc.commit;// commit state to cc directly, userFn can only be normal function
-        this.$$commitWith = this.cc.commitWith;
+        this.$$dispatch = this.cc.dispatch.bind(this);;//let CCComponent instance can call dispatch directly
+        this.$$invoke = this.cc.invoke.bind(this);;//commit state to cc directly, but userFn can be promise or generator both!
+        this.$$invokeWith = this.cc.invokeWith.bind(this);;
+        this.$$call = this.cc.call.bind(this);;// commit state by setState handler
+        this.$$callWith = this.cc.callWith.bind(this);;
+        this.$$callThunk = this.cc.callThunk.bind(this);;// commit state by setState handler
+        this.$$callThunkWith = this.cc.callThunkWith.bind(this);;
+        this.$$commit = this.cc.commit.bind(this);;// commit state to cc directly, userFn can only be normal function
+        this.$$commitWith = this.cc.commitWith.bind(this);;
+        this.$$effect = this.cc.effect.bind(this);;// commit state to cc directly, userFn can only be normal function
+        this.$$effectCtx = this.cc.effectCtx.bind(this);;
 
         this.setState = this.cc.setState;//let setState call cc.setState
         this.setGlobalState = this.cc.setGlobalState;//let setState call cc.setState

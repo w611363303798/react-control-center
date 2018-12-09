@@ -38,8 +38,9 @@ const ccContext = {
 
       }
     },
-    getState: function () {
-      return ccContext.store._state;
+    getState: function (module) {
+      if (module) return ccContext.store._state[module];
+      else return ccContext.store._state;
     },
     setState: function (module, _partialSharedState) {
       const _state = ccContext.store._state;
