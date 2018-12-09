@@ -251,6 +251,7 @@ export default function ({
   ccContext.isModuleMode = isModuleMode;
   ccContext.isStrict = isStrict;
   ccContext.isDebug = isDebug;
+  ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
 
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
 

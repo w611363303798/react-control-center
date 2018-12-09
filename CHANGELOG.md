@@ -1,5 +1,8 @@
 
 # Change Log
+## 2018-12-09 17:00
+* now ccClass can watch other module's state changing by config sharedToGlobalMapping while startup
+
 ## 2018-12-08 13:00
 * optimize ccInstance state recovering logic, fix bugs of broadcasting state.
   
