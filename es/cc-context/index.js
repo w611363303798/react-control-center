@@ -24,10 +24,12 @@ var ccContext = {
   moduleName_ccClassKeys_: {},
   globalCcClassKeys: [],
   ccClassKey_ccClassContext_: {},
+  //[globalKey]:{module:'xxx',key:'yyy'}
+  globalMappingKey_sharedKey_: {},
   store: {
     _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
-    getState: function getState() {
-      return ccContext.store._state;
+    getState: function getState(module) {
+      if (module) return ccContext.store._state[module];else return ccContext.store._state;
     },
     setState: function setState(module, _partialSharedState) {
       var _state = ccContext.store._state;

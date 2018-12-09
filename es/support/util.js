@@ -25,7 +25,7 @@ export function isPlainJsonObject(obj, canBeArray) {
     return false;
   }
 }
-export function verifyActionType(type) {
+export function isActionTypeValid(type) {
   if (typeof type !== 'string') {
     return false;
   } else {
@@ -92,11 +92,11 @@ export function makeStateMail(ccUniqueKey, ccOption, module, type, cb) {
 export function makeUniqueCcKey(ccClassKey, ccKey) {
   return ccClassKey + "/" + ccKey;
 }
-export function verifyModuleName(moduleName) {
+export function isModuleNameValid(moduleName) {
   return /^[\$\#\&a-zA-Z0-9_-]+$/.test(moduleName);
 }
-export function verifyModuleValue(value) {
-  return isPlainJsonObject(value);
+export function isModuleStateValid(state) {
+  return isPlainJsonObject(state);
 }
 export function verifyNamespacedActionType(actionType, allowSlashCountZero) {
   if (allowSlashCountZero === void 0) {
@@ -129,10 +129,10 @@ export function verifyNamespacedActionType(actionType, allowSlashCountZero) {
   }
 } // todo, modify verify rule
 
-export function verifyCcOption(ccOption) {
+export function isCcOptionValid(ccOption) {
   return isPlainJsonObject(ccOption);
 }
-export function verifyCcAction(action) {
+export function isCcActionValid(action) {
   var errMessage = '';
 
   if (!action) {
@@ -141,7 +141,7 @@ export function verifyCcAction(action) {
     var type = action.type,
         payload = action.payload;
 
-    if (!verifyActionType(type)) {
+    if (!isActionTypeValid(type)) {
       errMessage += 'action type must be string and length must LTE 1! ';
     }
 
@@ -244,11 +244,11 @@ export default {
   makeCcClassContext: makeCcClassContext,
   makeStateMail: makeStateMail,
   makeUniqueCcKey: makeUniqueCcKey,
-  verifyActionType: verifyActionType,
-  verifyModuleName: verifyModuleName,
-  verifyModuleValue: verifyModuleValue,
-  verifyCcOption: verifyCcOption,
-  verifyCcAction: verifyCcAction,
+  isActionTypeValid: isActionTypeValid,
+  isModuleNameValid: isModuleNameValid,
+  isModuleStateValid: isModuleStateValid,
+  isCcOptionValid: isCcOptionValid,
+  isCcActionValid: isCcActionValid,
   isPlainJsonObject: isPlainJsonObject,
   isValueNotNull: isValueNotNull,
   disassembleActionType: disassembleActionType,

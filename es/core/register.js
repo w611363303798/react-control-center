@@ -1,7 +1,7 @@
 import _extends from "@babel/runtime/helpers/esm/extends";
 import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
 import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
-import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, SYNC_FROM_CC_REF_STORE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, SYNC_FROM_CC_CLASS_STORE, SYNC_FROM_CC_CLASS_STORE_AND_REF_STORE, SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE, SYNC_FROM_GLOBAL_STORE_AND_CC_CLASS_STORE_AND_REF_STORE, SYNC_FROM_GLOBAL_STORE, SYNC_FROM_GLOBAL_STORE_AND_REF_STORE, SYNC_FROM_CC_INSTANCE_SHARED_STATE, SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE, SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE } from '../support/constant';
+import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, SYNC_FROM_CC_INSTANCE_SHARED_STATE, SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE, SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE_AND_SHARED_STATE } from '../support/constant';
 import ccContext, { getCcContext } from '../cc-context';
 import util from '../support/util';
 import uuid from 'uuid';
@@ -13,9 +13,12 @@ var verifyKeys = util.verifyKeys,
     verboseInfo = util.verboseInfo,
     makeError = util.makeError,
     justWarning = util.justWarning;
-var _state = ccContext.store._state,
+var _ccContext$store = ccContext.store,
+    _state = _ccContext$store._state,
+    getState = _ccContext$store.getState,
     _reducers = ccContext.reducer._reducers,
     refStore = ccContext.refStore,
+    globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
     ccKey_ref_ = ccContext.ccKey_ref_,
     ccKey_option_ = ccContext.ccKey_option_,
     globalCcClassKeys = ccContext.globalCcClassKeys,
@@ -75,6 +78,78 @@ function extractStateByKeys(state, targetKeys) {
   };
 }
 
+function extractGlobalStateByKeys(targetModule, commitState, globalStateKeys, sharedToGlobalMapping, globalMappingKey_sharedKey_) {
+  //all stateValue if belong to globalState will be collected to module_globalState_ , key means module name, stateKey mean globalMappingKey
+  var module_globalState_ = {}; //all stateValue if belong to globalState will be collected to module_originalState_, key means module name, stateKey mean sharedKey
+
+  var module_originalState_ = {}; //all stateValue if belong to globalState will be collected to partialGlobalState
+
+  var partialGlobalState = {};
+
+  if (!isStateValid(commitState) || globalStateKeys.length === 0) {
+    return {
+      partialGlobalState: partialGlobalState,
+      isPartialGlobalStateEmpty: true,
+      module_globalState_: module_globalState_
+    };
+  }
+
+  var isPartialGlobalStateEmpty = true;
+  globalStateKeys.forEach(function (gKey) {
+    if (commitState.hasOwnProperty(gKey)) {
+      isPartialGlobalStateEmpty = false;
+      var stateValue = commitState[gKey];
+      partialGlobalState[gKey] = stateValue;
+      var sharedKeyDescriptor = globalMappingKey_sharedKey_[gKey];
+
+      if (sharedKeyDescriptor) {
+        //this global key is mapping to some module's state key
+        var module = sharedKeyDescriptor.module,
+            key = sharedKeyDescriptor.key;
+        var tmpModuleGlobalState = module_originalState_[module];
+
+        if (!tmpModuleGlobalState) {
+          tmpModuleGlobalState = module_originalState_[module] = {};
+        }
+
+        tmpModuleGlobalState[key] = commitState[gKey];
+      }
+    }
+  });
+  /*
+    in case of commitState of targetModule including globalMappingState, check it with sharedToGlobalMapping
+  */
+
+  var mappingOfThisModule = sharedToGlobalMapping[targetModule];
+
+  if (mappingOfThisModule) {
+    var originalSharedKeys = Object.keys(mappingOfThisModule);
+    originalSharedKeys.forEach(function (originalSharedKey) {
+      if (commitState.hasOwnProperty(originalSharedKey)) {
+        var globalMappingKey = mappingOfThisModule[originalSharedKey];
+        var stateValue = commitState[originalSharedKey];
+        isPartialGlobalStateEmpty = false;
+        partialGlobalState[globalMappingKey] = stateValue; //collect this stateValue to partialGlobalState
+
+        var targetModuleGlobalState = module_globalState_[targetModule];
+
+        if (!targetModuleGlobalState) {
+          targetModuleGlobalState = module_globalState_[targetModule] = {};
+        }
+
+        targetModuleGlobalState[globalMappingKey] = stateValue;
+      }
+    });
+  }
+
+  return {
+    partialGlobalState: partialGlobalState,
+    isPartialGlobalStateEmpty: isPartialGlobalStateEmpty,
+    module_globalState_: module_globalState_,
+    module_originalState_: module_originalState_
+  };
+}
+
 function handleError(err, throwError) {
   if (throwError === void 0) {
     throwError = true;
@@ -92,12 +167,17 @@ function checkStoreModule(module, throwError) {
 
   if (!ccContext.isModuleMode) {
     if (module !== MODULE_DEFAULT) {
-      handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "module:" + module), throwError);
+      handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, vbi("module:" + module)), throwError);
       return false;
     } else return true;
   } else {
+    if (module === MODULE_GLOBAL) {
+      handleError(me(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED), throwError);
+      return false;
+    }
+
     if (!_state[module]) {
-      handleError(me(ERR.CC_CLASS_STORE_MODULE_INVALID, "module:" + module), throwError);
+      handleError(me(ERR.CC_CLASS_STORE_MODULE_INVALID, vbi("module:" + module + " is not configured in cc's store")), throwError);
       return false;
     } else return true;
   }
@@ -205,35 +285,39 @@ function checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKe
   }
 }
 
-function extractStateToBeBroadcasted(sourceState, sharedStateKeys, globalStateKeys) {
-  var partialSharedState = null,
-      partialGlobalState = null;
+function extractStateToBeBroadcasted(module, sourceState, sharedToGlobalMapping, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys) {
+  var partialSharedState = {};
+  var isPartialSharedStateEmpty = true;
 
   if (sharedStateKeys.length > 0) {
     var _extractStateByKeys = extractStateByKeys(sourceState, sharedStateKeys),
         partialState = _extractStateByKeys.partialState,
-        isPartialSharedStateEmpty = _extractStateByKeys.isStateEmpty;
+        isStateEmpty = _extractStateByKeys.isStateEmpty;
 
-    if (!isPartialSharedStateEmpty) {
+    if (!isStateEmpty) {
       ccContext.store.setState(module, partialState);
+      isPartialSharedStateEmpty = isStateEmpty;
       partialSharedState = partialState;
     }
   }
 
-  if (globalStateKeys.length > 0) {
-    var _extractStateByKeys2 = extractStateByKeys(sourceState, globalStateKeys),
-        _partialState = _extractStateByKeys2.partialState,
-        isPartialGlobalStateEmpty = _extractStateByKeys2.isStateEmpty;
+  var _extractGlobalStateBy = extractGlobalStateByKeys(module, sourceState, globalStateKeys, sharedToGlobalMapping, globalMappingKey_sharedKey_),
+      partialGlobalState = _extractGlobalStateBy.partialGlobalState,
+      isPartialGlobalStateEmpty = _extractGlobalStateBy.isPartialGlobalStateEmpty,
+      module_globalState_ = _extractGlobalStateBy.module_globalState_,
+      module_originalState_ = _extractGlobalStateBy.module_originalState_;
 
-    if (!isPartialGlobalStateEmpty) {
-      ccContext.store.setGlobalState(_partialState);
-      partialGlobalState = _partialState;
-    }
+  if (!isPartialGlobalStateEmpty) {
+    ccContext.store.setGlobalState(partialGlobalState);
   }
 
   return {
+    isPartialSharedStateEmpty: isPartialSharedStateEmpty,
     partialSharedState: partialSharedState,
-    partialGlobalState: partialGlobalState
+    isPartialGlobalStateEmpty: isPartialGlobalStateEmpty,
+    partialGlobalState: partialGlobalState,
+    module_globalState_: module_globalState_,
+    module_originalState_: module_originalState_
   };
 }
 /*
@@ -263,7 +347,7 @@ export default function register(ccClassKey, _temp) {
 
   checkStoreModule(module);
   checkReducerModule(_reducerModule);
-  checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys); //tell cc this ccClass is watching some of globalStateKeys
+  checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys); //tell cc this ccClass is watching some globalStateKeys of global module
 
   if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
   var contextMap = ccContext.ccClassKey_ccClassContext_;
@@ -271,11 +355,12 @@ export default function register(ccClassKey, _temp) {
   if (contextMap[ccClassKey] !== undefined) {
     throw me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
   } else {
+    //tell cc this ccClass is watching some sharedStateKeys of a module
     contextMap[ccClassKey] = util.makeCcClassContext(module, sharedStateKeys, globalStateKeys);
   }
 
-  var ccClassKeys_ = ccContext.moduleName_ccClassKeys_[module];
-  if (!ccClassKeys_) ccClassKeys_ = ccContext.moduleName_ccClassKeys_[module] = [];
+  var ccClassKeys_ = moduleName_ccClassKeys_[module];
+  if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_[module] = [];
   ccClassKeys_.push(ccClassKey);
   return function (ReactClass) {
     var CcClass =
@@ -285,10 +370,6 @@ export default function register(ccClassKey, _temp) {
 
       function CcClass(props, context) {
         var _this;
-
-        if (ccClassKey === 'BookList') {
-          console.log('BookList');
-        }
 
         _this = _ReactClass.call(this, props, context) || this;
         if (!_this.state) _this.state = {};
@@ -330,7 +411,7 @@ export default function register(ccClassKey, _temp) {
             sharedStateKeys = _this$cc$ccState.sharedStateKeys,
             ccOption = _this$cc$ccState.ccOption,
             ccUniqueKey = _this$cc$ccState.ccUniqueKey;
-        var refState = ccContext.refStore._state[ccUniqueKey] || {};
+        var refState = refStore._state[ccUniqueKey] || {};
         var sharedState = _state[currentModule];
         var globalState = _state[MODULE_GLOBAL];
         var syncState = ccOption.syncState,
@@ -339,17 +420,17 @@ export default function register(ccClassKey, _temp) {
             partialGlobalState = {};
 
         if (syncState) {
-          var _extractStateByKeys3 = extractStateByKeys(sharedState, sharedStateKeys),
-              partialState = _extractStateByKeys3.partialState;
+          var _extractStateByKeys2 = extractStateByKeys(sharedState, sharedStateKeys),
+              partialState = _extractStateByKeys2.partialState;
 
           partialSharedState = partialState;
         }
 
         if (syncGlobalState) {
-          var _extractStateByKeys4 = extractStateByKeys(globalState, globalStateKeys),
-              _partialState2 = _extractStateByKeys4.partialState;
+          var _extractStateByKeys3 = extractStateByKeys(globalState, globalStateKeys),
+              _partialState = _extractStateByKeys3.partialState;
 
-          partialGlobalState = _partialState2;
+          partialGlobalState = _partialState;
         }
 
         var selfState = this.state;
@@ -364,7 +445,7 @@ export default function register(ccClassKey, _temp) {
           console.log(ss("register ccKey " + ccUniqueKey + " to CC_CONTEXT"), cl());
         }
 
-        if (!util.verifyCcOption(ccOption)) {
+        if (!util.isCcOptionValid(ccOption)) {
           throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi("a standard default ccOption may like: {\"syncState\": true, \"asyncLifeCycleHook\":false, \"storedStateKeys\": []}"));
         }
 
@@ -448,12 +529,12 @@ export default function register(ccClassKey, _temp) {
           afterSetState: this.$$afterSetState,
           prepareReactSetState: function prepareReactSetState(changeWay, state, next, reactCallback) {
             if (storedStateKeys.length > 0) {
-              var _extractStateByKeys5 = extractStateByKeys(state, storedStateKeys),
-                  partialState = _extractStateByKeys5.partialState,
-                  isStateEmpty = _extractStateByKeys5.isStateEmpty;
+              var _extractStateByKeys4 = extractStateByKeys(state, storedStateKeys),
+                  partialState = _extractStateByKeys4.partialState,
+                  isStateEmpty = _extractStateByKeys4.isStateEmpty;
 
               if (!isStateEmpty) {
-                ccContext.refStore.setState(ccUniqueKey, partialState);
+                refStore.setState(ccUniqueKey, partialState);
               }
             }
 
@@ -487,29 +568,34 @@ export default function register(ccClassKey, _temp) {
             var _this2$cc$ccState = _this2.cc.ccState,
                 sharedStateKeys = _this2$cc$ccState.sharedStateKeys,
                 globalStateKeys = _this2$cc$ccState.globalStateKeys;
+            var sharedToGlobalMapping = ccContext.sharedToGlobalMapping;
 
-            var _extractStateToBeBroa = extractStateToBeBroadcasted(originalState, sharedStateKeys, globalStateKeys),
+            var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, sharedToGlobalMapping, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys),
+                isPartialSharedStateEmpty = _extractStateToBeBroa.isPartialSharedStateEmpty,
+                isPartialGlobalStateEmpty = _extractStateToBeBroa.isPartialGlobalStateEmpty,
                 partialSharedState = _extractStateToBeBroa.partialSharedState,
-                partialGlobalState = _extractStateToBeBroa.partialGlobalState;
+                partialGlobalState = _extractStateToBeBroa.partialGlobalState,
+                module_globalState_ = _extractStateToBeBroa.module_globalState_,
+                module_originalState_ = _extractStateToBeBroa.module_originalState_;
 
-            if (partialSharedState || partialGlobalState) {
+            if (!isPartialSharedStateEmpty || !isPartialGlobalStateEmpty) {
               if (_this2.$$beforeBroadcastState) {
                 //user define life cycle hook $$beforeBroadcastState
                 if (asyncLifeCycleHook) {
                   _this2.$$beforeBroadcastState({
                     triggerType: triggerType
                   }, function () {
-                    _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                    _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone);
                   });
                 } else {
                   _this2.$$beforeBroadcastState({
                     triggerType: triggerType
                   });
 
-                  _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                  _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone);
                 }
               } else {
-                _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, needClone);
+                _this2.cc.broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone);
               }
             }
           },
@@ -546,6 +632,7 @@ export default function register(ccClassKey, _temp) {
               cb: cb
             });
           },
+          // always change self module's state
           invoke: function invoke(userLogicFn) {
             var _this2$cc;
 
@@ -557,21 +644,59 @@ export default function register(ccClassKey, _temp) {
               module: currentModule
             }].concat(args));
           },
-          invokeWith: function invokeWith(userLogicFn, _temp2) {
-            var _ref2 = _temp2 === void 0 ? {} : _temp2,
-                _ref2$module = _ref2.module,
-                module = _ref2$module === void 0 ? currentModule : _ref2$module,
-                _ref2$forceSync = _ref2.forceSync,
-                forceSync = _ref2$forceSync === void 0 ? false : _ref2$forceSync,
-                cb = _ref2.cb;
+          // change other module's state
+          effect: function effect(targetModule, userLogicFn) {
+            var _this2$cc2;
+
+            //
+            var excludeTriggerRef = currentModule == targetModule;
 
             for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
               args[_key2 - 2] = arguments[_key2];
             }
 
+            (_this2$cc2 = _this2.cc).invokeWith.apply(_this2$cc2, [userLogicFn, {
+              module: targetModule,
+              context: false
+            }].concat(args));
+          },
+          // change other module's state, cc will give userLogicFn first param = module context
+          effectCtx: function effectCtx(targetModule, userLogicFn) {
+            var _this2$cc3;
+
+            for (var _len3 = arguments.length, args = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+              args[_key3 - 2] = arguments[_key3];
+            }
+
+            (_this2$cc3 = _this2.cc).invokeWith.apply(_this2$cc3, [userLogicFn, {
+              context: true,
+              module: targetModule
+            }].concat(args));
+          },
+          invokeWith: function invokeWith(userLogicFn, _temp2) {
+            var _ref2 = _temp2 === void 0 ? {} : _temp2,
+                _ref2$module = _ref2.module,
+                module = _ref2$module === void 0 ? currentModule : _ref2$module,
+                _ref2$context = _ref2.context,
+                context = _ref2$context === void 0 ? false : _ref2$context,
+                _ref2$forceSync = _ref2.forceSync,
+                forceSync = _ref2$forceSync === void 0 ? false : _ref2$forceSync,
+                cb = _ref2.cb;
+
+            for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
+              args[_key4 - 2] = arguments[_key4];
+            }
+
             isInputModuleInvalid(module, currentModule, cb, function (newCb) {
+              if (context) args.unshift({
+                module: module,
+                state: getState(module),
+                effect: _this2.$$effect,
+                effectCtx: _this2.$$effectCtx
+              });
               co.wrap(userLogicFn).apply(void 0, args).then(function (state) {
                 _this2.$$changeState(state, {
+                  excludeTriggerRef: false,
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
@@ -580,13 +705,13 @@ export default function register(ccClassKey, _temp) {
             });
           },
           call: function call(userLogicFn) {
-            var _this2$cc2;
+            var _this2$cc4;
 
-            for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-              args[_key3 - 1] = arguments[_key3];
+            for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+              args[_key5 - 1] = arguments[_key5];
             }
 
-            (_this2$cc2 = _this2.cc).callWith.apply(_this2$cc2, [userLogicFn, {
+            (_this2$cc4 = _this2.cc).callWith.apply(_this2$cc4, [userLogicFn, {
               module: currentModule
             }].concat(args));
           },
@@ -598,8 +723,8 @@ export default function register(ccClassKey, _temp) {
                 forceSync = _ref3$forceSync === void 0 ? false : _ref3$forceSync,
                 cb = _ref3.cb;
 
-            for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
-              args[_key4 - 2] = arguments[_key4];
+            for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
+              args[_key6 - 2] = arguments[_key6];
             }
 
             isInputModuleInvalid(module, currentModule, cb, function (newCb) {
@@ -611,13 +736,13 @@ export default function register(ccClassKey, _temp) {
             });
           },
           callThunk: function callThunk(userLogicFn) {
-            var _this2$cc3;
+            var _this2$cc5;
 
-            for (var _len5 = arguments.length, args = new Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-              args[_key5 - 1] = arguments[_key5];
+            for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+              args[_key7 - 1] = arguments[_key7];
             }
 
-            (_this2$cc3 = _this2.cc).callThunkWith.apply(_this2$cc3, [userLogicFn, {
+            (_this2$cc5 = _this2.cc).callThunkWith.apply(_this2$cc5, [userLogicFn, {
               module: currentModule
             }].concat(args));
           },
@@ -629,8 +754,8 @@ export default function register(ccClassKey, _temp) {
                 forceSync = _ref4$forceSync === void 0 ? false : _ref4$forceSync,
                 cb = _ref4.cb;
 
-            for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
-              args[_key6 - 2] = arguments[_key6];
+            for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+              args[_key8 - 2] = arguments[_key8];
             }
 
             isInputModuleInvalid(module, currentModule, cb, function (newCb) {
@@ -642,13 +767,13 @@ export default function register(ccClassKey, _temp) {
             });
           },
           commit: function commit(userLogicFn) {
-            var _this2$cc4;
+            var _this2$cc6;
 
-            for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
-              args[_key7 - 1] = arguments[_key7];
+            for (var _len9 = arguments.length, args = new Array(_len9 > 1 ? _len9 - 1 : 0), _key9 = 1; _key9 < _len9; _key9++) {
+              args[_key9 - 1] = arguments[_key9];
             }
 
-            (_this2$cc4 = _this2.cc).commitWith.apply(_this2$cc4, [userLogicFn, {
+            (_this2$cc6 = _this2.cc).commitWith.apply(_this2$cc6, [userLogicFn, {
               module: currentModule
             }].concat(args));
           },
@@ -660,8 +785,8 @@ export default function register(ccClassKey, _temp) {
                 forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
                 cb = _ref5.cb;
 
-            for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
-              args[_key8 - 2] = arguments[_key8];
+            for (var _len10 = arguments.length, args = new Array(_len10 > 2 ? _len10 - 2 : 0), _key10 = 2; _key10 < _len10; _key10++) {
+              args[_key10 - 2] = arguments[_key10];
             }
 
             isInputModuleInvalid(module, currentModule, cb, function (newCb) {
@@ -692,7 +817,7 @@ export default function register(ccClassKey, _temp) {
             if (!targetReducerMap) return justWarning("no reducerMap found for module:" + targetReducerModule);
             var reducerFn = targetReducerMap[type];
             if (!reducerFn) return justWarning("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type);
-            var errMsg = util.verifyCcAction({
+            var errMsg = util.isCcActionValid({
               type: type,
               payload: payload
             });
@@ -712,7 +837,7 @@ export default function register(ccClassKey, _temp) {
               _this2.cc.invokeWith(reducerFn, (_ref7 = {}, inputModule = _ref7.inputModule, forceSync = _ref7.forceSync, newCb = _ref7.cb, _ref7), executionContext);
             });
           },
-          broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, needClone, excludeTriggerRef) {
+          broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone, excludeTriggerRef) {
             if (excludeTriggerRef === void 0) {
               excludeTriggerRef = true;
             }
@@ -722,43 +847,38 @@ export default function register(ccClassKey, _temp) {
 
             ccContext.store.setState(moduleName, _partialSharedState);
             var currentCcKey = _this2.cc.ccState.ccUniqueKey;
-            var ccClassKey_beenCheck_ = {}; //record which ccKey has triggered setState
+            var ccClassKey_isHandled_ = {}; //record which ccClassKey has been handled
 
             var ccClassKeys = moduleName_ccClassKeys_[moduleName];
 
             if (ccClassKeys) {
               //these ccClass subscribe the same module's state
               ccClassKeys.forEach(function (ccClassKey) {
-                ccClassKey_beenCheck_[ccClassKey] = true;
+                ccClassKey_isHandled_[ccClassKey] = true;
                 var classContext = ccClassKey_ccClassContext_[ccClassKey];
                 var ccKeys = classContext.ccKeys,
                     sharedStateKeys = classContext.sharedStateKeys,
                     globalStateKeys = classContext.globalStateKeys;
+                if (ccKeys.length === 0) return;
                 if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; // extract _partialSharedState! because different class with a same module may have different sharedStateKeys!!!
 
-                var _extractStateByKeys6 = extractStateByKeys(_partialSharedState, sharedStateKeys),
-                    sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                    isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys
+                var _extractStateByKeys5 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                    sharedStateForCurrentCcClass = _extractStateByKeys5.partialState,
+                    isSharedStateEmpty = _extractStateByKeys5.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys.
+                // it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
+                // just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-                var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+                var _extractStateByKeys6 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys6.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys6.isStateEmpty;
 
                 if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
-                var mergedStateForCurrentCcClass;
 
-                if (isSharedStateEmpty && !isPartialGlobalStateEmpty) {
-                  mergedStateForCurrentCcClass = globalStateForCurrentCcClass;
-                } else if (!isSharedStateEmpty && isPartialGlobalStateEmpty) {
-                  mergedStateForCurrentCcClass = sharedStateForCurrentCcClass;
-                } else {
-                  // !isSharedStateEmpty && !isPartialGlobalStateEmpty
-                  mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
-                }
+                var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
 
                 ccKeys.forEach(function (ccKey) {
-                  if (excludeTriggerRef && ccKey === currentCcKey) return;
+                  // if (excludeTriggerRef && ccKey === currentCcKey) return;
                   var ref = ccKey_ref_[ccKey];
 
                   if (ref) {
@@ -777,31 +897,57 @@ export default function register(ccClassKey, _temp) {
                       toSet = globalStateForCurrentCcClass;
                     }
 
-                    if (toSet) ref.cc.prepareReactSetState(changeWay, toSet);
+                    if (toSet) {
+                      if (ccContext.isDebug) {
+                        console.log(ss("ref " + ccKey + " render triggered by broadcast's way1"), cl());
+                      }
+
+                      ref.cc.prepareReactSetState(changeWay, toSet);
+                    }
+
+                    ;
                   }
                 });
               });
             }
 
             if (partialGlobalState) {
+              //these ccClass are watching globalState
               globalCcClassKeys.forEach(function (ccClassKey) {
-                if (ccClassKey_beenCheck_[ccClassKey]) return;
+                if (ccClassKey_isHandled_[ccClassKey]) return;
                 var classContext = ccClassKey_ccClassContext_[ccClassKey];
                 var watchingGlobalStateCcKeys = classContext.ccKeys,
-                    globalStateKeys = classContext.globalStateKeys;
-                if (globalStateKeys.length === 0) return;
+                    globalStateKeys = classContext.globalStateKeys,
+                    currentCcClassModule = classContext.module; // if there is no any ccInstance of this ccClass are watching globalStateKey, return;
 
-                var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
+                if (watchingGlobalStateCcKeys.length === 0) return;
+                var originalStateOfMappingState = module_originalState_[currentCcClassModule];
 
-                if (isPartialGlobalStateEmpty) return;
+                if (originalStateOfMappingState) {
+                  ccContext.store.setState(currentCcClassModule, originalStateOfMappingState);
+                }
+
+                var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+
+                var mappedGlobalStateForCurrentCcClass = module_globalState_[currentCcClassModule]; //!!! backup state for current module
+
+                ccContext.store.setGlobalState(mappedGlobalStateForCurrentCcClass);
+                if (isPartialGlobalStateEmpty && !mappedGlobalStateForCurrentCcClass && !originalStateOfMappingState) return;
+
+                var toSet = _extends({}, globalStateForCurrentCcClass, mappedGlobalStateForCurrentCcClass, originalStateOfMappingState);
+
                 watchingGlobalStateCcKeys.forEach(function (ccKey) {
-                  if (excludeTriggerRef && ccKey === currentCcKey) return;
+                  // if (excludeTriggerRef && ccKey === currentCcKey) return;
                   var ref = ccKey_ref_[ccKey];
 
                   if (ref) {
-                    ref.cc.prepareReactSetState(SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE, globalStateForCurrentCcClass);
+                    if (ccContext.isDebug) {
+                      console.log(ss("ref " + ccKey + " render triggered by broadcast's way2"), cl());
+                    }
+
+                    ref.cc.prepareReactSetState(SYNC_FROM_CC_INSTANCE_GLOBAL_PARTIAL_STATE, toSet);
                   }
                 });
               });
@@ -812,20 +958,34 @@ export default function register(ccClassKey, _temp) {
         this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
         this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
         this.cc.prepareBroadcastState = this.cc.prepareBroadcastState.bind(this);
-        this.$$dispatch = this.cc.dispatch; //let CCComponent instance can call dispatch directly
+        this.$$dispatch = this.cc.dispatch.bind(this);
+        ; //let CCComponent instance can call dispatch directly
 
-        this.$$invoke = this.cc.invoke; //commit state to cc directly, but userFn can be promise or generator both!
+        this.$$invoke = this.cc.invoke.bind(this);
+        ; //commit state to cc directly, but userFn can be promise or generator both!
 
-        this.$$invokeWith = this.cc.invokeWith;
-        this.$$call = this.cc.call; // commit state by setState handler
+        this.$$invokeWith = this.cc.invokeWith.bind(this);
+        ;
+        this.$$call = this.cc.call.bind(this);
+        ; // commit state by setState handler
 
-        this.$$callWith = this.cc.callWith;
-        this.$$callThunk = this.cc.callThunk; // commit state by setState handler
+        this.$$callWith = this.cc.callWith.bind(this);
+        ;
+        this.$$callThunk = this.cc.callThunk.bind(this);
+        ; // commit state by setState handler
 
-        this.$$callThunkWith = this.cc.callThunkWith;
-        this.$$commit = this.cc.commit; // commit state to cc directly, userFn can only be normal function
+        this.$$callThunkWith = this.cc.callThunkWith.bind(this);
+        ;
+        this.$$commit = this.cc.commit.bind(this);
+        ; // commit state to cc directly, userFn can only be normal function
 
-        this.$$commitWith = this.cc.commitWith;
+        this.$$commitWith = this.cc.commitWith.bind(this);
+        ;
+        this.$$effect = this.cc.effect.bind(this);
+        ; // commit state to cc directly, userFn can only be normal function
+
+        this.$$effectCtx = this.cc.effectCtx.bind(this);
+        ;
         this.setState = this.cc.setState; //let setState call cc.setState
 
         this.setGlobalState = this.cc.setGlobalState; //let setState call cc.setState
