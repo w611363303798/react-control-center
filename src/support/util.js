@@ -110,13 +110,14 @@ export function isCcActionValid(action) {
   if (!action) {
     errMessage = 'trying to dispatch an null action is meaningless!';
   } else {
-    const { type, payload } = action;
+    // const { type, payload } = action;
+    const { type } = action;
     if (!isActionTypeValid(type)) {
       errMessage += 'action type must be string and length must LTE 1! ';
     }
-    if (!isPlainJsonObject(payload, true)) {
-      errMessage += 'payload must be a plain json object! ';
-    }
+    // if (!isPlainJsonObject(payload, true)) {
+    //   errMessage += 'payload must be a plain json object! ';
+    // }
   }
   return errMessage;
 }
@@ -154,7 +155,7 @@ export function verifyKeys(keys1, keys2) {
       keyElementNotString = true;
       break outLoop;
     }
-    for (let j = 0; j < len2; j++ ) {
+    for (let j = 0; j < len2; j++) {
       const tmpKey2 = keys2[j];
       if (typeof tmpKey2 !== 'string') {
         keyElementNotString = true;
@@ -173,7 +174,7 @@ export function color(color = 'green') {
   return `color:${color};border:1px solid ${color}`;
 }
 
-export function styleStr(str){
+export function styleStr(str) {
   return `%c${str}`;
 }
 
