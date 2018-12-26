@@ -66,7 +66,7 @@ export const ERR_MESSAGE = {
   [ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS]: 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!',
   [ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY]: 'globalStateKeys or sharedStateKeys is not an Array!',
   [ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT]: 'globalStateKeys or sharedStateKeys include non string element!',
-  [ERR.MODULE_KEY_CC_FOUND]: 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducers! ',
+  [ERR.MODULE_KEY_CC_FOUND]: 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ',
   [ERR.STORE_KEY_NAMING_INVALID]: `module name is invalid, /^[\$\#\&a-zA-Z0-9_-]+$/.test() is false. `,
   [ERR.STORE_MODULE_VALUE_INVALID]: `module state of store must be a plain json object! `,
   [ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE]: `sharedToGlobalMapping is not allowed to supply to startup's options in non module, `,

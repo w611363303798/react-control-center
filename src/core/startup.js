@@ -141,11 +141,11 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
  * @description
  * @author zzk
  * @param {*} mergedStore
- * @param {*} namespacedKeyReducers may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
+ * @param {*} namespacedKeyReducer may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
  */
-function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
-  const namespacedActionTypes = Object.keys(reducers);
-  const _reducers = ccContext.reducer._reducers;
+function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
+  const namespacedActionTypes = Object.keys(namespacedKeyReducer);
+  const _reducer = ccContext.reducer._reducer;
   const len = namespacedActionTypes.length;
   for (let i = 0; i < len; i++) {
     const actionType = namespacedActionTypes[i];
@@ -153,7 +153,7 @@ function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
       throw util.makeError(ERR.REDUCER_ACTION_TYPE_NAMING_INVALID, ` actionType:${actionType} is invalid!`);
     }
     // const { moduleName } = util.disassembleActionType(actionType);
-    _reducers[actionType] = namespacedKeyReducers[actionType];
+    _reducer[actionType] = namespacedKeyReducer[actionType];
   }
   throw new Error('now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, it will coming soon!');
 }
@@ -161,30 +161,30 @@ function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
 /**
  * @description
  * @author zzk
- * @param {*} reducers may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
+ * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
  */
-function bindReducersToCcContext(reducers, isModuleMode) {
-  const _reducers = ccContext.reducer._reducers;
+function bindReducerToCcContext(reducer, isModuleMode) {
+  const _reducer = ccContext.reducer._reducer;
   if (isModuleMode) {
-    const moduleNames = Object.keys(reducers);
+    const moduleNames = Object.keys(reducer);
     checkModuleNames(moduleNames);
 
     const len = moduleNames.length;
     let isDefaultReducerExist = false, isGlobalReducerExist = false;
     for (let i = 0; i < len; i++) {
       const moduleName = moduleNames[i];
-      _reducers[moduleName] = reducers[moduleName];
+      _reducer[moduleName] = reducer[moduleName];
       if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
       if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
     }
-    if (!isDefaultReducerExist) _reducers[MODULE_DEFAULT] = {};
-    if (!isGlobalReducerExist) _reducers[MODULE_GLOBAL] = {};
+    if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
+    if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
   } else {
-    if (reducers.hasOwnProperty(MODULE_DEFAULT)) _reducers[MODULE_DEFAULT] = reducers[MODULE_DEFAULT];
-    else _reducers[MODULE_DEFAULT] = reducers;
+    if (reducer.hasOwnProperty(MODULE_DEFAULT)) _reducer[MODULE_DEFAULT] = reducer[MODULE_DEFAULT];
+    else _reducer[MODULE_DEFAULT] = reducer;
 
-    if (reducers.hasOwnProperty(MODULE_GLOBAL)) _reducers[MODULE_GLOBAL] = reducers[MODULE_GLOBAL];
-    else _reducers[MODULE_GLOBAL] = {};
+    if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];
+    else _reducer[MODULE_GLOBAL] = {};
   }
 }
 
@@ -208,7 +208,7 @@ store in CC_CONTEXT may like:
 }
 
 // with isReducerKeyMeanNamespacedActionType = false
-reducers = {
+reducer = {
   [moduleName1]:{
     [actionType1]:callback(setState, {type:'',payload:''})
     [actionType2]:callback(setState, {type:'',payload:''})
@@ -219,7 +219,7 @@ reducers = {
 }
 
 // with isReducerKeyMeanNamespacedActionType = true
-reducers = {
+reducer = {
   '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
   '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
   '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
@@ -238,7 +238,7 @@ init = {
 */
 export default function ({
   store = {},
-  reducers = {},
+  reducer = {},
   isModuleMode = false,
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
@@ -255,8 +255,8 @@ export default function ({
 
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
 
-  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);
-  else bindReducersToCcContext(reducers, isModuleMode);
+  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);
+  else bindReducerToCcContext(reducer, isModuleMode);
 
   if (window) {
     window.CC_CONTEXT = ccContext;

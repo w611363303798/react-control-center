@@ -14,7 +14,7 @@ import co from 'co';
 
 const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning } = util;
 const {
-  store: { _state, getState }, reducer: { _reducers }, refStore, globalMappingKey_sharedKey_,
+  store: { _state, getState }, reducer: { _reducer }, refStore, globalMappingKey_sharedKey_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_
 } = ccContext;
 const cl = color;
@@ -151,7 +151,7 @@ function checkReducerModule(reducerModule, throwError = true) {
       handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `reducerModule:${reducerModule}`), throwError);
     }
   } else {
-    if (!_reducers[reducerModule]) {
+    if (!_reducer[reducerModule]) {
       handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, `reducerModule:${reducerModule}`), throwError);
     }
   }
@@ -521,7 +521,7 @@ export default function register(ccClassKey, {
             const { reducerModule: currentReducerModule } = this.cc.ccState;
             const targetReducerModule = reducerModule || currentReducerModule;//if reducerModule not defined, will find currentReducerModule's reducer
 
-            const targetReducerMap = _reducers[targetReducerModule];
+            const targetReducerMap = _reducer[targetReducerModule];
             if (!targetReducerMap) return justWarning(`no reducerMap found for module:${targetReducerModule}`);
             const reducerFn = targetReducerMap[type];
             if (!reducerFn) return justWarning(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}`);

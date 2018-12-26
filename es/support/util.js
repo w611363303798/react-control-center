@@ -138,16 +138,15 @@ export function isCcActionValid(action) {
   if (!action) {
     errMessage = 'trying to dispatch an null action is meaningless!';
   } else {
-    var type = action.type,
-        payload = action.payload;
+    // const { type, payload } = action;
+    var type = action.type;
 
     if (!isActionTypeValid(type)) {
       errMessage += 'action type must be string and length must LTE 1! ';
-    }
+    } // if (!isPlainJsonObject(payload, true)) {
+    //   errMessage += 'payload must be a plain json object! ';
+    // }
 
-    if (!isPlainJsonObject(payload, true)) {
-      errMessage += 'payload must be a plain json object! ';
-    }
   }
 
   return errMessage;

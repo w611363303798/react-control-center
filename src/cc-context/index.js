@@ -59,7 +59,7 @@ const ccContext = {
     }
   },
   reducer: {
-    _reducers: {
+    _reducer: {
       [MODULE_GLOBAL]: {
 
       },
