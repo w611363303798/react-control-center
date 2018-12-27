@@ -1,6 +1,12 @@
 # react-control-center [C_C]
 ## without redux、mobx, writing react app with cc is a funny way also, it's definitely worth doing!
 
+#### 介绍
+* cc是一个渐进式的、弱入侵的状态管理框架，可以和已有的redux混合使用，也可以独立使用，对现有的代码改造成本微乎其微；可以当做一种组件间通信的辅助工具使用，也可以当做整个项目的功能性组件服务转态管理。
+* cc精确的状态广播使得渲染的组件使得渲染效率异常高效，只渲染该渲染的片段；
+* cc的渲染理念认为，功能型组件，一切渲染皆应由state的改变而触发，弱化props的地位，props只需要在contructor里感知存在；
+* cc为state key划分了四种类型：temporary , stored , shared，global, 配上模块化的设计、sharedToGlobalMapping等高级功能，可以让开发探索更多的有趣的、简单的、高效的管理你的应用状态的可能！
+
 <h1 style="text-align:center;color:#4EB899">react-control-center</h1>
 <ul>
 <li style="font-size:16px;color:#4EB899">更优雅的兄弟组件间或者父子组件间通信</li>
@@ -188,8 +194,8 @@ export default class App extends react.Component{
 starup后，cc的CC_CONTEXT管理着所有cc实例的引用，可以直接调用实例的任何方法
 
 ---
-<h2 style="text-align:left;color:#4EB899">结语</h2>
----
+
+### 结语
 * 此项目启发于redux的高阶函数，在脑海里构思了一周左右，觉得通过控制引用接管setState函数，可以精确的控制想要渲染的组件，数据都从state降低编程的复杂度
 * 所有cc组件都具有相互感知到共享的key的数据变化，且组件销毁后数据能够存储的store里，使得再次实例化组件时数据能够自动恢复，让state能够变得更智能
 * 有了具体的思路，整个核心源码的实现一共花了2天左右，个人的目的是让react-control-center能够在已有项目中能够局部的渐进式的使用，所以设计的非常弹性，核心api非常少，不需要你为了react-control-center而让现有项目改动特别大，使用期待大家能够给我更多的star，提出更多的issues，让react-control-center 成为一种新的状态管理工具的可选项
@@ -197,4 +203,3 @@ starup后，cc的CC_CONTEXT管理着所有cc实例的引用，可以直接调�
 * 更多代码演示，参见我的示例项目 https://github.com/fantasticsoul/rcc-simple-demo
 * 第一次写README, 比较简陋，而且时间比较紧张，个人还有公司的是要开发任务要处理，所以文档目前也没有建立起来，index.d.ts也还没有添加，后期等得到更多的反馈后会逐步完善起来，期待大家通过我的示例项目体会到
 react-control-center的简单与美妙，
-
