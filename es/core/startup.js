@@ -153,13 +153,13 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
  * @description
  * @author zzk
  * @param {*} mergedStore
- * @param {*} namespacedKeyReducers may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
+ * @param {*} namespacedKeyReducer may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
  */
 
 
-function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
-  var namespacedActionTypes = Object.keys(reducers);
-  var _reducers = ccContext.reducer._reducers;
+function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
+  var namespacedActionTypes = Object.keys(namespacedKeyReducer);
+  var _reducer = ccContext.reducer._reducer;
   var len = namespacedActionTypes.length;
 
   for (var i = 0; i < len; i++) {
@@ -170,7 +170,7 @@ function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
     } // const { moduleName } = util.disassembleActionType(actionType);
 
 
-    _reducers[actionType] = namespacedKeyReducers[actionType];
+    _reducer[actionType] = namespacedKeyReducer[actionType];
   }
 
   throw new Error('now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, it will coming soon!');
@@ -178,15 +178,15 @@ function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
 /**
  * @description
  * @author zzk
- * @param {*} reducers may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
+ * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
  */
 
 
-function bindReducersToCcContext(reducers, isModuleMode) {
-  var _reducers = ccContext.reducer._reducers;
+function bindReducerToCcContext(reducer, isModuleMode) {
+  var _reducer = ccContext.reducer._reducer;
 
   if (isModuleMode) {
-    var moduleNames = Object.keys(reducers);
+    var moduleNames = Object.keys(reducer);
     checkModuleNames(moduleNames);
     var len = moduleNames.length;
     var isDefaultReducerExist = false,
@@ -194,16 +194,16 @@ function bindReducersToCcContext(reducers, isModuleMode) {
 
     for (var i = 0; i < len; i++) {
       var _moduleName2 = moduleNames[i];
-      _reducers[_moduleName2] = reducers[_moduleName2];
+      _reducer[_moduleName2] = reducer[_moduleName2];
       if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
       if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
     }
 
-    if (!isDefaultReducerExist) _reducers[MODULE_DEFAULT] = {};
-    if (!isGlobalReducerExist) _reducers[MODULE_GLOBAL] = {};
+    if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
+    if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
   } else {
-    if (reducers.hasOwnProperty(MODULE_DEFAULT)) _reducers[MODULE_DEFAULT] = reducers[MODULE_DEFAULT];else _reducers[MODULE_DEFAULT] = reducers;
-    if (reducers.hasOwnProperty(MODULE_GLOBAL)) _reducers[MODULE_GLOBAL] = reducers[MODULE_GLOBAL];else _reducers[MODULE_GLOBAL] = {};
+    if (reducer.hasOwnProperty(MODULE_DEFAULT)) _reducer[MODULE_DEFAULT] = reducer[MODULE_DEFAULT];else _reducer[MODULE_DEFAULT] = reducer;
+    if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];else _reducer[MODULE_GLOBAL] = {};
   }
 }
 /* 
@@ -226,7 +226,7 @@ store in CC_CONTEXT may like:
 }
 
 // with isReducerKeyMeanNamespacedActionType = false
-reducers = {
+reducer = {
   [moduleName1]:{
     [actionType1]:callback(setState, {type:'',payload:''})
     [actionType2]:callback(setState, {type:'',payload:''})
@@ -237,7 +237,7 @@ reducers = {
 }
 
 // with isReducerKeyMeanNamespacedActionType = true
-reducers = {
+reducer = {
   '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
   '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
   '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
@@ -261,8 +261,8 @@ export default function (_temp) {
   var _ref = _temp === void 0 ? {} : _temp,
       _ref$store = _ref.store,
       store = _ref$store === void 0 ? {} : _ref$store,
-      _ref$reducers = _ref.reducers,
-      reducers = _ref$reducers === void 0 ? {} : _ref$reducers,
+      _ref$reducer = _ref.reducer,
+      reducer = _ref$reducer === void 0 ? {} : _ref$reducer,
       _ref$isModuleMode = _ref.isModuleMode,
       isModuleMode = _ref$isModuleMode === void 0 ? false : _ref$isModuleMode,
       _ref$isReducerKeyMean = _ref.isReducerKeyMeanNamespacedActionType,
@@ -283,7 +283,7 @@ export default function (_temp) {
   ccContext.isDebug = isDebug;
   ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);else bindReducersToCcContext(reducers, isModuleMode);
+  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
 
   if (window) {
     window.CC_CONTEXT = ccContext;

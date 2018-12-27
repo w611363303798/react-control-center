@@ -16,7 +16,7 @@ var verifyKeys = util.verifyKeys,
 var _ccContext$store = ccContext.store,
     _state = _ccContext$store._state,
     getState = _ccContext$store.getState,
-    _reducers = ccContext.reducer._reducers,
+    _reducer = ccContext.reducer._reducer,
     refStore = ccContext.refStore,
     globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
     ccKey_ref_ = ccContext.ccKey_ref_,
@@ -193,7 +193,7 @@ function checkReducerModule(reducerModule, throwError) {
       handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "reducerModule:" + reducerModule), throwError);
     }
   } else {
-    if (!_reducers[reducerModule]) {
+    if (!_reducer[reducerModule]) {
       handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, "reducerModule:" + reducerModule), throwError);
     }
   }
@@ -364,6 +364,14 @@ export default function register(ccClassKey, _temp) {
   if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_[_curStateModule] = [];
   ccClassKeys_.push(ccClassKey);
   return function (ReactClass) {
+    if (ccClassKey == 'XX_1') {
+      console.log();
+    }
+
+    if (ReactClass.prototype.$$changeState && ReactClass.prototype.__$$mapCcToInstance) {
+      throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CCClass!"));
+    }
+
     var CcClass =
     /*#__PURE__*/
     function (_ReactClass) {
@@ -528,15 +536,33 @@ export default function register(ccClassKey, _temp) {
           beforeSetState: this.$$beforeSetState,
           beforeBroadcastState: this.$$beforeBroadcastState,
           afterSetState: this.$$afterSetState,
-          prepareReactSetState: function prepareReactSetState(changeWay, state, next, reactCallback) {
-            if (storedStateKeys.length > 0) {
-              var _extractStateByKeys4 = extractStateByKeys(state, storedStateKeys),
-                  partialState = _extractStateByKeys4.partialState,
+          prepareReactSetState: function prepareReactSetState(changeWay, state, isStateGlobal, next, reactCallback) {
+            var _targetState = null;
+
+            if (isStateGlobal) {
+              //this state is prepare for global, usually called by setGlobalState
+              var _extractStateByKeys4 = extractStateByKeys(state, globalStateKeys),
+                  partialGlobalState = _extractStateByKeys4.partialState,
                   isStateEmpty = _extractStateByKeys4.isStateEmpty;
 
-              if (!isStateEmpty) {
-                refStore.setState(ccUniqueKey, partialState);
+              if (!isStateEmpty) _targetState = partialGlobalState;
+            } else {
+              if (storedStateKeys.length > 0) {
+                var _extractStateByKeys5 = extractStateByKeys(state, storedStateKeys),
+                    partialState = _extractStateByKeys5.partialState,
+                    _isStateEmpty = _extractStateByKeys5.isStateEmpty;
+
+                if (!_isStateEmpty) {
+                  refStore.setState(ccUniqueKey, partialState);
+                }
               }
+
+              _targetState = state;
+            }
+
+            if (!_targetState) {
+              if (next) next();
+              return;
             }
 
             if (_this2.$$beforeSetState) {
@@ -624,7 +650,8 @@ export default function register(ccClassKey, _temp) {
 
             _this2.$$changeState(partialGlobalState, {
               module: currentModule,
-              changeWay: changeWay
+              changeWay: changeWay,
+              isStateGlobal: true
             });
           },
           forceUpdate: function forceUpdate(cb) {
@@ -648,9 +675,6 @@ export default function register(ccClassKey, _temp) {
           // change other module's state
           effect: function effect(targetModule, userLogicFn) {
             var _this2$cc2;
-
-            //
-            var excludeTriggerRef = currentModule == targetModule;
 
             for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
               args[_key2 - 2] = arguments[_key2];
@@ -697,7 +721,6 @@ export default function register(ccClassKey, _temp) {
               });
               co.wrap(userLogicFn).apply(void 0, args).then(function (state) {
                 _this2.$$changeState(state, {
-                  excludeTriggerRef: false,
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
@@ -814,7 +837,7 @@ export default function register(ccClassKey, _temp) {
             var currentReducerModule = _this2.cc.ccState.reducerModule;
             var targetReducerModule = reducerModule || currentReducerModule; //if reducerModule not defined, will find currentReducerModule's reducer
 
-            var targetReducerMap = _reducers[targetReducerModule];
+            var targetReducerMap = _reducer[targetReducerModule];
             if (!targetReducerMap) return justWarning("no reducerMap found for module:" + targetReducerModule);
             var reducerFn = targetReducerMap[type];
             if (!reducerFn) return justWarning("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type);
@@ -833,16 +856,14 @@ export default function register(ccClassKey, _temp) {
               state: _this2.state
             };
             isInputModuleInvalid(inputModule, currentModule, reactCallback, function (newCb) {
-              var _ref7;
-
-              _this2.cc.invokeWith(reducerFn, (_ref7 = {}, inputModule = _ref7.inputModule, forceSync = _ref7.forceSync, newCb = _ref7.cb, _ref7), executionContext);
+              _this2.cc.invokeWith(reducerFn, {
+                inputModule: inputModule,
+                forceSync: forceSync,
+                cb: newCb
+              }, executionContext);
             });
           },
-          broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone, excludeTriggerRef) {
-            if (excludeTriggerRef === void 0) {
-              excludeTriggerRef = true;
-            }
-
+          broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone) {
             var _partialSharedState = partialSharedState;
             if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone may cause performance issue, if partialSharedState is too big!!
 
@@ -863,23 +884,23 @@ export default function register(ccClassKey, _temp) {
                 if (ccKeys.length === 0) return;
                 if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; // extract _partialSharedState! because different class with a same module may have different sharedStateKeys!!!
 
-                var _extractStateByKeys5 = extractStateByKeys(_partialSharedState, sharedStateKeys),
-                    sharedStateForCurrentCcClass = _extractStateByKeys5.partialState,
-                    isSharedStateEmpty = _extractStateByKeys5.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys.
+                var _extractStateByKeys6 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                    sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
+                    isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys.
                 // it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
                 // just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-                var _extractStateByKeys6 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys6.isStateEmpty;
+                var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
 
                 if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
                 var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
 
                 ccKeys.forEach(function (ccKey) {
-                  // if (excludeTriggerRef && ccKey === currentCcKey) return;
+                  if (ccKey === currentCcKey) return;
                   var ref = ccKey_ref_[ccKey];
 
                   if (ref) {
@@ -928,9 +949,9 @@ export default function register(ccClassKey, _temp) {
                   ccContext.store.setState(currentCcClassModule, originalStateOfMappingState);
                 }
 
-                var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+                var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
                 var mappedGlobalStateForCurrentCcClass = module_globalState_[currentCcClassModule]; //!!! backup state for current module
 
@@ -992,7 +1013,7 @@ export default function register(ccClassKey, _temp) {
         this.setGlobalState = this.cc.setGlobalState; //let setState call cc.setState
 
         this.forceUpdate = this.cc.forceUpdate; //let forceUpdate call cc.forceUpdate
-      }; // note!!! changeState do two thing, decide if change self's state or not, if broadcast state or not;
+      }; // note!!! changeState do two thing, decide if it will change self's state or not, if it will broadcast state or not;
       // when ccIns's module != target module,
       //        cc will only broadcast the state to target module, caution: it will overwrite the target module's state!!
       // when ccIns's module == target module,
@@ -1004,11 +1025,13 @@ export default function register(ccClassKey, _temp) {
       _proto.$$changeState = function $$changeState(state, _temp7) {
         var _this3 = this;
 
-        var _ref8 = _temp7 === void 0 ? {} : _temp7,
-            module = _ref8.module,
-            changeWay = _ref8.changeWay,
-            forceSync = _ref8.forceSync,
-            reactCallback = _ref8.cb;
+        var _ref7 = _temp7 === void 0 ? {} : _temp7,
+            _ref7$isStateGlobal = _ref7.isStateGlobal,
+            isStateGlobal = _ref7$isStateGlobal === void 0 ? false : _ref7$isStateGlobal,
+            module = _ref7.module,
+            changeWay = _ref7.changeWay,
+            forceSync = _ref7.forceSync,
+            reactCallback = _ref7.cb;
 
         //executionContext
         var ccState = this.cc.ccState;
@@ -1016,7 +1039,7 @@ export default function register(ccClassKey, _temp) {
 
         if (module === currentModule) {
           // who trigger $$changeState, who will go to change the whole received state 
-          this.cc.prepareReactSetState(changeWay || CHANGE_BY_SELF, state, function () {
+          this.cc.prepareReactSetState(changeWay || CHANGE_BY_SELF, state, isStateGlobal, function () {
             //if forceSync=true, cc clone the input state
             if (forceSync) {
               _this3.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, forceSync);

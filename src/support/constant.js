@@ -35,6 +35,7 @@ export const ERR = {
   CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS: 1018,
   CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY: 1019,
   CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT: 1020,
+  CC_REGISTER_A_CC_CLASS: 1021,
   MODULE_KEY_CC_FOUND: 1100,
   STORE_KEY_NAMING_INVALID: 1101,
   STORE_MODULE_VALUE_INVALID: 1102,
@@ -47,6 +48,7 @@ export const ERR = {
 export const ERR_MESSAGE = {
   [ERR.CC_ALREADY_STARTUP]: 'react-controller-center startup method con only be invoked one time by user! ',
   [ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE]: 'you are trying register a module class but cc startup with non module mode! ',
+  [ERR.CC_REGISTER_A_CC_CLASS]: 'registering a cc class is prohibited! ',
   [ERR.CC_CLASS_KEY_DUPLICATE]: 'ccClassKey duplicate while you register a react class!  ',
   [ERR.CC_CLASS_NOT_FOUND]: 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ',
   [ERR.CC_CLASS_STORE_MODULE_INVALID]: 'ccClass ccOption module value is invalid, can not match it in store! ',

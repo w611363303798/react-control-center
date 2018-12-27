@@ -1,11 +1,16 @@
 
 # Change Log
+
+## 2018-12-26 09:00
+* fix bug: if register a CCClass, will cause endless loop when call setState in one of its instance, to avoid this, add strict check while register a ReactClass, if it has been registered to cc, it can not been registered again.
+* optimize setGlobalState: if user call setGlobalState, state will only treated as a global state.
+* rename effectCtx to xeffect
+
 ## 2018-12-09 17:00
 * now ccClass can watch other module's state changing by config sharedToGlobalMapping while startup
 
 ## 2018-12-08 13:00
 * optimize ccInstance state recovering logic, fix bugs of broadcasting state.
-  
 
 ## 2018-12-06 13:00
 * every CCClass automatically watch $$global state 's change, if you give CCClass a globalStateKeys to let cc know this CCClass want to know which keys it want to watch, then any state of these keys changed will trigger this CCClass's all instance render, if you want to reject render triggered by global state change in some CCInstance, you can specify syncGlobalState=false in these CCInstance

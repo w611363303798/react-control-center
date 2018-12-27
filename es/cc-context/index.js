@@ -1,6 +1,6 @@
 import _extends from "@babel/runtime/helpers/esm/extends";
 
-var _state2, _reducers;
+var _state2, _reducer;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 var refs = {};
@@ -52,7 +52,7 @@ var ccContext = {
     }
   },
   reducer: {
-    _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
+    _reducer: (_reducer = {}, _reducer[MODULE_GLOBAL] = {}, _reducer[MODULE_CC] = {}, _reducer)
   },
   refStore: {
     _state: {},

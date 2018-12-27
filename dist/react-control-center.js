@@ -43,6 +43,7 @@
     CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS: 1018,
     CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY: 1019,
     CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT: 1020,
+    CC_REGISTER_A_CC_CLASS: 1021,
     MODULE_KEY_CC_FOUND: 1100,
     STORE_KEY_NAMING_INVALID: 1101,
     STORE_MODULE_VALUE_INVALID: 1102,
@@ -51,7 +52,7 @@
     REDUCER_ACTION_TYPE_NO_MODULE: 1202 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = 'globalStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducers! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module, ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = 'globalStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module, ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
 
   function isHotReloadMode() {
     return window && window.webpackHotUpdate;
@@ -285,7 +286,7 @@
     justWarning: justWarning
   };
 
-  var _state2, _reducers;
+  var _state2, _reducer;
   var refs = {};
   /**
    ccClassContext:{
@@ -335,7 +336,7 @@
       }
     },
     reducer: {
-      _reducers: (_reducers = {}, _reducers[MODULE_GLOBAL] = {}, _reducers[MODULE_CC] = {}, _reducers)
+      _reducer: (_reducer = {}, _reducer[MODULE_GLOBAL] = {}, _reducer[MODULE_CC] = {}, _reducer)
     },
     refStore: {
       _state: {},
@@ -508,13 +509,13 @@
    * @description
    * @author zzk
    * @param {*} mergedStore
-   * @param {*} namespacedKeyReducers may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
+   * @param {*} namespacedKeyReducer may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
    */
 
 
-  function bindNamespacedKeyReducersToCcContext(namespacedKeyReducers) {
-    var namespacedActionTypes = Object.keys(reducers);
-    var _reducers = ccContext.reducer._reducers;
+  function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
+    var namespacedActionTypes = Object.keys(namespacedKeyReducer);
+    var _reducer = ccContext.reducer._reducer;
     var len = namespacedActionTypes.length;
 
     for (var i = 0; i < len; i++) {
@@ -525,7 +526,7 @@
       } // const { moduleName } = util.disassembleActionType(actionType);
 
 
-      _reducers[actionType] = namespacedKeyReducers[actionType];
+      _reducer[actionType] = namespacedKeyReducer[actionType];
     }
 
     throw new Error('now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, it will coming soon!');
@@ -533,15 +534,15 @@
   /**
    * @description
    * @author zzk
-   * @param {*} reducers may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
+   * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
    */
 
 
-  function bindReducersToCcContext(reducers, isModuleMode) {
-    var _reducers = ccContext.reducer._reducers;
+  function bindReducerToCcContext(reducer, isModuleMode) {
+    var _reducer = ccContext.reducer._reducer;
 
     if (isModuleMode) {
-      var moduleNames = Object.keys(reducers);
+      var moduleNames = Object.keys(reducer);
       checkModuleNames(moduleNames);
       var len = moduleNames.length;
       var isDefaultReducerExist = false,
@@ -549,16 +550,16 @@
 
       for (var i = 0; i < len; i++) {
         var _moduleName2 = moduleNames[i];
-        _reducers[_moduleName2] = reducers[_moduleName2];
+        _reducer[_moduleName2] = reducer[_moduleName2];
         if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
         if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
       }
 
-      if (!isDefaultReducerExist) _reducers[MODULE_DEFAULT] = {};
-      if (!isGlobalReducerExist) _reducers[MODULE_GLOBAL] = {};
+      if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
+      if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
     } else {
-      if (reducers.hasOwnProperty(MODULE_DEFAULT)) _reducers[MODULE_DEFAULT] = reducers[MODULE_DEFAULT];else _reducers[MODULE_DEFAULT] = reducers;
-      if (reducers.hasOwnProperty(MODULE_GLOBAL)) _reducers[MODULE_GLOBAL] = reducers[MODULE_GLOBAL];else _reducers[MODULE_GLOBAL] = {};
+      if (reducer.hasOwnProperty(MODULE_DEFAULT)) _reducer[MODULE_DEFAULT] = reducer[MODULE_DEFAULT];else _reducer[MODULE_DEFAULT] = reducer;
+      if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];else _reducer[MODULE_GLOBAL] = {};
     }
   }
   /* 
@@ -581,7 +582,7 @@
   }
 
   // with isReducerKeyMeanNamespacedActionType = false
-  reducers = {
+  reducer = {
     [moduleName1]:{
       [actionType1]:callback(setState, {type:'',payload:''})
       [actionType2]:callback(setState, {type:'',payload:''})
@@ -592,7 +593,7 @@
   }
 
   // with isReducerKeyMeanNamespacedActionType = true
-  reducers = {
+  reducer = {
     '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
     '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
     '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
@@ -616,8 +617,8 @@
     var _ref = _temp === void 0 ? {} : _temp,
         _ref$store = _ref.store,
         store = _ref$store === void 0 ? {} : _ref$store,
-        _ref$reducers = _ref.reducers,
-        reducers = _ref$reducers === void 0 ? {} : _ref$reducers,
+        _ref$reducer = _ref.reducer,
+        reducer = _ref$reducer === void 0 ? {} : _ref$reducer,
         _ref$isModuleMode = _ref.isModuleMode,
         isModuleMode = _ref$isModuleMode === void 0 ? false : _ref$isModuleMode,
         _ref$isReducerKeyMean = _ref.isReducerKeyMeanNamespacedActionType,
@@ -638,7 +639,7 @@
     ccContext.isDebug = isDebug;
     ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
     bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-    if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducersToCcContext(reducers);else bindReducersToCcContext(reducers, isModuleMode);
+    if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
 
     if (window) {
       window.CC_CONTEXT = ccContext;
@@ -1067,7 +1068,7 @@
   var _ccContext$store = ccContext.store,
       _state = _ccContext$store._state,
       getState = _ccContext$store.getState,
-      _reducers$1 = ccContext.reducer._reducers,
+      _reducer$1 = ccContext.reducer._reducer,
       refStore = ccContext.refStore,
       globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
       ccKey_ref_ = ccContext.ccKey_ref_,
@@ -1244,7 +1245,7 @@
         handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "reducerModule:" + reducerModule), throwError);
       }
     } else {
-      if (!_reducers$1[reducerModule]) {
+      if (!_reducer$1[reducerModule]) {
         handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, "reducerModule:" + reducerModule), throwError);
       }
     }
@@ -1415,6 +1416,14 @@
     if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_[_curStateModule] = [];
     ccClassKeys_.push(ccClassKey);
     return function (ReactClass) {
+      if (ccClassKey == 'XX_1') {
+        console.log();
+      }
+
+      if (ReactClass.prototype.$$changeState && ReactClass.prototype.__$$mapCcToInstance) {
+        throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi$1("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CCClass!"));
+      }
+
       var CcClass =
       /*#__PURE__*/
       function (_ReactClass) {
@@ -1579,15 +1588,33 @@
             beforeSetState: this.$$beforeSetState,
             beforeBroadcastState: this.$$beforeBroadcastState,
             afterSetState: this.$$afterSetState,
-            prepareReactSetState: function prepareReactSetState(changeWay, state, next, reactCallback) {
-              if (storedStateKeys.length > 0) {
-                var _extractStateByKeys4 = extractStateByKeys(state, storedStateKeys),
-                    partialState = _extractStateByKeys4.partialState,
+            prepareReactSetState: function prepareReactSetState(changeWay, state, isStateGlobal, next, reactCallback) {
+              var _targetState = null;
+
+              if (isStateGlobal) {
+                //this state is prepare for global, usually called by setGlobalState
+                var _extractStateByKeys4 = extractStateByKeys(state, globalStateKeys),
+                    partialGlobalState = _extractStateByKeys4.partialState,
                     isStateEmpty = _extractStateByKeys4.isStateEmpty;
 
-                if (!isStateEmpty) {
-                  refStore.setState(ccUniqueKey, partialState);
+                if (!isStateEmpty) _targetState = partialGlobalState;
+              } else {
+                if (storedStateKeys.length > 0) {
+                  var _extractStateByKeys5 = extractStateByKeys(state, storedStateKeys),
+                      partialState = _extractStateByKeys5.partialState,
+                      _isStateEmpty = _extractStateByKeys5.isStateEmpty;
+
+                  if (!_isStateEmpty) {
+                    refStore.setState(ccUniqueKey, partialState);
+                  }
                 }
+
+                _targetState = state;
+              }
+
+              if (!_targetState) {
+                if (next) next();
+                return;
               }
 
               if (_this2.$$beforeSetState) {
@@ -1675,7 +1702,8 @@
 
               _this2.$$changeState(partialGlobalState, {
                 module: currentModule,
-                changeWay: changeWay
+                changeWay: changeWay,
+                isStateGlobal: true
               });
             },
             forceUpdate: function forceUpdate(cb) {
@@ -1745,7 +1773,6 @@
                 });
                 co_1.wrap(userLogicFn).apply(void 0, args).then(function (state) {
                   _this2.$$changeState(state, {
-                    excludeTriggerRef: false,
                     module: module,
                     forceSync: forceSync,
                     cb: newCb
@@ -1862,7 +1889,7 @@
               var currentReducerModule = _this2.cc.ccState.reducerModule;
               var targetReducerModule = reducerModule || currentReducerModule; //if reducerModule not defined, will find currentReducerModule's reducer
 
-              var targetReducerMap = _reducers$1[targetReducerModule];
+              var targetReducerMap = _reducer$1[targetReducerModule];
               if (!targetReducerMap) return justWarning$1("no reducerMap found for module:" + targetReducerModule);
               var reducerFn = targetReducerMap[type];
               if (!reducerFn) return justWarning$1("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type);
@@ -1881,16 +1908,14 @@
                 state: _this2.state
               };
               isInputModuleInvalid(inputModule, currentModule, reactCallback, function (newCb) {
-                var _ref7;
-
-                _this2.cc.invokeWith(reducerFn, (_ref7 = {}, inputModule = _ref7.inputModule, forceSync = _ref7.forceSync, newCb = _ref7.cb, _ref7), executionContext);
+                _this2.cc.invokeWith(reducerFn, {
+                  inputModule: inputModule,
+                  forceSync: forceSync,
+                  cb: newCb
+                }, executionContext);
               });
             },
-            broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone, excludeTriggerRef) {
-              if (excludeTriggerRef === void 0) {
-                excludeTriggerRef = true;
-              }
-
+            broadcastState: function broadcastState(moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone) {
               var _partialSharedState = partialSharedState;
               if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone may cause performance issue, if partialSharedState is too big!!
 
@@ -1911,23 +1936,23 @@
                   if (ccKeys.length === 0) return;
                   if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; // extract _partialSharedState! because different class with a same module may have different sharedStateKeys!!!
 
-                  var _extractStateByKeys5 = extractStateByKeys(_partialSharedState, sharedStateKeys),
-                      sharedStateForCurrentCcClass = _extractStateByKeys5.partialState,
-                      isSharedStateEmpty = _extractStateByKeys5.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys.
+                  var _extractStateByKeys6 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                      sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
+                      isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; // extract sourcePartialGlobalState! because different class watch different globalStateKeys.
                   // it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
                   // just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-                  var _extractStateByKeys6 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                      globalStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                      isPartialGlobalStateEmpty = _extractStateByKeys6.isStateEmpty;
+                  var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
 
                   if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
                   var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
 
                   ccKeys.forEach(function (ccKey) {
-                    // if (excludeTriggerRef && ccKey === currentCcKey) return;
+                    if (ccKey === currentCcKey) return;
                     var ref = ccKey_ref_[ccKey];
 
                     if (ref) {
@@ -1974,9 +1999,9 @@
                     ccContext.store.setState(currentCcClassModule, originalStateOfMappingState);
                   }
 
-                  var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                      globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                      isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+                  var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
                   var mappedGlobalStateForCurrentCcClass = module_globalState_[currentCcClassModule]; //!!! backup state for current module
 
@@ -2027,7 +2052,7 @@
           this.setGlobalState = this.cc.setGlobalState; //let setState call cc.setState
 
           this.forceUpdate = this.cc.forceUpdate; //let forceUpdate call cc.forceUpdate
-        }; // note!!! changeState do two thing, decide if change self's state or not, if broadcast state or not;
+        }; // note!!! changeState do two thing, decide if it will change self's state or not, if it will broadcast state or not;
         // when ccIns's module != target module,
         //        cc will only broadcast the state to target module, caution: it will overwrite the target module's state!!
         // when ccIns's module == target module,
@@ -2039,11 +2064,13 @@
         _proto.$$changeState = function $$changeState(state, _temp7) {
           var _this3 = this;
 
-          var _ref8 = _temp7 === void 0 ? {} : _temp7,
-              module = _ref8.module,
-              changeWay = _ref8.changeWay,
-              forceSync = _ref8.forceSync,
-              reactCallback = _ref8.cb;
+          var _ref7 = _temp7 === void 0 ? {} : _temp7,
+              _ref7$isStateGlobal = _ref7.isStateGlobal,
+              isStateGlobal = _ref7$isStateGlobal === void 0 ? false : _ref7$isStateGlobal,
+              module = _ref7.module,
+              changeWay = _ref7.changeWay,
+              forceSync = _ref7.forceSync,
+              reactCallback = _ref7.cb;
 
           //executionContext
           var ccState = this.cc.ccState;
@@ -2051,7 +2078,7 @@
 
           if (module === currentModule) {
             // who trigger $$changeState, who will go to change the whole received state 
-            this.cc.prepareReactSetState(changeWay || CHANGE_BY_SELF, state, function () {
+            this.cc.prepareReactSetState(changeWay || CHANGE_BY_SELF, state, isStateGlobal, function () {
               //if forceSync=true, cc clone the input state
               if (forceSync) {
                 _this3.cc.prepareBroadcastState(changeWay || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, forceSync);
