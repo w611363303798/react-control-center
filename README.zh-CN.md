@@ -156,7 +156,7 @@ class BookMenu extends react.Component{
         <button onClick={this.addBookByDispatch}>通过dispatch添加一本书</button>
         <button onClick={this.addBookByInvoke}>通过invoke添加一本书</button>
         {
-          books.map(b=><div>{b.name} --- {b.author}</div>)
+          books.map((b,idx)=><div key={idx}>{b.name} --- {b.author}</div>)
         }
       </div>
     );

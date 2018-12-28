@@ -227,6 +227,10 @@ function checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKe
   }
 }
 
+function checkCcStartupOrNot(){
+  if(!window.cc)throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
+}
+
 function extractStateToBeBroadcasted(module, sourceState, sharedToGlobalMapping, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys) {
   let partialSharedState = {};
   let isPartialSharedStateEmpty = true;
@@ -259,6 +263,7 @@ export default function register(ccClassKey, {
   sharedStateKeys = [],
   globalStateKeys = [],
 } = {}) {
+  checkCcStartupOrNot();
   const _curStateModule = module;
   const _asyncLifeCycleHook = asyncLifeCycleHook;
   const _reducerModule = reducerModule || _curStateModule;//if reducerModule not defined, will be equal module;
