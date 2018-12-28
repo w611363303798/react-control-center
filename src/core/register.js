@@ -151,9 +151,10 @@ function checkReducerModule(reducerModule, throwError = true) {
       handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, `reducerModule:${reducerModule}`), throwError);
     }
   } else {
-    if (!_reducer[reducerModule]) {
-      handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, `reducerModule:${reducerModule}`), throwError);
-    }
+    //this check can be optional?? if user don't configure a reducer for a module, may be he really don't want to use dispatch
+    // if (!_reducer[reducerModule]) {
+    //   handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, `reducerModule:${reducerModule}`), throwError);
+    // }
   }
 }
 

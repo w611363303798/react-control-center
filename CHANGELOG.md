@@ -1,6 +1,10 @@
 
 # Change Log
 
+## 2018-12-26 08:00
+* optimize register: make sure cc startup is called before register
+* optimize register: now reducer is optional for startup options
+
 ## 2018-12-26 09:00
 * fix bug: if register a CCClass, will cause endless loop when call setState in one of its instance, to avoid this, add strict check while register a ReactClass, if it has been registered to cc, it can not been registered again.
 * optimize setGlobalState: if user call setGlobalState, state will only treated as a global state.

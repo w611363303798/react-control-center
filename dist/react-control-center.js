@@ -1244,10 +1244,6 @@
       if (reducerModule != MODULE_DEFAULT) {
         handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "reducerModule:" + reducerModule), throwError);
       }
-    } else {
-      if (!_reducer$1[reducerModule]) {
-        handleError(me(ERR.CC_CLASS_REDUCER_MODULE_INVALID, "reducerModule:" + reducerModule), throwError);
-      }
     }
   }
 
@@ -1337,6 +1333,10 @@
     }
   }
 
+  function checkCcStartupOrNot() {
+    if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
+  }
+
   function extractStateToBeBroadcasted(module, sourceState, sharedToGlobalMapping, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys) {
     var partialSharedState = {};
     var isPartialSharedStateEmpty = true;
@@ -1392,6 +1392,7 @@
         _ref$globalStateKeys = _ref.globalStateKeys,
         globalStateKeys = _ref$globalStateKeys === void 0 ? [] : _ref$globalStateKeys;
 
+    checkCcStartupOrNot();
     var _curStateModule = module;
     var _asyncLifeCycleHook = asyncLifeCycleHook;
 
