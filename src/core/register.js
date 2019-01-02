@@ -301,7 +301,7 @@ export default function register(ccClassKey, {
         if (!this.state) this.state = {};
         const { ccKey, ccOption = {} } = props;
         util.bindThis(this, [
-          '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState', '__$$recoverState'
+          '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState'
         ]);
         if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
         if (ccOption.syncState === undefined) ccOption.syncState = true;
@@ -518,7 +518,7 @@ export default function register(ccClassKey, {
           },
           callWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
             isInputModuleInvalid(module, currentModule, cb, (newCb) => {
-              userLogicFn.call(this, this.$$getChangeStateHandler({ module, forceSync, cb: newCb }), ...args);
+              userLogicFn.call(this, this.__$$getChangeStateHandler({ module, forceSync, cb: newCb }), ...args);
             });
           },
           callThunk: (userLogicFn, ...args) => {
@@ -526,7 +526,7 @@ export default function register(ccClassKey, {
           },
           callThunkWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
             isInputModuleInvalid(module, currentModule, cb, (newCb) => {
-              userLogicFn.call(this, ...args)(this.$$getChangeStateHandler({ module, forceSync, cb: newCb }));
+              userLogicFn.call(this, ...args)(this.__$$getChangeStateHandler({ module, forceSync, cb: newCb }));
             });
           },
           commit: (userLogicFn, ...args) => {
@@ -717,7 +717,7 @@ export default function register(ccClassKey, {
       }
 
       //{ module, forceSync, cb }
-      $$getChangeStateHandler(executionContext) {
+      __$$getChangeStateHandler(executionContext) {
         return (state) => {
           this.$$changeState(state, executionContext);
         }
