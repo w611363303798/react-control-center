@@ -1,12 +1,12 @@
 import ccContext from '../../cc-context';
-var ccKey_ref_ = ccContext.ccKey_ref_,
-    moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
-    ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
 /****
  * pick one ccInstance ref randomly
  */
 
 export default function (module) {
+  var ccKey_ref_ = ccContext.ccKey_ref_,
+      moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
+      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
   var ccKeys;
 
   if (module) {

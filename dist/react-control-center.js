@@ -359,14 +359,14 @@
     }
   };
 
-  var ccKey_ref_ = ccContext.ccKey_ref_,
-      moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
-      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
   /****
    * pick one ccInstance ref randomly
    */
 
   function pickOneRef (module) {
+    var ccKey_ref_ = ccContext.ccKey_ref_,
+        moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
+        ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
     var ccKeys;
 
     if (module) {
@@ -1194,11 +1194,11 @@
       _reducer$1 = ccContext.reducer._reducer,
       refStore = ccContext.refStore,
       globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
-      ccKey_ref_$1 = ccContext.ccKey_ref_,
+      ccKey_ref_ = ccContext.ccKey_ref_,
       ccKey_option_ = ccContext.ccKey_option_,
       globalCcClassKeys = ccContext.globalCcClassKeys,
-      moduleName_ccClassKeys_$1 = ccContext.moduleName_ccClassKeys_,
-      ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_;
+      moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
+      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
   var cl$1 = color$1;
   var ss$1 = styleStr$1;
   var me = makeError$1;
@@ -1536,8 +1536,8 @@
       contextMap[ccClassKey] = util.makeCcClassContext(_curStateModule, sharedStateKeys, globalStateKeys);
     }
 
-    var ccClassKeys_ = moduleName_ccClassKeys_$1[_curStateModule];
-    if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_$1[_curStateModule] = [];
+    var ccClassKeys_ = moduleName_ccClassKeys_[_curStateModule];
+    if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_[_curStateModule] = [];
     ccClassKeys_.push(ccClassKey);
     return function (ReactClass) {
       if (ccClassKey == 'XX_1') {
@@ -2047,13 +2047,13 @@
               var currentCcKey = _this2.cc.ccState.ccUniqueKey;
               var ccClassKey_isHandled_ = {}; //record which ccClassKey has been handled
 
-              var ccClassKeys = moduleName_ccClassKeys_$1[moduleName];
+              var ccClassKeys = moduleName_ccClassKeys_[moduleName];
 
               if (ccClassKeys) {
                 //these ccClass subscribe the same module's state
                 ccClassKeys.forEach(function (ccClassKey) {
                   ccClassKey_isHandled_[ccClassKey] = true;
-                  var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
+                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
                   var ccKeys = classContext.ccKeys,
                       sharedStateKeys = classContext.sharedStateKeys,
                       globalStateKeys = classContext.globalStateKeys;
@@ -2077,7 +2077,7 @@
 
                   ccKeys.forEach(function (ccKey) {
                     if (ccKey === currentCcKey) return;
-                    var ref = ccKey_ref_$1[ccKey];
+                    var ref = ccKey_ref_[ccKey];
 
                     if (ref) {
                       var option = ccKey_option_[ccKey];
@@ -2111,7 +2111,7 @@
                 //these ccClass are watching globalState
                 globalCcClassKeys.forEach(function (ccClassKey) {
                   if (ccClassKey_isHandled_[ccClassKey]) return;
-                  var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
+                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
                   var watchingGlobalStateCcKeys = classContext.ccKeys,
                       globalStateKeys = classContext.globalStateKeys,
                       currentCcClassModule = classContext.module; // if there is no any ccInstance of this ccClass are watching globalStateKey, return;
@@ -2136,7 +2136,7 @@
 
                   watchingGlobalStateCcKeys.forEach(function (ccKey) {
                     // if (excludeTriggerRef && ccKey === currentCcKey) return;
-                    var ref = ccKey_ref_$1[ccKey];
+                    var ref = ccKey_ref_[ccKey];
 
                     if (ref) {
                       if (ccContext.isDebug) {
@@ -2257,8 +2257,8 @@
   }
 
   var vbi$2 = util.verboseInfo;
-  var ccClassKey_ccClassContext_$2 = ccContext.ccClassKey_ccClassContext_,
-      ccKey_ref_$2 = ccContext.ccKey_ref_;
+  var ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_,
+      ccKey_ref_$1 = ccContext.ccKey_ref_;
   /**
    * @description
    * @author zzk
@@ -2273,7 +2273,7 @@
   function invoke (ccClassKey, ccInstanceKey, method) {
     var _ref$method;
 
-    var classContext = ccClassKey_ccClassContext_$2[ccClassKey];
+    var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
 
     if (!classContext) {
       var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey));
@@ -2284,10 +2284,10 @@
 
     if (ccInstanceKey) {
       var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
-      ref = ccKey_ref_$2[ccKey];
+      ref = ccKey_ref_$1[ccKey];
     } else {
       var ccKeys = classContext.ccKeys;
-      ref = ccKey_ref_$2[ccKeys[0]]; // pick first one
+      ref = ccKey_ref_$1[ccKeys[0]]; // pick first one
     }
 
     if (!ref) {
