@@ -21,6 +21,7 @@
   var BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD = 1;
   var BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE = 2;
   var BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE = 3;
+  var BROADCAST_TRIGGERED_BY_CC_API_SET_STATE = 4;
   var ERR = {
     CC_ALREADY_STARTUP: 1000,
     CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE: 1001,
@@ -288,14 +289,6 @@
 
   var _state2, _reducer;
   var refs = {};
-  /**
-   ccClassContext:{
-    ccKeys: [],
-    ccKey_componentRef_: {},
-    ccKey_option_: {},
-   }
-   */
-
   var ccContext = {
     isDebug: false,
     // if isStrict is true, every error will be throw out instead of console.error, 
@@ -307,6 +300,15 @@
     isCcAlreadyStartup: false,
     moduleName_ccClassKeys_: {},
     globalCcClassKeys: [],
+
+    /**
+      ccClassContext:{
+        module,
+        sharedStateKeys,
+        globalStateKeys,
+        ccKeys: [],
+      }
+    */
     ccClassKey_ccClassContext_: {},
     //[globalKey]:{module:'xxx',key:'yyy'}
     globalMappingKey_sharedKey_: {},
@@ -356,6 +358,59 @@
       startupTime: Date.now()
     }
   };
+
+  var ccKey_ref_ = ccContext.ccKey_ref_,
+      moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
+      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
+  /****
+   * pick one ccInstance ref randomly
+   */
+
+  function pickOneRef (module) {
+    var ccKeys;
+
+    if (module) {
+      var ccClassKeys = moduleName_ccClassKeys_[module];
+
+      if (ccClassKeys.length === 0) {
+        throw new Error("no ccClass found for module" + module + "!");
+      }
+
+      var oneCcClassKey = ccClassKeys[0];
+      var ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
+
+      if (!ccClassContext) {
+        throw new Error("no ccClassContext found for ccClassKey" + oneCcClassKey + "!");
+      }
+
+      ccKeys = ccClassContext.ccKeys;
+    } else {
+      ccKeys = Object.keys(ccKey_ref_);
+    }
+
+    if (ccKeys.length === 0) {
+      throw new Error('no ccInstance found for any ccClass!');
+    }
+
+    var oneRef = ccKey_ref_[ccKeys[0]];
+
+    if (!oneRef) {
+      throw new Error('cc found no ref!');
+    }
+
+    return oneRef;
+  }
+
+  function setState (module, state) {
+    try {
+      var ref = pickOneRef(module);
+      ref.setState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_STATE);
+    } catch (err) {
+      ccContext.store.setState(module, state); //store this state;
+
+      util.justWarning(err.message);
+    }
+  }
 
   var vbi = verboseInfo;
   var ss = styleStr;
@@ -562,11 +617,70 @@
       if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];else _reducer[MODULE_GLOBAL] = {};
     }
   }
+
+  function executeInitializer(isModuleMode, store, init) {
+    var stateHandler = function stateHandler(module) {
+      return function (state) {
+        return setState(module, state);
+      };
+    };
+
+    if (!isModuleMode) {
+      if (isPlainJsonObject(init)) {
+        var includeDefaultModule = init.hasOwnProperty(MODULE_DEFAULT);
+        var includeGlobalModule = init.hasOwnProperty(MODULE_GLOBAL);
+
+        if (includeDefaultModule || includeGlobalModule) {
+          if (includeDefaultModule) {
+            var defaultInit = init[MODULE_DEFAULT];
+
+            if (typeof defaultInit !== 'function') {
+              throw new Error('init.$$default value must be a function when cc startup in nonModuleMode!');
+            } else {
+              defaultInit(stateHandler(MODULE_DEFAULT));
+            }
+          }
+
+          if (includeGlobalModule) {
+            var globalInit = init[MODULE_GLOBAL];
+
+            if (typeof globalInit !== 'function') {
+              throw new Error('init.$$global value must be a function when cc startup in nonModuleMode!');
+            } else {
+              globalInit(stateHandler(MODULE_GLOBAL));
+            }
+          }
+        } else {
+          throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
+        }
+      } else {
+        if (typeof init !== 'function') {
+          throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
+        }
+
+        init(stateHandler(MODULE_DEFAULT));
+      }
+    } else {
+      if (!isPlainJsonObject(init)) {
+        throw new Error('init value must be a object like { ${moduleName}:Function } when cc startup in moduleMode!');
+      }
+
+      var moduleNames = Object.keys(init);
+      moduleNames.forEach(function (moduleName) {
+        if (!store[moduleName]) {
+          throw new Error("module " + moduleName + " not found, check your ccStartupOption.init object keys");
+        }
+
+        var initFn = init[moduleName];
+        initFn(stateHandler(moduleName));
+      });
+    }
+  }
   /* 
   store in CC_CONTEXT may like:
    {
     $$global:{
-
+   
     },
     module1:{
       books:[],
@@ -580,7 +694,7 @@
       followCount:15,
     }
   }
-
+   
   // with isReducerKeyMeanNamespacedActionType = false
   reducer = {
     [moduleName1]:{
@@ -591,14 +705,14 @@
       [actionType1]:callback(setState, {type:'',payload:''})
     }
   }
-
-  // with isReducerKeyMeanNamespacedActionType = true
+   
+  // with isReducerKeyMeanNamespacedActionType = true, to be implement
   reducer = {
     '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
     '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
     '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
   }
-
+   
   init = {
     global:(setState)=>{}
   }
@@ -628,7 +742,9 @@
         _ref$isDebug = _ref.isDebug,
         isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
         _ref$sharedToGlobalMa = _ref.sharedToGlobalMapping,
-        sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa;
+        sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa,
+        _ref$init = _ref.init,
+        init = _ref$init === void 0 ? null : _ref$init;
 
     if (ccContext.isCcAlreadyStartup) {
       throw util.makeError(ERR.CC_ALREADY_STARTUP);
@@ -640,6 +756,13 @@
     ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
     bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
     if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
+
+    if (init) {
+      var computedStore = ccContext.store._state;
+      executeInitializer(isModuleMode, computedStore, init);
+    }
+
+    ccContext.isCcAlreadyStartup = true;
 
     if (window) {
       window.CC_CONTEXT = ccContext;
@@ -1071,11 +1194,11 @@
       _reducer$1 = ccContext.reducer._reducer,
       refStore = ccContext.refStore,
       globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
-      ccKey_ref_ = ccContext.ccKey_ref_,
+      ccKey_ref_$1 = ccContext.ccKey_ref_,
       ccKey_option_ = ccContext.ccKey_option_,
       globalCcClassKeys = ccContext.globalCcClassKeys,
-      moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
-      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
+      moduleName_ccClassKeys_$1 = ccContext.moduleName_ccClassKeys_,
+      ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_;
   var cl$1 = color$1;
   var ss$1 = styleStr$1;
   var me = makeError$1;
@@ -1413,8 +1536,8 @@
       contextMap[ccClassKey] = util.makeCcClassContext(_curStateModule, sharedStateKeys, globalStateKeys);
     }
 
-    var ccClassKeys_ = moduleName_ccClassKeys_[_curStateModule];
-    if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_[_curStateModule] = [];
+    var ccClassKeys_ = moduleName_ccClassKeys_$1[_curStateModule];
+    if (!ccClassKeys_) ccClassKeys_ = moduleName_ccClassKeys_$1[_curStateModule] = [];
     ccClassKeys_.push(ccClassKey);
     return function (ReactClass) {
       if (ccClassKey == 'XX_1') {
@@ -1438,7 +1561,7 @@
           var ccKey = props.ccKey,
               _props$ccOption = props.ccOption,
               ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
-          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState', '__$$recoverState']);
+          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState']);
           if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
           if (ccOption.syncState === undefined) ccOption.syncState = true;
           if (ccOption.syncGlobalState === undefined) ccOption.syncGlobalState = true;
@@ -1805,7 +1928,7 @@
               }
 
               isInputModuleInvalid(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2, _this2.$$getChangeStateHandler({
+                userLogicFn.call.apply(userLogicFn, [_this2, _this2.__$$getChangeStateHandler({
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
@@ -1836,7 +1959,7 @@
               }
 
               isInputModuleInvalid(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.$$getChangeStateHandler({
+                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.__$$getChangeStateHandler({
                   module: module,
                   forceSync: forceSync,
                   cb: newCb
@@ -1924,13 +2047,13 @@
               var currentCcKey = _this2.cc.ccState.ccUniqueKey;
               var ccClassKey_isHandled_ = {}; //record which ccClassKey has been handled
 
-              var ccClassKeys = moduleName_ccClassKeys_[moduleName];
+              var ccClassKeys = moduleName_ccClassKeys_$1[moduleName];
 
               if (ccClassKeys) {
                 //these ccClass subscribe the same module's state
                 ccClassKeys.forEach(function (ccClassKey) {
                   ccClassKey_isHandled_[ccClassKey] = true;
-                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                  var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
                   var ccKeys = classContext.ccKeys,
                       sharedStateKeys = classContext.sharedStateKeys,
                       globalStateKeys = classContext.globalStateKeys;
@@ -1954,7 +2077,7 @@
 
                   ccKeys.forEach(function (ccKey) {
                     if (ccKey === currentCcKey) return;
-                    var ref = ccKey_ref_[ccKey];
+                    var ref = ccKey_ref_$1[ccKey];
 
                     if (ref) {
                       var option = ccKey_option_[ccKey];
@@ -1988,7 +2111,7 @@
                 //these ccClass are watching globalState
                 globalCcClassKeys.forEach(function (ccClassKey) {
                   if (ccClassKey_isHandled_[ccClassKey]) return;
-                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                  var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
                   var watchingGlobalStateCcKeys = classContext.ccKeys,
                       globalStateKeys = classContext.globalStateKeys,
                       currentCcClassModule = classContext.module; // if there is no any ccInstance of this ccClass are watching globalStateKey, return;
@@ -2013,7 +2136,7 @@
 
                   watchingGlobalStateCcKeys.forEach(function (ccKey) {
                     // if (excludeTriggerRef && ccKey === currentCcKey) return;
-                    var ref = ccKey_ref_[ccKey];
+                    var ref = ccKey_ref_$1[ccKey];
 
                     if (ref) {
                       if (ccContext.isDebug) {
@@ -2095,7 +2218,7 @@
         }; //{ module, forceSync, cb }
 
 
-        _proto.$$getChangeStateHandler = function $$getChangeStateHandler(executionContext) {
+        _proto.__$$getChangeStateHandler = function __$$getChangeStateHandler(executionContext) {
           var _this4 = this;
 
           return function (state) {
@@ -2134,8 +2257,8 @@
   }
 
   var vbi$2 = util.verboseInfo;
-  var ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_,
-      ccKey_ref_$1 = ccContext.ccKey_ref_;
+  var ccClassKey_ccClassContext_$2 = ccContext.ccClassKey_ccClassContext_,
+      ccKey_ref_$2 = ccContext.ccKey_ref_;
   /**
    * @description
    * @author zzk
@@ -2150,7 +2273,7 @@
   function invoke (ccClassKey, ccInstanceKey, method) {
     var _ref$method;
 
-    var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
+    var classContext = ccClassKey_ccClassContext_$2[ccClassKey];
 
     if (!classContext) {
       var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey));
@@ -2161,10 +2284,10 @@
 
     if (ccInstanceKey) {
       var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
-      ref = ccKey_ref_$1[ccKey];
+      ref = ccKey_ref_$2[ccKey];
     } else {
       var ccKeys = classContext.ccKeys;
-      ref = ccKey_ref_$1[ccKeys[0]]; // pick first one
+      ref = ccKey_ref_$2[ccKeys[0]]; // pick first one
     }
 
     if (!ref) {
@@ -2190,27 +2313,27 @@
     (_ref$method = ref[method]).call.apply(_ref$method, [ref].concat(args));
   }
 
-  var ccKey_ref_$2 = ccContext.ccKey_ref_;
+  /****
+   * if you are sure this state is really belong to global state, call cc.setGlobalState,
+   * cc will only pass this state to global module
+   */
+
   function setGlobalState (state) {
-    var refKeys = Object.keys(ccKey_ref_$2);
+    try {
+      var ref = pickOneRef();
+      ref.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
+    } catch (err) {
+      ccContext.store.setState(MODULE_GLOBAL, state); //store this state to global;
 
-    if (refKeys.length === 0) {
-      return util.justWarning('no CCInstance found for any CCClass!');
+      util.justWarning(err.message);
     }
-
-    var oneRef = ccKey_ref_$2[refKeys[0]];
-
-    if (!oneRef) {
-      return util.justWarning('cc found no ref!');
-    }
-
-    oneRef.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
   }
 
   ccContext.startup = startup;
   ccContext.register = register;
   ccContext.invoke = invoke;
   ccContext.setGlobalState = setGlobalState;
+  ccContext.setState = setState;
 
   return ccContext;
 

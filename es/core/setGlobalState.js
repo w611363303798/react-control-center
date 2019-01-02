@@ -1,19 +1,19 @@
-import ccContext from '../cc-context';
 import util from '../support/util';
-import { BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE } from '../support/constant';
-var ccKey_ref_ = ccContext.ccKey_ref_;
+import { BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE, MODULE_GLOBAL } from '../support/constant';
+import * as helper from './helper';
+import cc from '../cc-context';
+/****
+ * if you are sure this state is really belong to global state, call cc.setGlobalState,
+ * cc will only pass this state to global module
+ */
+
 export default function (state) {
-  var refKeys = Object.keys(ccKey_ref_);
+  try {
+    var ref = helper.pickOneRef();
+    ref.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
+  } catch (err) {
+    cc.store.setState(MODULE_GLOBAL, state); //store this state to global;
 
-  if (refKeys.length === 0) {
-    return util.justWarning('no CCInstance found for any CCClass!');
+    util.justWarning(err.message);
   }
-
-  var oneRef = ccKey_ref_[refKeys[0]];
-
-  if (!oneRef) {
-    return util.justWarning('cc found no ref!');
-  }
-
-  oneRef.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
 }

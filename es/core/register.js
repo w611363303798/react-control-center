@@ -390,7 +390,7 @@ export default function register(ccClassKey, _temp) {
         var ccKey = props.ccKey,
             _props$ccOption = props.ccOption,
             ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
-        util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '$$getChangeStateHandler', '$$changeState', '__$$recoverState']);
+        util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState']);
         if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
         if (ccOption.syncState === undefined) ccOption.syncState = true;
         if (ccOption.syncGlobalState === undefined) ccOption.syncGlobalState = true;
@@ -757,7 +757,7 @@ export default function register(ccClassKey, _temp) {
             }
 
             isInputModuleInvalid(module, currentModule, cb, function (newCb) {
-              userLogicFn.call.apply(userLogicFn, [_this2, _this2.$$getChangeStateHandler({
+              userLogicFn.call.apply(userLogicFn, [_this2, _this2.__$$getChangeStateHandler({
                 module: module,
                 forceSync: forceSync,
                 cb: newCb
@@ -788,7 +788,7 @@ export default function register(ccClassKey, _temp) {
             }
 
             isInputModuleInvalid(module, currentModule, cb, function (newCb) {
-              userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.$$getChangeStateHandler({
+              userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.__$$getChangeStateHandler({
                 module: module,
                 forceSync: forceSync,
                 cb: newCb
@@ -1061,7 +1061,7 @@ export default function register(ccClassKey, _temp) {
       }; //{ module, forceSync, cb }
 
 
-      _proto.$$getChangeStateHandler = function $$getChangeStateHandler(executionContext) {
+      _proto.__$$getChangeStateHandler = function __$$getChangeStateHandler(executionContext) {
         var _this4 = this;
 
         return function (state) {

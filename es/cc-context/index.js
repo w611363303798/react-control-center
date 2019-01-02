@@ -4,14 +4,6 @@ var _state2, _reducer;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 var refs = {};
-/**
- ccClassContext:{
-  ccKeys: [],
-  ccKey_componentRef_: {},
-  ccKey_option_: {},
- }
- */
-
 var ccContext = {
   isDebug: false,
   // if isStrict is true, every error will be throw out instead of console.error, 
@@ -23,6 +15,15 @@ var ccContext = {
   isCcAlreadyStartup: false,
   moduleName_ccClassKeys_: {},
   globalCcClassKeys: [],
+
+  /**
+    ccClassContext:{
+      module,
+      sharedStateKeys,
+      globalStateKeys,
+      ccKeys: [],
+    }
+  */
   ccClassKey_ccClassContext_: {},
   //[globalKey]:{module:'xxx',key:'yyy'}
   globalMappingKey_sharedKey_: {},

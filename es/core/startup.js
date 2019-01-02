@@ -1,6 +1,7 @@
 import util, { isValueNotNull, isModuleStateValid, verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
 import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT, MODULE_CC_LIKE } from '../support/constant';
 import ccContext from '../cc-context';
+import setState from './setState';
 var vbi = verboseInfo;
 var ss = styleStr;
 var cl = color;
@@ -206,11 +207,70 @@ function bindReducerToCcContext(reducer, isModuleMode) {
     if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];else _reducer[MODULE_GLOBAL] = {};
   }
 }
+
+function executeInitializer(isModuleMode, store, init) {
+  var stateHandler = function stateHandler(module) {
+    return function (state) {
+      return setState(module, state);
+    };
+  };
+
+  if (!isModuleMode) {
+    if (isPlainJsonObject(init)) {
+      var includeDefaultModule = init.hasOwnProperty(MODULE_DEFAULT);
+      var includeGlobalModule = init.hasOwnProperty(MODULE_GLOBAL);
+
+      if (includeDefaultModule || includeGlobalModule) {
+        if (includeDefaultModule) {
+          var defaultInit = init[MODULE_DEFAULT];
+
+          if (typeof defaultInit !== 'function') {
+            throw new Error('init.$$default value must be a function when cc startup in nonModuleMode!');
+          } else {
+            defaultInit(stateHandler(MODULE_DEFAULT));
+          }
+        }
+
+        if (includeGlobalModule) {
+          var globalInit = init[MODULE_GLOBAL];
+
+          if (typeof globalInit !== 'function') {
+            throw new Error('init.$$global value must be a function when cc startup in nonModuleMode!');
+          } else {
+            globalInit(stateHandler(MODULE_GLOBAL));
+          }
+        }
+      } else {
+        throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
+      }
+    } else {
+      if (typeof init !== 'function') {
+        throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
+      }
+
+      init(stateHandler(MODULE_DEFAULT));
+    }
+  } else {
+    if (!isPlainJsonObject(init)) {
+      throw new Error('init value must be a object like { ${moduleName}:Function } when cc startup in moduleMode!');
+    }
+
+    var moduleNames = Object.keys(init);
+    moduleNames.forEach(function (moduleName) {
+      if (!store[moduleName]) {
+        throw new Error("module " + moduleName + " not found, check your ccStartupOption.init object keys");
+      }
+
+      var initFn = init[moduleName];
+      initFn(stateHandler(moduleName));
+    });
+  }
+}
 /* 
 store in CC_CONTEXT may like:
  {
   $$global:{
-
+ 
   },
   module1:{
     books:[],
@@ -224,7 +284,7 @@ store in CC_CONTEXT may like:
     followCount:15,
   }
 }
-
+ 
 // with isReducerKeyMeanNamespacedActionType = false
 reducer = {
   [moduleName1]:{
@@ -235,14 +295,14 @@ reducer = {
     [actionType1]:callback(setState, {type:'',payload:''})
   }
 }
-
-// with isReducerKeyMeanNamespacedActionType = true
+ 
+// with isReducerKeyMeanNamespacedActionType = true, to be implement
 reducer = {
   '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
   '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
   '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
 }
-
+ 
 init = {
   global:(setState)=>{}
 }
@@ -272,7 +332,9 @@ export default function (_temp) {
       _ref$isDebug = _ref.isDebug,
       isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
       _ref$sharedToGlobalMa = _ref.sharedToGlobalMapping,
-      sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa;
+      sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa,
+      _ref$init = _ref.init,
+      init = _ref$init === void 0 ? null : _ref$init;
 
   if (ccContext.isCcAlreadyStartup) {
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
@@ -284,6 +346,13 @@ export default function (_temp) {
   ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
+
+  if (init) {
+    var computedStore = ccContext.store._state;
+    executeInitializer(isModuleMode, computedStore, init);
+  }
+
+  ccContext.isCcAlreadyStartup = true;
 
   if (window) {
     window.CC_CONTEXT = ccContext;

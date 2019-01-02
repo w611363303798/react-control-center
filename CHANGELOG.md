@@ -1,6 +1,11 @@
 
 # Change Log
 
+## 2018-01-02 08:00
+* optimize register: now startup support init option, to set your store asynchronously
+* add top api cc.setState
+* add top api cc.setGlobalState
+
 ## 2018-12-26 08:00
 * optimize register: make sure cc startup is called before register
 * optimize register: now reducer is optional for startup options
