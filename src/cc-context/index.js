@@ -2,13 +2,6 @@ import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 
 const refs = {};
 
-/**
- ccClassContext:{
-  ccKeys: [],
-  ccKey_componentRef_: {},
-  ccKey_option_: {},
- }
- */
 const ccContext = {
   isDebug: false,
   // if isStrict is true, every error will be throw out instead of console.error, 
@@ -22,6 +15,14 @@ const ccContext = {
 
   },
   globalCcClassKeys: [],
+  /**
+    ccClassContext:{
+      module,
+      sharedStateKeys,
+      globalStateKeys,
+      ccKeys: [],
+    }
+  */
   ccClassKey_ccClassContext_: {
 
   },
