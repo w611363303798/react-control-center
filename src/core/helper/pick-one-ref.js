@@ -1,10 +1,11 @@
 import ccContext from '../../cc-context';
-const { ccKey_ref_, moduleName_ccClassKeys_, ccClassKey_ccClassContext_ } = ccContext;
 
 /****
  * pick one ccInstance ref randomly
  */
 export default function (module) {
+  const { ccKey_ref_, moduleName_ccClassKeys_, ccClassKey_ccClassContext_ } = ccContext;
+
   let ccKeys;
   if (module) {
     const ccClassKeys = moduleName_ccClassKeys_[module];
