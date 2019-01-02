@@ -184,6 +184,11 @@ export function justWarning(err) {
   else console.error(err);
 }
 
+export function justTip(msg) {
+  console.error(' ------------ CC TIP ------------');
+  console.error(`%c${msg}`, 'color:green;border:1px solid green;');
+}
+
 export default {
   makeError,
   isHotReloadMode,
@@ -206,4 +211,5 @@ export default {
   color,
   styleStr,
   justWarning,
+  justTip,
 }

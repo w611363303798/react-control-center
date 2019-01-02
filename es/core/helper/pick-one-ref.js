@@ -12,7 +12,7 @@ export default function (module) {
   if (module) {
     var ccClassKeys = moduleName_ccClassKeys_[module];
 
-    if (ccClassKeys.length === 0) {
+    if (!ccClassKeys || ccClassKeys.length === 0) {
       throw new Error("no ccClass found for module" + module + "!");
     }
 

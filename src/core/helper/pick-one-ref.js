@@ -10,13 +10,13 @@ export default function (module) {
   if (module) {
     const ccClassKeys = moduleName_ccClassKeys_[module];
     if (!ccClassKeys || ccClassKeys.length === 0) {
-      throw new Error(`no ccClass found for module${module}!`);
+      throw new Error(`no ccClass found for module ${module}!`);
     }
 
     const oneCcClassKey = ccClassKeys[0];
     const ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
     if (!ccClassContext) {
-      throw new Error(`no ccClassContext found for ccClassKey${oneCcClassKey}!`);
+      throw new Error(`no ccClassContext found for ccClassKey ${oneCcClassKey}!`);
     }
     ccKeys = ccClassContext.ccKeys;
   } else {
