@@ -258,6 +258,7 @@ export default function ({
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);
   else bindReducerToCcContext(reducer, isModuleMode);
 
+  ccContext.isCcAlreadyStartup = true;
   if (window) {
     window.CC_CONTEXT = ccContext;
     window.cc = ccContext;
