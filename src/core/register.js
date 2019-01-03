@@ -228,8 +228,8 @@ function checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKe
   }
 }
 
-function checkCcStartupOrNot(){
-  if(!window.cc)throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
+function checkCcStartupOrNot() {
+  if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
 }
 
 function extractStateToBeBroadcasted(module, sourceState, sharedToGlobalMapping, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys) {
@@ -550,7 +550,10 @@ export default function register(ccClassKey, {
             const errMsg = util.isCcActionValid({ type, payload });
             if (errMsg) return justWarning(errMsg);
 
-            const executionContext = { ccUniqueKey, ccOption, module, reducerModule, type, payload, state: this.state, effect: this.$$effect };
+            const executionContext = {
+              ccUniqueKey, ccOption, module, reducerModule, type,
+              payload, state: this.state, effect: this.$$effect, xeffect: this.$$xeffect
+            };
 
             isInputModuleInvalid(inputModule, currentModule, reactCallback, (newCb) => {
               this.cc.invokeWith(reducerFn, { inputModule, forceSync, cb: newCb }, executionContext);
