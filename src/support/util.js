@@ -1,5 +1,5 @@
 
-import { ERR_MESSAGE, MODULE_GLOBAL } from './constant';
+import { ERR_MESSAGE, MODULE_GLOBAL, MODULE_CC } from './constant';
 
 export function isHotReloadMode() {
   return window && window.webpackHotUpdate;
@@ -70,6 +70,11 @@ export function makeUniqueCcKey(ccClassKey, ccKey) {
 
 export function isModuleNameValid(moduleName) {
   return /^[\$\#\&a-zA-Z0-9_-]+$/.test(moduleName);
+}
+
+export function isModuleNameCcLike(moduleName) {
+  const name = moduleName.toLowerCase();
+  return name === MODULE_CC;
 }
 
 export function isModuleStateValid(state) {
@@ -197,6 +202,7 @@ export default {
   makeUniqueCcKey,
   isActionTypeValid,
   isModuleNameValid,
+  isModuleNameCcLike,
   isModuleStateValid,
   isCcOptionValid,
   isCcActionValid,

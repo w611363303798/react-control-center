@@ -3,6 +3,9 @@ import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 const refs = {};
 
 const ccContext = {
+  core:{
+    
+  },
   isDebug: false,
   // if isStrict is true, every error will be throw out instead of console.error, 
   // but this may crash your app, make sure you have a nice error handling way,
