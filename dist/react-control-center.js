@@ -25,35 +25,41 @@
   var ERR = {
     CC_ALREADY_STARTUP: 1000,
     CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE: 1001,
-    CC_CLASS_KEY_DUPLICATE: 1002,
-    CC_CLASS_NOT_FOUND: 1003,
-    CC_CLASS_STORE_MODULE_INVALID: 1004,
-    CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED: 1005,
-    CC_CLASS_REDUCER_MODULE_INVALID: 1006,
-    CC_CLASS_INSTANCE_KEY_DUPLICATE: 1007,
-    CC_CLASS_INSTANCE_OPTION_INVALID: 1008,
-    CC_CLASS_INSTANCE_NOT_FOUND: 1009,
-    CC_CLASS_INSTANCE_METHOD_NOT_FOUND: 1010,
-    CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID: 1011,
-    CC_CLASS_INSTANCE_MORE_THAN_ONE: 1012,
-    CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE: 1013,
-    CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS: 1014,
-    CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY: 1015,
-    CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT: 1016,
-    CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS: 1017,
-    CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS: 1018,
-    CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY: 1019,
-    CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT: 1020,
-    CC_REGISTER_A_CC_CLASS: 1021,
-    MODULE_KEY_CC_FOUND: 1100,
-    STORE_KEY_NAMING_INVALID: 1101,
-    STORE_MODULE_VALUE_INVALID: 1102,
-    STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE: 1103,
-    REDUCER_ACTION_TYPE_NAMING_INVALID: 1201,
-    REDUCER_ACTION_TYPE_NO_MODULE: 1202 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
+    CC_MODULE_NAME_DUPLICATE: 1002,
+    CC_REGISTER_A_CC_CLASS: 1003,
+    CC_MODULE_KEY_CC_FOUND: 1004,
+    CC_MODULE_NAME_INVALID: 1005,
+    CC_STORE_STATE_INVALID: 1006,
+    CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE: 1007,
+    CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1008,
+    CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1009,
+    CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1010,
+    CC_CLASS_KEY_DUPLICATE: 1100,
+    CC_CLASS_NOT_FOUND: 1101,
+    CC_CLASS_STORE_MODULE_INVALID: 1102,
+    CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED: 1103,
+    CC_CLASS_REDUCER_MODULE_INVALID: 1104,
+    CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE: 1105,
+    CC_CLASS_INSTANCE_KEY_DUPLICATE: 1200,
+    CC_CLASS_INSTANCE_OPTION_INVALID: 1201,
+    CC_CLASS_INSTANCE_NOT_FOUND: 1202,
+    CC_CLASS_INSTANCE_METHOD_NOT_FOUND: 1203,
+    CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID: 1204,
+    CC_CLASS_INSTANCE_MORE_THAN_ONE: 1205,
+    CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS: 1206,
+    CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS: 1207,
+    CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY: 1300,
+    CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT: 1301,
+    CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS: 1400,
+    CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE: 1401,
+    CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY: 1402,
+    CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT: 1403,
+    CC_REDUCER_ACTION_TYPE_NAMING_INVALID: 1500,
+    CC_REDUCER_ACTION_TYPE_NO_MODULE: 1501,
+    CC_REDUCER_MODULE_NAME_DUPLICATE: 1502 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = 'globalStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.STORE_KEY_NAMING_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.STORE_MODULE_VALUE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module, ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = 'globalStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE);
 
   function isHotReloadMode() {
     return window && window.webpackHotUpdate;
@@ -150,6 +156,10 @@
   }
   function isModuleNameValid(moduleName) {
     return /^[\$\#\&a-zA-Z0-9_-]+$/.test(moduleName);
+  }
+  function isModuleNameCcLike(moduleName) {
+    var name = moduleName.toLowerCase();
+    return name === MODULE_CC;
   }
   function isModuleStateValid(state) {
     return isPlainJsonObject(state);
@@ -275,6 +285,7 @@
     makeUniqueCcKey: makeUniqueCcKey,
     isActionTypeValid: isActionTypeValid,
     isModuleNameValid: isModuleNameValid,
+    isModuleNameCcLike: isModuleNameCcLike,
     isModuleStateValid: isModuleStateValid,
     isCcOptionValid: isCcOptionValid,
     isCcActionValid: isCcActionValid,
@@ -406,6 +417,71 @@
     return oneRef;
   }
 
+  function checkModuleName (moduleName, checkForReducer) {
+    if (checkForReducer === void 0) {
+      checkForReducer = false;
+    }
+
+    var _state = ccContext.store._state;
+    var _reducer = ccContext.reducer._reducer;
+
+    if (!isModuleNameValid(moduleName)) {
+      throw makeError(ERR.CC_MODULE_NAME_INVALID, verboseInfo(" moduleName:" + moduleName + " is invalid!"));
+    }
+
+    if (isModuleNameCcLike(moduleName)) {
+      throw makeError(ERR.CC_MODULE_KEY_CC_FOUND);
+    }
+
+    if (checkForReducer) {
+      if (_reducer[moduleName]) {
+        throw makeError(ERR.CC_REDUCER_MODULE_NAME_DUPLICATE, verboseInfo("moduleName:" + moduleName));
+      }
+    } else {
+      if (_state[moduleName]) {
+        throw makeError(ERR.CC_MODULE_NAME_DUPLICATE, verboseInfo("moduleName:" + moduleName));
+      }
+    }
+  }
+
+  function checkModuleState (moduleState) {
+    if (!util.isModuleStateValid(moduleState)) {
+      throw util.makeError(ERR.CC_STORE_STATE_INVALID, util.verboseInfo("moduleName:" + moduleName + "'s state is invalid!"));
+    }
+  }
+
+  function mapSharedKeyToGlobal (moduleName, sharedKey, globalMappingKey) {
+    var _state = ccContext.store._state;
+    var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
+    var globalState = _state[MODULE_GLOBAL];
+    var moduleState = _state[moduleName];
+
+    if (!moduleState.hasOwnProperty(sharedKey)) {
+      throw new Error("the module:" + moduleName + " doesn't have a key named " + sharedKey + ", check your sharedToGlobalMapping");
+    }
+
+    if (globalState.hasOwnProperty(globalMappingKey)) {
+      throw new Error("the key:" + globalMappingKey + " is already been declared in globalState, you can't use it to map the sharedStateKey:" + sharedKey + " to global state, try rename your mappingKey in sharedToGlobalMapping!");
+    }
+
+    globalState[globalMappingKey] = moduleState[sharedKey];
+    globalMappingKey_sharedKey_[globalMappingKey] = {
+      module: moduleName,
+      key: sharedKey
+    };
+  }
+
+  function handleModuleSharedToGlobalMapping (moduleName, moduleSharedKeyToGlobalKeyConfig) {
+    var sharedKeys = Object.keys(moduleSharedKeyToGlobalKeyConfig);
+    var sLen = sharedKeys.length;
+
+    for (var k = 0; k < sLen; k++) {
+      var sharedKey = sharedKeys[k];
+      var globalMappingKey = moduleSharedKeyToGlobalKeyConfig[sharedKey];
+      mapSharedKeyToGlobal(moduleName, sharedKey, globalMappingKey);
+    }
+  }
+
   function setState (module, state, throwError) {
     if (throwError === void 0) {
       throwError = false;
@@ -419,18 +495,39 @@
     }
   }
 
+  /****
+   * if you are sure this state is really belong to global state, call cc.setGlobalState,
+   * cc will only pass this state to global module
+   */
+
+  function setGlobalState (state, throwError) {
+    if (throwError === void 0) {
+      throwError = false;
+    }
+
+    try {
+      var ref = pickOneRef();
+      ref.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
+    } catch (err) {
+      if (throwError) throw err;else util.justWarning(err.message);
+    }
+  }
+
+  function getStateHandlerForInit (module) {
+    return function (state) {
+      try {
+        setState(module, state, true);
+      } catch (err) {
+        ccContext.store.setState(module, state); //store this state;
+
+        util.justTip("no ccInstance found for module " + module + " currently, cc will just store it, lately ccInstance will pick this state to render");
+      }
+    };
+  }
+
   var vbi = verboseInfo;
   var ss = styleStr;
   var cl = color;
-
-  function checkModuleNames(moduleNames) {
-    var len = moduleNames.length;
-
-    for (var i = 0; i < len; i++) {
-      var name = moduleNames[i].toLowerCase();
-      if (name === MODULE_CC) throw util.makeError(ERR.MODULE_KEY_CC_FOUND);
-    }
-  }
 
   function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     if (!isPlainJsonObject(store)) {
@@ -445,14 +542,12 @@
     _state[MODULE_CC] = {};
 
     if (isModuleMode) {
-      var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
       var moduleNames = Object.keys(store);
-      checkModuleNames(moduleNames, isModuleMode);
       var globalState = store[MODULE_GLOBAL];
 
       if (globalState) {
         if (!util.isModuleStateValid(globalState)) {
-          throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
         } else {
           console.log(ss('$$global module state found while startup cc!'), cl());
         }
@@ -469,15 +564,9 @@
         var _moduleName = moduleNames[i];
 
         if (_moduleName !== MODULE_GLOBAL) {
-          if (!util.isModuleNameValid(_moduleName)) {
-            throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + _moduleName + " is invalid!"));
-          }
-
+          checkModuleName(_moduleName);
           var moduleState = store[_moduleName];
-
-          if (!isModuleStateValid(moduleState)) {
-            throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi("moduleName:" + _moduleName + "'s value is invalid!"));
-          }
+          checkModuleState(moduleState);
 
           if (_moduleName === MODULE_DEFAULT) {
             isDefaultModuleExist = true;
@@ -489,29 +578,8 @@
           var sharedKey_globalKey_ = sharedToGlobalMapping[_moduleName];
 
           if (sharedKey_globalKey_) {
-            //this module's some key will been mapped to global module
-            var sharedKeys = Object.keys(sharedKey_globalKey_);
-            var sLen = sharedKeys.length;
-
-            for (var k = 0; k < sLen; k++) {
-              var sharedKey = sharedKeys[k];
-
-              if (!moduleState.hasOwnProperty(sharedKey)) {
-                throw new Error("the module:" + _moduleName + " don't have a key named " + sharedKey + ", check your sharedToGlobalMapping");
-              }
-
-              var globalMappingKey = sharedKey_globalKey_[sharedKey];
-
-              if (globalState.hasOwnProperty(globalMappingKey)) {
-                throw new Error("the key:" + globalMappingKey + " is already declared in globalState, you can not use it to map the sharedStateKey:" + sharedKey + " to global state, try rename your mappingKey in sharedToGlobalMapping!");
-              } else {
-                globalState[globalMappingKey] = moduleState[sharedKey];
-                globalMappingKey_sharedKey_[globalMappingKey] = {
-                  module: _moduleName,
-                  key: sharedKey
-                };
-              }
-            }
+            //this module's some key will have been mapped to global module
+            handleModuleSharedToGlobalMapping(_moduleName, sharedKey_globalKey_);
           }
         }
       }
@@ -521,8 +589,9 @@
         console.log(ss('$$default module state not found,cc will generate one for user automatically!'), cl());
       }
     } else {
+      // non module mode
       if (sharedToGlobalMapping) {
-        throw util.makeError(ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
+        throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
       }
 
       var includeDefaultModule = store.hasOwnProperty(MODULE_DEFAULT);
@@ -532,7 +601,7 @@
       if (includeDefaultModule || includeGlobalModule) {
         if (includeDefaultModule && !includeGlobalModule) {
           if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
-            throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+            throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
           } else {
             _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
             invalidKeyCount += 1;
@@ -544,7 +613,7 @@
 
         if (includeGlobalModule && !includeDefaultModule) {
           if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
-            throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+            throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
           } else {
             _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
             invalidKeyCount += 1;
@@ -560,7 +629,7 @@
         }
       } else {
         if (!util.isModuleStateValid(store)) {
-          throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
+          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
         }
 
         _state[MODULE_DEFAULT] = store;
@@ -584,7 +653,7 @@
       var actionType = namespacedActionTypes[i];
 
       if (!util.verifyActionType(actionType)) {
-        throw util.makeError(ERR.REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
+        throw util.makeError(ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
       } // const { moduleName } = util.disassembleActionType(actionType);
 
 
@@ -605,13 +674,13 @@
 
     if (isModuleMode) {
       var moduleNames = Object.keys(reducer);
-      checkModuleNames(moduleNames);
       var len = moduleNames.length;
       var isDefaultReducerExist = false,
           isGlobalReducerExist = false;
 
       for (var i = 0; i < len; i++) {
         var _moduleName2 = moduleNames[i];
+        checkModuleName(_moduleName2, true);
         _reducer[_moduleName2] = reducer[_moduleName2];
         if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
         if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
@@ -626,17 +695,7 @@
   }
 
   function executeInitializer(isModuleMode, store, init) {
-    var stateHandler = function stateHandler(module) {
-      return function (state) {
-        try {
-          setState(module, state, true);
-        } catch (err) {
-          ccContext.store.setState(module, state); //store this state;
-
-          util.justTip("no ccInstance found for module " + module + " currently, cc will just store it, lately ccInstance will pick this state to render");
-        }
-      };
-    };
+    var stateHandler = getStateHandlerForInit;
 
     if (!isModuleMode) {
       if (isPlainJsonObject(init)) {
@@ -779,7 +838,7 @@
 
     if (window) {
       window.CC_CONTEXT = ccContext;
-      window.cc = ccContext;
+      window.ccc = ccContext;
     }
   }
 
@@ -2269,6 +2328,94 @@
     };
   }
 
+  /**
+   * @description configure module、state、option to cc
+   * @author zzk
+   * @export
+   * @param {String} module
+   * @param {Object} state
+   * @param {Option？} option, reducer、init、sharedToGlobalMapping
+   */
+
+  function configure (module, state, _temp) {
+    var _ref = _temp === void 0 ? {} : _temp,
+        moduleReducer = _ref.moduleReducer,
+        reducer = _ref.reducer,
+        init = _ref.init,
+        globalState = _ref.globalState,
+        sharedToGlobalMapping = _ref.sharedToGlobalMapping;
+
+    if (!ccContext.isCcAlreadyStartup) {
+      throw new Error('cc is not startup yet,you can not call cc.configure!');
+    }
+
+    if (!ccContext.isModuleMode) {
+      throw new Error('cc is running in non module node, can not call cc.configure');
+    }
+
+    checkModuleName(module);
+    checkModuleState(state);
+    var _state = ccContext.store._state;
+    var _reducer = ccContext.reducer._reducer;
+
+    if (_state[module]) {
+      throw makeError(ERR.CC_MODULE_NAME_DUPLICATE, verboseInfo("moduleName " + module));
+    }
+
+    _state[module] = state;
+
+    if (moduleReducer) {
+      if (typeof moduleReducer !== 'function') {
+        throw makeError(ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID, verboseInfo("moduleName " + module + " 's moduleReducer is invalid"));
+      }
+
+      _reducer[module] = moduleReducer;
+    } else if (reducer) {
+      if (!isPlainJsonObject(reducer)) {
+        throw makeError(ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID, verboseInfo("moduleName " + module + " 's moduleReducer is invalid"));
+      }
+
+      var reducerModuleNames = Object.keys(reducer);
+      reducerModuleNames.forEach(function (rmName) {
+        checkModuleName(rmName);
+        var moduleReducer = reducer[rmName];
+
+        if (!isPlainJsonObject(moduleReducer)) {
+          throw makeError(ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID, verboseInfo("moduleName " + module + " reducer 's value  is invalid"));
+        }
+
+        _reducer[rmName] = moduleReducer;
+      });
+    }
+
+    var storedGlobalState = _state[MODULE_GLOBAL];
+
+    if (globalState) {
+      checkModuleState(globalState);
+      var globalStateKeys = Object.keys(globalState);
+      globalStateKeys.forEach(function (gKey) {
+        if (storedGlobalState[gKey]) {
+          throw makeError(ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE, verboseInfo("duplicate globalKey: " + gKey));
+        }
+
+        var stateValue = globalState[gKey];
+        storedGlobalState[gKey] = stateValue;
+      });
+    }
+
+    if (sharedToGlobalMapping) {
+      handleModuleSharedToGlobalMapping(module, sharedToGlobalMapping);
+    }
+
+    if (init) {
+      if (typeof init !== 'function') {
+        throw new Error('init value must be a function!');
+      }
+
+      init(getStateHandlerForInit(module));
+    }
+  }
+
   var vbi$2 = util.verboseInfo;
   var ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_,
       ccKey_ref_$1 = ccContext.ccKey_ref_;
@@ -2326,30 +2473,41 @@
     (_ref$method = ref[method]).call.apply(_ref$method, [ref].concat(args));
   }
 
-  /****
-   * if you are sure this state is really belong to global state, call cc.setGlobalState,
-   * cc will only pass this state to global module
-   */
+  var vbi$3 = util.verboseInfo;
+  var ccClassKey_ccClassContext_$2 = ccContext.ccClassKey_ccClassContext_;
+  function invokeSingle (ccClassKey, method) {
+    var classContext = ccClassKey_ccClassContext_$2[ccClassKey];
 
-  function setGlobalState (state, throwError) {
-    if (throwError === void 0) {
-      throwError = false;
+    if (!classContext.isSingle) {
+      var err = util.makeError(ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE, vbi$3("ccClassKey:" + ccClassKey)); // only error, the target instance may has been unmounted really!
+
+      return console.error(err.message);
     }
 
-    try {
-      var ref = pickOneRef();
-      ref.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
-    } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
     }
+
+    invoke.apply(void 0, [ccClassKey, ccClassKey, method].concat(args));
   }
 
-  ccContext.startup = startup;
-  ccContext.register = register;
-  ccContext.invoke = invoke;
-  ccContext.setGlobalState = setGlobalState;
-  ccContext.setState = setState;
+  console.log('what is setState', setState);
 
-  return ccContext;
+  var defaultExport = {
+    startup: startup,
+    register: register,
+    configure: configure,
+    invoke: invoke,
+    invokeSingle: invokeSingle,
+    setGlobalState: setGlobalState,
+    setState: setState,
+    ccContext: ccContext
+  };
+
+  if (window) {
+    window.cc = defaultExport;
+  }
+
+  return defaultExport;
 
 })));

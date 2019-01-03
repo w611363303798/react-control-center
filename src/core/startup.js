@@ -1,8 +1,7 @@
-import util, { isModuleNameCcLike, verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
+import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
 import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT } from '../support/constant';
 import * as helper from './helper';
 import ccContext from '../cc-context';
-import setState from './setState';
 
 const vbi = verboseInfo;
 const ss = styleStr;
@@ -39,11 +38,11 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     let isDefaultModuleExist = false;
     for (let i = 0; i < len; i++) {
       const moduleName = moduleNames[i];
-      helper.checkModuleName(moduleName);
-      const moduleState = store[moduleName];
-      helper.checkModuleState(moduleState);
-
       if (moduleName !== MODULE_GLOBAL) {
+        helper.checkModuleName(moduleName);
+        const moduleState = store[moduleName];
+        helper.checkModuleState(moduleState);
+
         if (moduleName === MODULE_DEFAULT) {
           isDefaultModuleExist = true;
           console.log(ss('$$default module state found while startup cc!'), cl());
@@ -139,12 +138,12 @@ function bindReducerToCcContext(reducer, isModuleMode) {
   const _reducer = ccContext.reducer._reducer;
   if (isModuleMode) {
     const moduleNames = Object.keys(reducer);
-    checkModuleNames(moduleNames);
 
     const len = moduleNames.length;
     let isDefaultReducerExist = false, isGlobalReducerExist = false;
     for (let i = 0; i < len; i++) {
       const moduleName = moduleNames[i];
+      helper.checkModuleName(moduleName, true);
       _reducer[moduleName] = reducer[moduleName];
       if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
       if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;

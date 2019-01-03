@@ -1,19 +1,10 @@
-import util, { isValueNotNull, isModuleStateValid, verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
-import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT, MODULE_CC_LIKE } from '../support/constant';
+import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
+import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT } from '../support/constant';
+import * as helper from './helper';
 import ccContext from '../cc-context';
-import setState from './setState';
 var vbi = verboseInfo;
 var ss = styleStr;
 var cl = color;
-
-function checkModuleNames(moduleNames) {
-  var len = moduleNames.length;
-
-  for (var i = 0; i < len; i++) {
-    var name = moduleNames[i].toLowerCase();
-    if (name === MODULE_CC) throw util.makeError(ERR.MODULE_KEY_CC_FOUND);
-  }
-}
 
 function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
   if (!isPlainJsonObject(store)) {
@@ -28,14 +19,12 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
   _state[MODULE_CC] = {};
 
   if (isModuleMode) {
-    var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
     var moduleNames = Object.keys(store);
-    checkModuleNames(moduleNames, isModuleMode);
     var globalState = store[MODULE_GLOBAL];
 
     if (globalState) {
       if (!util.isModuleStateValid(globalState)) {
-        throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
+        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
       } else {
         console.log(ss('$$global module state found while startup cc!'), cl());
       }
@@ -52,15 +41,9 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       var _moduleName = moduleNames[i];
 
       if (_moduleName !== MODULE_GLOBAL) {
-        if (!util.isModuleNameValid(_moduleName)) {
-          throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + _moduleName + " is invalid!"));
-        }
-
+        helper.checkModuleName(_moduleName);
         var moduleState = store[_moduleName];
-
-        if (!isModuleStateValid(moduleState)) {
-          throw util.makeError(ERR.STORE_MODULE_VALUE_INVALID, vbi("moduleName:" + _moduleName + "'s value is invalid!"));
-        }
+        helper.checkModuleState(moduleState);
 
         if (_moduleName === MODULE_DEFAULT) {
           isDefaultModuleExist = true;
@@ -72,29 +55,8 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         var sharedKey_globalKey_ = sharedToGlobalMapping[_moduleName];
 
         if (sharedKey_globalKey_) {
-          //this module's some key will been mapped to global module
-          var sharedKeys = Object.keys(sharedKey_globalKey_);
-          var sLen = sharedKeys.length;
-
-          for (var k = 0; k < sLen; k++) {
-            var sharedKey = sharedKeys[k];
-
-            if (!moduleState.hasOwnProperty(sharedKey)) {
-              throw new Error("the module:" + _moduleName + " don't have a key named " + sharedKey + ", check your sharedToGlobalMapping");
-            }
-
-            var globalMappingKey = sharedKey_globalKey_[sharedKey];
-
-            if (globalState.hasOwnProperty(globalMappingKey)) {
-              throw new Error("the key:" + globalMappingKey + " is already declared in globalState, you can not use it to map the sharedStateKey:" + sharedKey + " to global state, try rename your mappingKey in sharedToGlobalMapping!");
-            } else {
-              globalState[globalMappingKey] = moduleState[sharedKey];
-              globalMappingKey_sharedKey_[globalMappingKey] = {
-                module: _moduleName,
-                key: sharedKey
-              };
-            }
-          }
+          //this module's some key will have been mapped to global module
+          helper.handleModuleSharedToGlobalMapping(_moduleName, sharedKey_globalKey_);
         }
       }
     }
@@ -104,8 +66,9 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       console.log(ss('$$default module state not found,cc will generate one for user automatically!'), cl());
     }
   } else {
+    // non module mode
     if (sharedToGlobalMapping) {
-      throw util.makeError(ERR.STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
+      throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
     }
 
     var includeDefaultModule = store.hasOwnProperty(MODULE_DEFAULT);
@@ -115,7 +78,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     if (includeDefaultModule || includeGlobalModule) {
       if (includeDefaultModule && !includeGlobalModule) {
         if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
-          throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
         } else {
           _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
           invalidKeyCount += 1;
@@ -127,7 +90,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
 
       if (includeGlobalModule && !includeDefaultModule) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
-          throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
         } else {
           _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
           invalidKeyCount += 1;
@@ -143,7 +106,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       }
     } else {
       if (!util.isModuleStateValid(store)) {
-        throw util.makeError(ERR.STORE_KEY_NAMING_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
+        throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
       }
 
       _state[MODULE_DEFAULT] = store;
@@ -167,7 +130,7 @@ function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
     var actionType = namespacedActionTypes[i];
 
     if (!util.verifyActionType(actionType)) {
-      throw util.makeError(ERR.REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
+      throw util.makeError(ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
     } // const { moduleName } = util.disassembleActionType(actionType);
 
 
@@ -188,13 +151,13 @@ function bindReducerToCcContext(reducer, isModuleMode) {
 
   if (isModuleMode) {
     var moduleNames = Object.keys(reducer);
-    checkModuleNames(moduleNames);
     var len = moduleNames.length;
     var isDefaultReducerExist = false,
         isGlobalReducerExist = false;
 
     for (var i = 0; i < len; i++) {
       var _moduleName2 = moduleNames[i];
+      helper.checkModuleName(_moduleName2, true);
       _reducer[_moduleName2] = reducer[_moduleName2];
       if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
       if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
@@ -209,17 +172,7 @@ function bindReducerToCcContext(reducer, isModuleMode) {
 }
 
 function executeInitializer(isModuleMode, store, init) {
-  var stateHandler = function stateHandler(module) {
-    return function (state) {
-      try {
-        setState(module, state, true);
-      } catch (err) {
-        ccContext.store.setState(module, state); //store this state;
-
-        util.justTip("no ccInstance found for module " + module + " currently, cc will just store it, lately ccInstance will pick this state to render");
-      }
-    };
-  };
+  var stateHandler = helper.getStateHandlerForInit;
 
   if (!isModuleMode) {
     if (isPlainJsonObject(init)) {
@@ -362,6 +315,6 @@ export default function (_temp) {
 
   if (window) {
     window.CC_CONTEXT = ccContext;
-    window.cc = ccContext;
+    window.ccc = ccContext;
   }
 }

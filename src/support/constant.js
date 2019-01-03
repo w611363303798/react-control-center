@@ -22,6 +22,9 @@ export const ERR = {
   CC_MODULE_NAME_INVALID: 1005,
   CC_STORE_STATE_INVALID: 1006,
   CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE: 1007,
+  CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1008,
+  CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1009,
+  CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1010,
 
   CC_CLASS_KEY_DUPLICATE: 1100,
   CC_CLASS_NOT_FOUND: 1101,
@@ -49,6 +52,7 @@ export const ERR = {
 
   CC_REDUCER_ACTION_TYPE_NAMING_INVALID: 1500,
   CC_REDUCER_ACTION_TYPE_NO_MODULE: 1501,
+  CC_REDUCER_MODULE_NAME_DUPLICATE: 1502,
   // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 }
 
@@ -83,6 +87,10 @@ export const ERR_MESSAGE = {
   [ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE]: `sharedToGlobalMapping is not allowed to supply to startup's options in non module. `,
   [ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID]: `action type's naming is invalid, correct one may like: fooModule/fooType. `,
   [ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE]: `action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!`,
+  [ERR.CC_REDUCER_MODULE_NAME_DUPLICATE]: `reducer module name duplicate!`,
+  [ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument moduleReducer is invalid, must be a function!`,
+  [ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer is invalid, must be a plain json object(not an array also)!`,
+  [ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer's value is invalid, must be a plain json object(not an array also)!`,
   // [ERR.REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE]: `reducer key is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in reducer keys!`,
 }
 
