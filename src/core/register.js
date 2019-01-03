@@ -550,7 +550,7 @@ export default function register(ccClassKey, {
             const errMsg = util.isCcActionValid({ type, payload });
             if (errMsg) return justWarning(errMsg);
 
-            const executionContext = { ccUniqueKey, ccOption, module, reducerModule, type, payload, state: this.state };
+            const executionContext = { ccUniqueKey, ccOption, module, reducerModule, type, payload, state: this.state, effect: this.$$effect };
 
             isInputModuleInvalid(inputModule, currentModule, reactCallback, (newCb) => {
               this.cc.invokeWith(reducerFn, { inputModule, forceSync, cb: newCb }, executionContext);

@@ -3,7 +3,8 @@
 ## 2018-01-03 08:00
 * add top api cc.configure, now cc can dynamically set module、state、reducer，this api must be called after cc.startup,
 * by using cc.configure, user can publish your wonderful CcifyReactComponent to npmjs package repository.
-
+* this version is what I think and want in the beginning, now all the basic apis is ready, we can explore more wonderful things from this version
+  
 ## 2018-01-02 08:00
 * optimize register: now startup support init option, to set your store asynchronously
 * add top api cc.setState
