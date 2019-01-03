@@ -263,6 +263,10 @@
     console.error(' ------------ CC WARNING ------------');
     if (err instanceof Error) console.error(err.message);else console.error(err);
   }
+  function justTip(msg) {
+    console.error(' ------------ CC TIP ------------');
+    console.error("%c" + msg, 'color:green;border:1px solid green;');
+  }
   var util = {
     makeError: makeError,
     isHotReloadMode: isHotReloadMode,
@@ -284,7 +288,8 @@
     verifyKeys: verifyKeys,
     color: color,
     styleStr: styleStr,
-    justWarning: justWarning
+    justWarning: justWarning,
+    justTip: justTip
   };
 
   var _state2, _reducer;
@@ -373,14 +378,14 @@
       var ccClassKeys = moduleName_ccClassKeys_[module];
 
       if (!ccClassKeys || ccClassKeys.length === 0) {
-        throw new Error("no ccClass found for module" + module + "!");
+        throw new Error("no ccClass found for module " + module + "!");
       }
 
       var oneCcClassKey = ccClassKeys[0];
       var ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
 
       if (!ccClassContext) {
-        throw new Error("no ccClassContext found for ccClassKey" + oneCcClassKey + "!");
+        throw new Error("no ccClassContext found for ccClassKey " + oneCcClassKey + "!");
       }
 
       ccKeys = ccClassContext.ccKeys;
@@ -401,14 +406,16 @@
     return oneRef;
   }
 
-  function setState (module, state) {
+  function setState (module, state, throwError) {
+    if (throwError === void 0) {
+      throwError = false;
+    }
+
     try {
       var ref = pickOneRef(module);
       ref.setState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_STATE);
     } catch (err) {
-      ccContext.store.setState(module, state); //store this state;
-
-      util.justWarning(err.message);
+      if (throwError) throw err;else util.justWarning(err.message);
     }
   }
 
@@ -621,7 +628,13 @@
   function executeInitializer(isModuleMode, store, init) {
     var stateHandler = function stateHandler(module) {
       return function (state) {
-        return setState(module, state);
+        try {
+          setState(module, state, true);
+        } catch (err) {
+          ccContext.store.setState(module, state); //store this state;
+
+          util.justTip("no ccInstance found for module " + module + " currently, cc will just store it, lately ccInstance will pick this state to render");
+        }
       };
     };
 
@@ -2318,14 +2331,16 @@
    * cc will only pass this state to global module
    */
 
-  function setGlobalState (state) {
+  function setGlobalState (state, throwError) {
+    if (throwError === void 0) {
+      throwError = false;
+    }
+
     try {
       var ref = pickOneRef();
       ref.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
     } catch (err) {
-      ccContext.store.setState(MODULE_GLOBAL, state); //store this state to global;
-
-      util.justWarning(err.message);
+      if (throwError) throw err;else util.justWarning(err.message);
     }
   }
 

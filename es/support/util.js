@@ -237,6 +237,10 @@ export function justWarning(err) {
   console.error(' ------------ CC WARNING ------------');
   if (err instanceof Error) console.error(err.message);else console.error(err);
 }
+export function justTip(msg) {
+  console.error(' ------------ CC TIP ------------');
+  console.error("%c" + msg, 'color:green;border:1px solid green;');
+}
 export default {
   makeError: makeError,
   isHotReloadMode: isHotReloadMode,
@@ -258,5 +262,6 @@ export default {
   verifyKeys: verifyKeys,
   color: color,
   styleStr: styleStr,
-  justWarning: justWarning
+  justWarning: justWarning,
+  justTip: justTip
 };

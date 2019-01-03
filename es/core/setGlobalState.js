@@ -7,13 +7,15 @@ import cc from '../cc-context';
  * cc will only pass this state to global module
  */
 
-export default function (state) {
+export default function (state, throwError) {
+  if (throwError === void 0) {
+    throwError = false;
+  }
+
   try {
     var ref = helper.pickOneRef();
     ref.setGlobalState(state, BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE);
   } catch (err) {
-    cc.store.setState(MODULE_GLOBAL, state); //store this state to global;
-
-    util.justWarning(err.message);
+    if (throwError) throw err;else util.justWarning(err.message);
   }
 }
