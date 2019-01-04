@@ -289,7 +289,7 @@ export default function register(ccClassKey, {
 
   return function (ReactClass) {
     if (ReactClass.prototype.$$changeState && ReactClass.prototype.__$$mapCcToInstance) {
-      throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi(`if you want to register ${ccClassKey} to cc successfully, the ReactClass can not be a CCClass!`));
+      throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi(`if you want to register ${ccClassKey} to cc successfully, the ReactClass can not be a CcClass!`));
     }
 
     const CcClass = class extends ReactClass {
@@ -550,7 +550,7 @@ export default function register(ccClassKey, {
             if (errMsg) return justWarning(errMsg);
 
             const executionContext = {
-              ccUniqueKey, ccOption, module, reducerModule, type,
+              ccUniqueKey, ccOption, module, reducerModule, type, dispatch: this.$$dispatch,
               payload, state: this.state, effect: this.$$effect, xeffect: this.$$xeffect
             };
 
@@ -672,7 +672,7 @@ export default function register(ccClassKey, {
         this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
         this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
         this.cc.prepareBroadcastState = this.cc.prepareBroadcastState.bind(this);
-        this.$$dispatch = this.cc.dispatch.bind(this);;//let CCComponent instance can call dispatch directly
+        this.$$dispatch = this.cc.dispatch.bind(this);;//let CcComponent instance can call dispatch directly
         this.$$invoke = this.cc.invoke.bind(this);;//commit state to cc directly, but userFn can be promise or generator both!
         this.$$invokeWith = this.cc.invokeWith.bind(this);;
         this.$$call = this.cc.call.bind(this);;// commit state by setState handler
