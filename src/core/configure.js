@@ -45,7 +45,23 @@ export default function (module, state, { moduleReducer, reducer, init, globalSt
       if (!isPlainJsonObject(moduleReducer)) {
         throw makeError(ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID, verboseInfo(`moduleName ${module} reducer 's value  is invalid`));
       }
-      _reducer[rmName] = moduleReducer;
+
+      if (rmName == MODULE_GLOBAL) {//merge input globalReducer to existed globalReducer
+        const typesOfGlobal = Object.keys(moduleReducer);
+        const globalReducer = _reducer[MODULE_GLOBAL];
+        typesOfGlobal.forEach(type => {
+          if (globalReducer[type]) {
+            throw makeError(ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE, verboseInfo(`type ${type}`));
+          }
+          var reducerFn = moduleReducer[type];
+          if (typeof reducerFn !== 'function') {
+            throw makeError(ERR.CC_REDUCER_NOT_A_FUNCTION);
+          }
+          globalReducer[type] = reducerFn;
+        });
+      } else {
+        _reducer[rmName] = moduleReducer;
+      }
     });
   }
 

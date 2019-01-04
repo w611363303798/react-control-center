@@ -14,6 +14,11 @@ const ccContext = {
   moduleName_ccClassKeys_: {
 
   },
+  // map from moduleName to sharedStateKeys
+  moduleName_sharedStateKeys_: {
+
+  },
+  //to let cc know which ccClass are watching globalStateKeys
   globalCcClassKeys: [],
   /**
     ccClassContext:{
