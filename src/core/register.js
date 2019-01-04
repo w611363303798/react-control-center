@@ -497,7 +497,8 @@ export default function register(ccClassKey, {
           invoke: (userLogicFn, ...args) => {
             this.cc.invokeWith(userLogicFn, { module: currentModule }, ...args);
           },
-          // change other module's state
+          // change other module's state, mostly you should use this method to generate new state instead of xeffect,
+          // because xeffect will force your logicFn to put your first param as ExecutionContext
           effect: (targetModule, userLogicFn, ...args) => {
             this.cc.invokeWith(userLogicFn, { context: false, module: targetModule }, ...args);
           },
