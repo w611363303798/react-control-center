@@ -477,27 +477,16 @@ export default function register(ccClassKey, {
               targetSharedStateKeys = sharedStateKeys;
               targetGlobalStateKeys = globalStateKeys;
             } else {
-              const ccClassKeys = moduleName_ccClassKeys_[moduleName];
-              targetSharedStateKeys = [];
-              targetGlobalStateKeys = [];
-              ccClassKeys.forEach(ccClassKey => {
-                const ccClassContext = ccClassKey_ccClassContext_[ccClassKey];
-                ccClassContext.sharedStateKeys.forEach(sKey => {
-                  if (!targetSharedStateKeys.includes(sKey)) targetSharedStateKeys.push(sKey);
-                });
-                ccClassContext.globalStateKeys.forEach(gKey => {
-                  if (!targetGlobalStateKeys.includes(gKey)) targetGlobalStateKeys.push(gKey);
-                });
-              });
+              targetSharedStateKeys = moduleName_sharedStateKeys_[moduleName];
+              targetGlobalStateKeys = Object.keys(getState(MODULE_GLOBAL));
             }
 
-
-            const sharedToGlobalMapping = ccContext.sharedToGlobalMapping;;
+            const sharedToGlobalMapping = ccContext.sharedToGlobalMapping;
 
             // need judge dispatch from what? from ccInstance, from reducer block, is totally different
             // !!! todo optimize sharedStateKeys globalStateKeys computation
             const { isPartialSharedStateEmpty, isPartialGlobalStateEmpty, partialSharedState, partialGlobalState, module_globalState_, module_originalState_ }
-              = extractStateToBeBroadcasted(moduleName, originalState, sharedToGlobalMapping, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys);
+              = extractStateToBeBroadcasted(moduleName, originalState, sharedToGlobalMapping, globalMappingKey_sharedKey_, targetSharedStateKeys, targetGlobalStateKeys);
 
             if (!isPartialSharedStateEmpty || !isPartialGlobalStateEmpty) {
               if (this.$$beforeBroadcastState) {//user define life cycle hook $$beforeBroadcastState

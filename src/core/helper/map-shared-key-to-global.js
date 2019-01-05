@@ -8,10 +8,10 @@ export default function (moduleName, sharedKey, globalMappingKey) {
   const moduleState = _state[moduleName];
 
   if (!moduleState.hasOwnProperty(sharedKey)) {
-    throw new Error(`the module:${moduleName} doesn't have a key named ${sharedKey}, check your sharedToGlobalMapping`);
+    throw new Error(`the module:${moduleName} doesn't have a key named ${sharedKey}, check your sharedToGlobalMapping or your module state`);
   }
   if (globalState.hasOwnProperty(globalMappingKey)) {
-    throw new Error(`the key:${globalMappingKey} is already been declared in globalState, you can't use it to map the sharedStateKey:${sharedKey} to global state, try rename your mappingKey in sharedToGlobalMapping!`);
+    throw new Error(`the key:${globalMappingKey} has been declared already in globalState, you can't use it to map the sharedStateKey:${sharedKey} to global state, try rename your mappingKey in sharedToGlobalMapping!`);
   }
 
   globalState[globalMappingKey] = moduleState[sharedKey];

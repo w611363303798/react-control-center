@@ -14,6 +14,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
   if (!isPlainJsonObject(sharedToGlobalMapping)) {
     throw new Error(`the sharedToGlobalMapping is not a plain json object!`);
   }
+  ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
 
   const _state = ccContext.store._state;
   _state[MODULE_CC] = {};
@@ -49,9 +50,8 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         }
         _state[moduleName] = moduleState;
 
-        //analyze sharedToGlobalMapping
         const sharedKey_globalKey_ = sharedToGlobalMapping[moduleName];
-        if (sharedKey_globalKey_) {//this module's some key will have been mapped to global module
+        if (sharedKey_globalKey_) {
           helper.handleModuleSharedToGlobalMapping(moduleName, sharedKey_globalKey_);
         }
       }
