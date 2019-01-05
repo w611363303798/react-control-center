@@ -15,6 +15,9 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     throw new Error("the sharedToGlobalMapping is not a plain json object!");
   }
 
+  ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
+  var globalStateKeys = ccContext.globalStateKeys;
+  var pureGlobalStateKeys = ccContext.pureGlobalStateKeys;
   var _state = ccContext.store._state;
   _state[MODULE_CC] = {};
 
@@ -27,9 +30,13 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
       } else {
         console.log(ss('$$global module state found while startup cc!'), cl());
+        Object.keys(globalState).forEach(function (key) {
+          globalStateKeys.push(key);
+          pureGlobalStateKeys.push(key);
+        });
       }
     } else {
-      console.log(ss('$$global module state not found,cc will generate one for user automatically!'), cl());
+      console.log(ss('$$global module state not found, cc will generate one for user automatically!'), cl());
       globalState = {};
     }
 
@@ -50,12 +57,10 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
           console.log(ss('$$default module state found while startup cc!'), cl());
         }
 
-        _state[_moduleName] = moduleState; //analyze sharedToGlobalMapping
-
+        _state[_moduleName] = moduleState;
         var sharedKey_globalKey_ = sharedToGlobalMapping[_moduleName];
 
         if (sharedKey_globalKey_) {
-          //this module's some key will have been mapped to global module
           helper.handleModuleSharedToGlobalMapping(_moduleName, sharedKey_globalKey_);
         }
       }
@@ -93,6 +98,10 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
         } else {
           _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
+          Object.keys(store[MODULE_GLOBAL]).forEach(function (key) {
+            globalStateKeys.push(key);
+            pureGlobalStateKeys.push(key);
+          });
           invalidKeyCount += 1;
           console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
         }
@@ -101,10 +110,10 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       }
 
       if (Object.keys(store).length > invalidKeyCount) {
-        // justWarning(`now cc is startup with non module mode, but the store you configured include a key named $$default but it has more than one key . cc will only pick $$default value as cc's $$default store, and the other key will be ignore`);
         justWarning("now cc is startup with non module mode, cc only allow you define store like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
       }
     } else {
+      // treat store as $$default module store
       if (!util.isModuleStateValid(store)) {
         throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
       }

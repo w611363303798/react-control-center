@@ -15,6 +15,8 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     throw new Error(`the sharedToGlobalMapping is not a plain json object!`);
   }
   ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
+  const globalStateKeys = ccContext.globalStateKeys;
+  const pureGlobalStateKeys = ccContext.pureGlobalStateKeys;
 
   const _state = ccContext.store._state;
   _state[MODULE_CC] = {};
@@ -28,9 +30,13 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(`moduleName:${MODULE_GLOBAL}'s value is invalid!`));
       } else {
         console.log(ss('$$global module state found while startup cc!'), cl());
+        Object.keys(globalState).forEach(key => {
+          globalStateKeys.push(key);
+          pureGlobalStateKeys.push(key);
+        });
       }
     } else {
-      console.log(ss('$$global module state not found,cc will generate one for user automatically!'), cl());
+      console.log(ss('$$global module state not found, cc will generate one for user automatically!'), cl());
       globalState = {};
     }
     _state[MODULE_GLOBAL] = globalState;
@@ -88,6 +94,10 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
         } else {
           _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
+          Object.keys(store[MODULE_GLOBAL]).forEach(key => {
+            globalStateKeys.push(key);
+            pureGlobalStateKeys.push(key);
+          });
           invalidKeyCount += 1;
           console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
         }
@@ -96,10 +106,9 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       }
 
       if (Object.keys(store).length > invalidKeyCount) {
-        // justWarning(`now cc is startup with non module mode, but the store you configured include a key named $$default but it has more than one key . cc will only pick $$default value as cc's $$default store, and the other key will be ignore`);
         justWarning(`now cc is startup with non module mode, cc only allow you define store like {"$$default":{}, "$$global":{}}, cc will ignore other module keys`);
       }
-    } else {
+    } else {// treat store as $$default module store
       if (!util.isModuleStateValid(store)) {
         throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName} is invalid!`));
       }
@@ -158,8 +167,6 @@ function bindReducerToCcContext(reducer, isModuleMode) {
     else _reducer[MODULE_GLOBAL] = {};
   }
 }
-
-
 
 function executeInitializer(isModuleMode, store, init) {
   const stateHandler = helper.getStateHandlerForInit;

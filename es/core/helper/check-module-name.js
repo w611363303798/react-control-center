@@ -1,5 +1,5 @@
 import { isModuleNameCcLike, isModuleNameValid, verboseInfo, makeError } from '../../support/util';
-import { ERR } from '../../support/constant';
+import { ERR, MODULE_GLOBAL } from '../../support/constant';
 import ccContext from '../../cc-context';
 export default function (moduleName, checkForReducer) {
   if (checkForReducer === void 0) {
@@ -18,8 +18,10 @@ export default function (moduleName, checkForReducer) {
   }
 
   if (checkForReducer) {
-    if (_reducer[moduleName]) {
-      throw makeError(ERR.CC_REDUCER_MODULE_NAME_DUPLICATE, verboseInfo("moduleName:" + moduleName));
+    if (moduleName != MODULE_GLOBAL) {
+      if (_reducer[moduleName]) {
+        throw makeError(ERR.CC_REDUCER_MODULE_NAME_DUPLICATE, verboseInfo("moduleName:" + moduleName));
+      }
     }
   } else {
     if (_state[moduleName]) {

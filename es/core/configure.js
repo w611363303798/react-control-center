@@ -8,7 +8,10 @@ import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
  * @export
  * @param {String} module
  * @param {Object} state
- * @param {Option？} option, reducer、init、sharedToGlobalMapping
+ * @param {Option？} [option] reducer、init、sharedToGlobalMapping
+ * @param {Option？} [option.reducer]  you can define multi reducer for a module by specify a reducer
+ * @param {Option？} [option.moduleReducer]  if you specify moduleReducer for module, 
+ * the reducer's module name is equal to statue module name, and the reducer will be ignored automatically
  */
 
 export default function (module, state, _temp) {
@@ -58,7 +61,26 @@ export default function (module, state, _temp) {
         throw makeError(ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID, verboseInfo("moduleName " + module + " reducer 's value  is invalid"));
       }
 
-      _reducer[rmName] = moduleReducer;
+      if (rmName == MODULE_GLOBAL) {
+        //merge input globalReducer to existed globalReducer
+        var typesOfGlobal = Object.keys(moduleReducer);
+        var globalReducer = _reducer[MODULE_GLOBAL];
+        typesOfGlobal.forEach(function (type) {
+          if (globalReducer[type]) {
+            throw makeError(ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE, verboseInfo("type " + type));
+          }
+
+          var reducerFn = moduleReducer[type];
+
+          if (typeof reducerFn !== 'function') {
+            throw makeError(ERR.CC_REDUCER_NOT_A_FUNCTION);
+          }
+
+          globalReducer[type] = reducerFn;
+        });
+      } else {
+        _reducer[rmName] = moduleReducer;
+      }
     });
   }
 

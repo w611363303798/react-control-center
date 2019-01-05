@@ -18,6 +18,13 @@ const ccContext = {
   moduleName_sharedStateKeys_: {
 
   },
+  // map from moduleName to globalStateKeys
+  moduleName_globalStateKeys_: {
+
+  },
+  moduleName_sharedKeysWhichMapToGlobal_: {
+
+  },
   //to let cc know which ccClass are watching globalStateKeys
   globalCcClassKeys: [],
   /**
@@ -31,10 +38,21 @@ const ccContext = {
   ccClassKey_ccClassContext_: {
 
   },
-  //[globalKey]:{module:'xxx',key:'yyy'}
+  // [globalKey]:{module:'xxx',key:'yyy'}
   globalMappingKey_sharedKey_: {
 
   },
+  // globalStateKeys is maintained by cc automatically,
+  // when user call cc.setGlobalState, or ccInstance.setGlobalState,
+  // commit state will be checked strictly by cc with globalStateKeys,
+  // all the keys of commit state must been included in globalStateKeys
+  globalStateKeys: [
+
+  ],
+  //  all global keys that exclude sharedToGlobalMapping keys
+  pureGlobalStateKeys:[
+
+  ],
   store: {
     _state: {
       [MODULE_GLOBAL]: {

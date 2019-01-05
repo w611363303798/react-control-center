@@ -13,6 +13,16 @@ export function isValueNotNull(value) {
   return !(value === null || value === undefined);
 }
 
+export function isObjectNotNull(object) {
+  if (object === null || object === undefined) {
+    return false;
+  } else if (Object.keys(object).length > 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 export function isPlainJsonObject(obj, canBeArray = false) {
   if (typeof obj === 'object') {
     if (Array.isArray(obj)) {
@@ -207,6 +217,7 @@ export default {
   isCcOptionValid,
   isCcActionValid,
   isPlainJsonObject,
+  isObjectNotNull,
   isValueNotNull,
   disassembleActionType,
   verboseInfo,

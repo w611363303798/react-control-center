@@ -10,6 +10,15 @@ export function bindThis(_this, methods) {
 export function isValueNotNull(value) {
   return !(value === null || value === undefined);
 }
+export function isObjectNotNull(object) {
+  if (object === null || object === undefined) {
+    return false;
+  } else if (Object.keys(object).length > 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
 export function isPlainJsonObject(obj, canBeArray) {
   if (canBeArray === void 0) {
     canBeArray = false;
@@ -258,6 +267,7 @@ export default {
   isCcOptionValid: isCcOptionValid,
   isCcActionValid: isCcActionValid,
   isPlainJsonObject: isPlainJsonObject,
+  isObjectNotNull: isObjectNotNull,
   isValueNotNull: isValueNotNull,
   disassembleActionType: disassembleActionType,
   verboseInfo: verboseInfo,
