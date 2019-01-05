@@ -56,7 +56,7 @@ function extractStateByKeys(state, targetKeys) {
   let isStateEmpty = true;
   targetKeys.forEach(key => {
     const value = state[key];
-    if (util.isValueNotNull(value)) {
+    if (value != undefined) {
       partialState[key] = value;
       isStateEmpty = false;
     }
@@ -595,7 +595,7 @@ export default function register(ccClassKey, {
           // partialGlobalState多余的？ partialGlobalState多余的？
           broadcastState: (moduleName, partialSharedState, partialGlobalState, module_globalState_, module_originalState_, needClone) => {
             let _partialSharedState = partialSharedState;
-            if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone may cause performance issue, if partialSharedState is too big!!
+            if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone operation may cause performance issue, if partialSharedState is too big!!
 
             ccContext.store.setState(moduleName, _partialSharedState);
             const { ccUniqueKey: currentCcKey } = this.cc.ccState;
@@ -603,7 +603,7 @@ export default function register(ccClassKey, {
 
             const ccClassKeys = moduleName_ccClassKeys_[moduleName];
             if (ccClassKeys) {
-              //these ccClass subscribe the same module's state
+              //these ccClass are watching the same module's state
               ccClassKeys.forEach(ccClassKey => {
                 ccClassKey_isHandled_[ccClassKey] = true;
                 const classContext = ccClassKey_ccClassContext_[ccClassKey];
