@@ -56,7 +56,7 @@ function extractStateByKeys(state, targetKeys) {
   let isStateEmpty = true;
   targetKeys.forEach(key => {
     const value = state[key];
-    if (value != undefined) {
+    if (value !== undefined) {
       partialState[key] = value;
       isStateEmpty = false;
     }
@@ -65,9 +65,9 @@ function extractStateByKeys(state, targetKeys) {
 }
 
 function extractGlobalStateByKeys(targetModule, commitState, globalStateKeys, sharedToGlobalMapping, globalMappingKey_sharedKey_) {
-  //all stateValue if belong to globalState will be collected to module_globalState_ , key means module name, stateKey mean globalMappingKey
+  //all stateValue if belong to globalState will be collected to module_globalState_ , key means module name, key of globalState means globalMappingKey
   const module_globalState_ = {};
-  //all stateValue if belong to globalState will be collected to module_originalState_, key means module name, stateKey mean sharedKey
+  //all stateValue if belong to globalState will be collected to module_originalState_, key means module name, key of originalState means sharedKey
   const module_originalState_ = {};
   //all stateValue if belong to globalState will be collected to partialGlobalState
   const partialGlobalState = {};
