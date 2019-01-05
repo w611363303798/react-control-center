@@ -1632,7 +1632,7 @@
     ccClassKeys_.push(ccClassKey);
   }
   /****
-   * it is very important for cc to know how to extract committed state for lately broadcast operation with stateFor value
+   * it is very important for cc to know how to extract committed state for the following broadcast operation with stateFor value
    * 
    * if stateFor = STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, cc will treat this state as a ccInstance's state, 
    * then cc will use the ccClass's globalStateKeys and sharedStateKeys to extract the state.
