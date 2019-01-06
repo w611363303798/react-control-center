@@ -179,16 +179,22 @@ function checkSharedKeysAndGlobalKeys(module, ccClassKey, sharedStateKeys, globa
     throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS, vbi(`ccClassKey:${ccClassKey} globalStateKeys:${globalStateKeys} sharedStateKeys:${sharedStateKeys}`));
   }
 
+  const globalState = getState(MODULE_GLOBAL);
+
   let hasGlobalMappingKeyInSharedStateKeys = false;
   let matchedGlobalKey, matchedSharedKey;
   const len = globalStateKeys.length;
   for (let i = 0; i < len; i++) {
     const gKey = globalStateKeys[i];
+    if (globalState[gKey] === undefined) {
+      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE, vbi(`ccClassKey:${ccClassKey}, invalid key in globalStateKeys is [${gKey}]`));
+    }
+
     const sharedKey = globalMappingKey_sharedKey_[gKey];
     const fromModule = globalMappingKey_fromModule_[gKey];
 
     //  if cc found one of the globalStateKeys of this module is just mapped from shared to global
-    //  it is strictly prohibited
+    //  it is strictly prohibited here
     if (fromModule == module && sharedStateKeys.includes(sharedKey)) {
       hasGlobalMappingKeyInSharedStateKeys = true;
       matchedGlobalKey = gKey;

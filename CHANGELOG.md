@@ -1,5 +1,8 @@
 
 # Change Log
+#### 2018-01-06 16:30
+* fix bug: forget to check if any key of globalStateKeys is included in global state
+
 #### 2018-01-06 16:00
 * fix bug: dispatch action to other module in a reducer block, ccInstance can not recover its globalState correctly, problem found in extractStateToBeBroadcasted
   
