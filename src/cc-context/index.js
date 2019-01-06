@@ -11,6 +11,12 @@ const ccContext = {
   returnRootState: false,
   isModuleMode: false,
   isCcAlreadyStartup: false,
+  //  cc allow multi react class register to a module by default, but if want to control some module 
+  //  to only allow register one react class, flag the module name as true in this option object
+  //  example:  {fooModule: true, barModule:true}
+  moduleSingleClass: {
+
+  },
   moduleName_ccClassKeys_: {
 
   },
@@ -35,7 +41,7 @@ const ccContext = {
   ccClassKey_ccClassContext_: {
 
   },
-   // [globalKey]:${modules}, let cc know what modules are watching a same globalKey
+  // [globalKey]:${modules}, let cc know what modules are watching a same globalKey
   globalKey_toModules_: {
 
   },
@@ -62,11 +68,11 @@ const ccContext = {
   pureGlobalStateKeys: [
 
   ],
-  sharedToGlobalMapping:{
+  sharedToGlobalMapping: {
 
   },
   //  translate sharedToGlobalMapping object to another shape: {sharedKey: {globalMappingKey, fromModule}, ... }
-  sharedKey_globalMappingKeyDescriptor_:{
+  sharedKey_globalMappingKeyDescriptor_: {
 
   },
   store: {

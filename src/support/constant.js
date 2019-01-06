@@ -40,6 +40,7 @@ export const ERR = {
   CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED: 1103,
   CC_CLASS_REDUCER_MODULE_INVALID: 1104,
   CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE: 1105,
+  CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE:1106,
 
   CC_CLASS_INSTANCE_KEY_DUPLICATE: 1200,
   CC_CLASS_INSTANCE_OPTION_INVALID: 1201,
@@ -97,6 +98,7 @@ export const ERR_MESSAGE = {
   [ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED]: `$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!`,
   [ERR.CC_CLASS_REDUCER_MODULE_INVALID]: 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ',
   [ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE]: 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ',
+  [ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE]: 'you are trying register a react class to a single class module, but cc found the target module has been registered!',
 
   [ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY]: 'storedStateKeys or sharedStateKeys is not an Array!',
   [ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT]: 'storedStateKeys or sharedStateKeys include non string element',

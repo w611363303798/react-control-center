@@ -293,6 +293,8 @@ export default function (_temp) {
       reducer = _ref$reducer === void 0 ? {} : _ref$reducer,
       _ref$isModuleMode = _ref.isModuleMode,
       isModuleMode = _ref$isModuleMode === void 0 ? false : _ref$isModuleMode,
+      _ref$moduleSingleClas = _ref.moduleSingleClass,
+      moduleSingleClass = _ref$moduleSingleClas === void 0 ? {} : _ref$moduleSingleClas,
       _ref$isReducerKeyMean = _ref.isReducerKeyMeanNamespacedActionType,
       isReducerKeyMeanNamespacedActionType = _ref$isReducerKeyMean === void 0 ? false : _ref$isReducerKeyMean,
       _ref$isStrict = _ref.isStrict,
@@ -311,7 +313,8 @@ export default function (_temp) {
   ccContext.isModuleMode = isModuleMode;
   ccContext.isStrict = isStrict;
   ccContext.isDebug = isDebug;
-  ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
+  util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
+  util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
 

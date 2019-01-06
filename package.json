@@ -1,6 +1,6 @@
 {
   "name": "react-control-center",
-  "version": "1.1.22",
+  "version": "1.1.23",
   "description": "control your react component state in a funny way, every react instance of different class if they were registered in react-control-center own the ability of knowing and syncing each other's state, just have a try and discover more^_^",
   "main": "src/index.js",
   "scripts": {

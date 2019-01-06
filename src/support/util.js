@@ -205,20 +205,26 @@ export function justTip(msg) {
   console.error(`%c${msg}`, 'color:green;border:1px solid green;');
 }
 
-export function safeGetObjectFromObject(object, key){
+export function safeGetObjectFromObject(object, key) {
   let childrenObject = object[key];
-  if(!childrenObject){
+  if (!childrenObject) {
     childrenObject = object[key] = {};
   }
   return childrenObject;
 }
 
-export function safeGetArrayFromObject(object, key){
+export function safeGetArrayFromObject(object, key) {
   let childrenArray = object[key];
-  if(!childrenArray){
+  if (!childrenArray) {
     childrenArray = object[key] = [];
   }
   return childrenArray;
+}
+
+export function safeAssignObjectValue(assignTo, assignFrom) {
+  Object.keys(assignFrom).forEach(key => {
+    assignTo[key] = assignFrom[key];
+  });
 }
 
 export default {
@@ -248,4 +254,5 @@ export default {
   justTip,
   safeGetObjectFromObject,
   safeGetArrayFromObject,
+  safeAssignObjectValue,
 }

@@ -99,7 +99,8 @@ export function makeStateMail(ccUniqueKey, ccOption, module, type, cb) {
 } // !!! different ccClass enable own a same key
 
 export function makeUniqueCcKey(ccClassKey, ccKey) {
-  return ccClassKey + "/" + ccKey;
+  // return `${ccClassKey}/${ccKey}`;
+  return ccClassKey + "$" + ccKey;
 }
 export function isModuleNameValid(moduleName) {
   return /^[\$\#\&a-zA-Z0-9_-]+$/.test(moduleName);
@@ -272,6 +273,11 @@ export function safeGetArrayFromObject(object, key) {
 
   return childrenArray;
 }
+export function safeAssignObjectValue(assignTo, assignFrom) {
+  Object.keys(assignFrom).forEach(function (key) {
+    assignTo[key] = assignFrom[key];
+  });
+}
 export default {
   makeError: makeError,
   isHotReloadMode: isHotReloadMode,
@@ -298,5 +304,6 @@ export default {
   justWarning: justWarning,
   justTip: justTip,
   safeGetObjectFromObject: safeGetObjectFromObject,
-  safeGetArrayFromObject: safeGetArrayFromObject
+  safeGetArrayFromObject: safeGetArrayFromObject,
+  safeAssignObjectValue: safeAssignObjectValue
 };

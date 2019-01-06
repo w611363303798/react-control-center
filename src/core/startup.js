@@ -271,6 +271,7 @@ export default function ({
   store = {},
   reducer = {},
   isModuleMode = false,
+  moduleSingleClass = {},
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
@@ -283,7 +284,8 @@ export default function ({
   ccContext.isModuleMode = isModuleMode;
   ccContext.isStrict = isStrict;
   ccContext.isDebug = isDebug;
-  ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
+  util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
+  util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
 
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
 
