@@ -29,7 +29,8 @@ var _ccContext$store = ccContext.store,
     ccGlobalStateKeys = ccContext.globalStateKeys,
     globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_,
     globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_,
-    globalKey_toModules_ = ccContext.globalKey_toModules_;
+    globalKey_toModules_ = ccContext.globalKey_toModules_,
+    sharedKey_globalMappingKeyDescriptor_ = ccContext.sharedKey_globalMappingKeyDescriptor_;
 var cl = color;
 var ss = styleStr;
 var me = makeError;
@@ -247,8 +248,9 @@ function checkCcStartupOrNot() {
   if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
 }
 
-function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedStateKeys, globalStateKeys) {
+function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_, sharedStateKeys, globalStateKeys) {
   var ccSetState = ccContext.store.setState;
+  var globalState = getState(MODULE_GLOBAL);
 
   var _extractStateByKeys = extractStateByKeys(sourceState, sharedStateKeys),
       partialSharedState = _extractStateByKeys.partialState,
@@ -264,8 +266,11 @@ function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_share
 
   if (!isPartialGlobalStateEmpty) {
     ccSetState(MODULE_GLOBAL, partialGlobalState);
-  } //  any stateValue's key if it is a sharedToGlobalMappingKey, the stateValue will been collected to module_globalState_, 
-  //  key means module name, key of originalState means sharedKey
+  } //  any stateValue's key if it is a global key (a normal global key , or a global key mapped from a state key)
+  //  the stateValue will been collected to module_globalState_, 
+  //  any stateValue's key if it is a shared key that mapped to global key,
+  //  the stateValue will been collected to module_globalState_ also,
+  //  key means module name, value means the state to been broadcasted to the module
 
 
   var module_globalState_ = {}; //  see if sourceState includes globalMappingKeys, extract the target state that will been broadcasted to other module by globalMappingKey_sharedKey_
@@ -291,6 +296,26 @@ function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_share
         var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
         modulePartialGlobalState[stateKey] = stateValue;
       });
+    }
+  }); //  see if sourceState includes sharedStateKey which are mapped to globalStateKey
+
+  sharedStateKeys.forEach(function (sKey) {
+    var stateValue = sourceState[sKey];
+
+    if (stateValue !== undefined) {
+      var descriptor = sharedKey_globalMappingKeyDescriptor_[sKey];
+
+      if (descriptor) {
+        var globalMappingKey = descriptor.globalMappingKey;
+        var toModules = globalMappingKey_toModules_[globalMappingKey];
+        toModules.forEach(function (m) {
+          var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+          modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
+          //  can recover it correctly while they are mounted again!
+
+          globalState[globalMappingKey] = stateValue;
+        });
+      }
     }
   });
   Object.keys(module_globalState_).forEach(function (moduleName) {
@@ -323,6 +348,19 @@ function mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalS
 
     if (!toModules.includes(_curStateModule)) {
       toModules.push(_curStateModule);
+    }
+  });
+}
+
+function mapGlobalMappingKeyAndToModules(_curStateModule, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalStateKeys) {
+  globalStateKeys.forEach(function (gKey) {
+    var toModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, gKey);
+
+    if (globalMappingKey_sharedKey_[gKey]) {
+      //  if this gKey is globalMappingKey
+      if (!toModules.includes(_curStateModule)) {
+        toModules.push(_curStateModule);
+      }
     }
   });
 } //to let cc know a specified module are watching what globalStateKeys
@@ -423,6 +461,7 @@ export default function register(ccClassKey, _temp) {
   mapModuleAndSharedStateKeys(_curStateModule, moduleName_sharedStateKeys_, sharedStateKeys);
   mapModuleAndGlobalStateKeys(_curStateModule, moduleName_globalStateKeys_, globalStateKeys);
   mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalStateKeys);
+  mapGlobalMappingKeyAndToModules(_curStateModule, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalStateKeys);
   mapModuleAndCcClassKeys(_curStateModule, ccClassKey); //tell cc this ccClass is watching some globalStateKeys of global module
 
   if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
@@ -1022,7 +1061,7 @@ export default function register(ccClassKey, _temp) {
               return justWarning(err.message + " prepareBroadcastState failed!");
             }
 
-            var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, targetSharedStateKeys, targetGlobalStateKeys),
+            var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_, targetSharedStateKeys, targetGlobalStateKeys),
                 isPartialSharedStateEmpty = _extractStateToBeBroa.isPartialSharedStateEmpty,
                 isPartialGlobalStateEmpty = _extractStateToBeBroa.isPartialGlobalStateEmpty,
                 partialSharedState = _extractStateToBeBroa.partialSharedState,
@@ -1113,7 +1152,7 @@ export default function register(ccClassKey, _temp) {
 
                     if (toSet) {
                       if (ccContext.isDebug) {
-                        console.log(ss("ref " + ccKey + " to be rendered state(changeBy" + changeBy + ") is broadcast from same module's other ref " + currentCcKey), cl());
+                        console.log(ss("ref " + ccKey + " to be rendered state(changeBy " + changeBy + ") is broadcast from same module's other ref " + currentCcKey), cl());
                       }
 
                       ref.cc.prepareReactSetState(changeBy, toSet);

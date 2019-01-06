@@ -1,5 +1,8 @@
 
 # Change Log
+#### 2018-01-06 16:00
+* fix bug: dispatch action to other module in a reducer block, ccInstance can not recover its globalState correctly, problem found in extractStateToBeBroadcasted
+  
 #### 2018-01-06 12:00
 * fix bug: multi module watch a same globalMappingKey, state to be broadcasted is incorrectly
 

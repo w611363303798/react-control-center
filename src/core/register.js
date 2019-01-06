@@ -23,7 +23,7 @@ const {
   moduleName_sharedStateKeys_, moduleName_globalStateKeys_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_,
   globalStateKeys: ccGlobalStateKeys,
-  globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_
+  globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_
 } = ccContext;
 const cl = color;
 const ss = styleStr;
@@ -208,8 +208,9 @@ function checkCcStartupOrNot() {
   if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
 }
 
-function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedStateKeys, globalStateKeys) {
+function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_, sharedStateKeys, globalStateKeys) {
   const ccSetState = ccContext.store.setState;
+  const globalState = getState(MODULE_GLOBAL);
 
   const { partialState: partialSharedState, isStateEmpty: isPartialSharedStateEmpty } = extractStateByKeys(sourceState, sharedStateKeys);
   if (!isPartialSharedStateEmpty) {
@@ -221,8 +222,11 @@ function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_share
     ccSetState(MODULE_GLOBAL, partialGlobalState);
   }
 
-  //  any stateValue's key if it is a sharedToGlobalMappingKey, the stateValue will been collected to module_globalState_, 
-  //  key means module name, key of originalState means sharedKey
+  //  any stateValue's key if it is a global key (a normal global key , or a global key mapped from a state key)
+  //  the stateValue will been collected to module_globalState_, 
+  //  any stateValue's key if it is a shared key that mapped to global key,
+  //  the stateValue will been collected to module_globalState_ also,
+  //  key means module name, value means the state to been broadcasted to the module
   const module_globalState_ = {};
 
   //  see if sourceState includes globalMappingKeys, extract the target state that will been broadcasted to other module by globalMappingKey_sharedKey_
@@ -242,6 +246,25 @@ function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_share
         let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
         modulePartialGlobalState[stateKey] = stateValue;
       });
+    }
+  });
+
+  //  see if sourceState includes sharedStateKey which are mapped to globalStateKey
+  sharedStateKeys.forEach(sKey => {
+    const stateValue = sourceState[sKey];
+    if (stateValue !== undefined) {
+      const descriptor = sharedKey_globalMappingKeyDescriptor_[sKey];
+      if (descriptor) {
+        const { globalMappingKey } = descriptor;
+        const toModules = globalMappingKey_toModules_[globalMappingKey];
+        toModules.forEach(m => {
+          let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+          modulePartialGlobalState[globalMappingKey] = stateValue;
+          //  !!!set this state to globalState, let other module that watching this globalMappingKey
+          //  can recover it correctly while they are mounted again!
+          globalState[globalMappingKey] = stateValue;
+        });
+      }
     }
   });
 
@@ -270,6 +293,17 @@ function mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalS
     // because cc allow multi class register to a same module, so here judge if toModules includes module or not
     if (!toModules.includes(_curStateModule)) {
       toModules.push(_curStateModule);
+    }
+  });
+}
+
+function mapGlobalMappingKeyAndToModules(_curStateModule, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalStateKeys) {
+  globalStateKeys.forEach(gKey => {
+    const toModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, gKey);
+    if (globalMappingKey_sharedKey_[gKey]) {//  if this gKey is globalMappingKey
+      if (!toModules.includes(_curStateModule)) {
+        toModules.push(_curStateModule);
+      }
     }
   });
 }
@@ -353,6 +387,7 @@ export default function register(ccClassKey, {
   mapModuleAndSharedStateKeys(_curStateModule, moduleName_sharedStateKeys_, sharedStateKeys);
   mapModuleAndGlobalStateKeys(_curStateModule, moduleName_globalStateKeys_, globalStateKeys);
   mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalStateKeys);
+  mapGlobalMappingKeyAndToModules(_curStateModule, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalStateKeys);
   mapModuleAndCcClassKeys(_curStateModule, ccClassKey);
 
   //tell cc this ccClass is watching some globalStateKeys of global module
@@ -663,7 +698,7 @@ export default function register(ccClassKey, {
             }
 
             const { isPartialSharedStateEmpty, isPartialGlobalStateEmpty, partialSharedState, partialGlobalState, module_globalState_ }
-              = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, targetSharedStateKeys, targetGlobalStateKeys);
+              = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_, targetSharedStateKeys, targetGlobalStateKeys);
 
             if (!isPartialSharedStateEmpty || !isPartialGlobalStateEmpty) {
               if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
@@ -742,7 +777,7 @@ export default function register(ccClassKey, {
 
                     if (toSet) {
                       if (ccContext.isDebug) {
-                        console.log(ss(`ref ${ccKey} to be rendered state(changeBy${changeBy}) is broadcast from same module's other ref ${currentCcKey}`), cl());
+                        console.log(ss(`ref ${ccKey} to be rendered state(changeBy ${changeBy}) is broadcast from same module's other ref ${currentCcKey}`), cl());
                       }
                       ref.cc.prepareReactSetState(changeBy, toSet)
                     };

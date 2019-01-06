@@ -5,8 +5,8 @@ import util from '../../support/util';
 export default function (moduleName, sharedKey, globalMappingKey) {
   const _state = ccContext.store._state;
   const globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
-  const globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_;
   const globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_;
+  const sharedKey_globalMappingKeyDescriptor_ = ccContext.sharedKey_globalMappingKeyDescriptor_;
   const globalStateKeys = ccContext.globalStateKeys;
   const globalState = _state[MODULE_GLOBAL];
   const moduleState = _state[moduleName];
@@ -22,7 +22,6 @@ export default function (moduleName, sharedKey, globalMappingKey) {
   globalState[globalMappingKey] = moduleState[sharedKey];
   globalMappingKey_sharedKey_[globalMappingKey] = sharedKey;
   globalMappingKey_fromModule_[globalMappingKey] = moduleName;
+  sharedKey_globalMappingKeyDescriptor_[sharedKey] = { globalMappingKey, fromModule: moduleName };
 
-  const mappingKeyModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, globalMappingKey);
-  mappingKeyModules.push(moduleName);
 }

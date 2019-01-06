@@ -45,6 +45,9 @@ var ccContext = {
   globalStateKeys: [],
   //  all global keys that exclude sharedToGlobalMapping keys
   pureGlobalStateKeys: [],
+  sharedToGlobalMapping: {},
+  //  translate sharedToGlobalMapping object to another shape: {sharedKey: {globalMappingKey, fromModule}, ... }
+  sharedKey_globalMappingKeyDescriptor_: {},
   store: {
     _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
     getState: function getState(module) {
