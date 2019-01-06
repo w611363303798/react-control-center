@@ -68,7 +68,7 @@
     CC_REDUCER_MODULE_NAME_DUPLICATE: 1511 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = 'globalStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY] = 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it', _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE] = "reducer action type duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_NOT_A_FUNCTION] = "reducer must be a function!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = 'globalStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY] = 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it ', _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE] = "reducer action type duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_NOT_A_FUNCTION] = "reducer must be a function!", _ERR_MESSAGE);
 
   function isHotReloadMode() {
     return window && window.webpackHotUpdate;
@@ -295,6 +295,24 @@
     console.error(' ------------ CC TIP ------------');
     console.error("%c" + msg, 'color:green;border:1px solid green;');
   }
+  function safeGetObjectFromObject(object, key) {
+    var childrenObject = object[key];
+
+    if (!childrenObject) {
+      childrenObject = object[key] = {};
+    }
+
+    return childrenObject;
+  }
+  function safeGetArrayFromObject(object, key) {
+    var childrenArray = object[key];
+
+    if (!childrenArray) {
+      childrenArray = object[key] = [];
+    }
+
+    return childrenArray;
+  }
   var util = {
     makeError: makeError,
     isHotReloadMode: isHotReloadMode,
@@ -319,7 +337,9 @@
     color: color,
     styleStr: styleStr,
     justWarning: justWarning,
-    justTip: justTip
+    justTip: justTip,
+    safeGetObjectFromObject: safeGetObjectFromObject,
+    safeGetArrayFromObject: safeGetArrayFromObject
   };
 
   var _state2, _reducer;
@@ -338,7 +358,6 @@
     moduleName_sharedStateKeys_: {},
     // map from moduleName to globalStateKeys
     moduleName_globalStateKeys_: {},
-    moduleName_sharedKeysWhichMapToGlobal_: {},
     //to let cc know which ccClass are watching globalStateKeys
     globalCcClassKeys: [],
 
@@ -351,8 +370,14 @@
       }
     */
     ccClassKey_ccClassContext_: {},
-    // [globalKey]:{module:'xxx',key:'yyy'}
+    // [globalKey]:${modules}, let cc know what modules are watching a same globalKey
+    globalKey_toModules_: {},
+    // [globalKey]:${sharedKey}
     globalMappingKey_sharedKey_: {},
+    // [globalKey]:${modules}, let cc know what modules are watching a same globalMappingKey
+    globalMappingKey_toModules_: {},
+    // let cc know a globalMappingKey is mapped from which module
+    globalMappingKey_fromModule_: {},
     // globalStateKeys is maintained by cc automatically,
     // when user call cc.setGlobalState, or ccInstance.setGlobalState,
     // commit state will be checked strictly by cc with globalStateKeys,
@@ -487,8 +512,9 @@
   function mapSharedKeyToGlobal (moduleName, sharedKey, globalMappingKey) {
     var _state = ccContext.store._state;
     var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
+    var globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_;
+    var globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_;
     var globalStateKeys = ccContext.globalStateKeys;
-    var moduleName_sharedKeysWhichMapToGlobal_ = ccContext.moduleName_sharedKeysWhichMapToGlobal_;
     var globalState = _state[MODULE_GLOBAL];
     var moduleState = _state[moduleName];
 
@@ -502,17 +528,10 @@
 
     globalStateKeys.push(globalMappingKey);
     globalState[globalMappingKey] = moduleState[sharedKey];
-    globalMappingKey_sharedKey_[globalMappingKey] = {
-      module: moduleName,
-      key: sharedKey
-    };
-    var sharedKeysWhichMapToGlobal = moduleName_sharedKeysWhichMapToGlobal_[moduleName];
-
-    if (!sharedKeysWhichMapToGlobal) {
-      sharedKeysWhichMapToGlobal = moduleName_sharedKeysWhichMapToGlobal_[moduleName] = [];
-    }
-
-    sharedKeysWhichMapToGlobal.push(sharedKey);
+    globalMappingKey_sharedKey_[globalMappingKey] = sharedKey;
+    globalMappingKey_fromModule_[globalMappingKey] = moduleName;
+    var mappingKeyModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, globalMappingKey);
+    mappingKeyModules.push(moduleName);
   }
 
   function handleModuleSharedToGlobalMapping (moduleName, moduleSharedKeyToGlobalKeyConfig) {
@@ -1326,7 +1345,10 @@
       globalCcClassKeys = ccContext.globalCcClassKeys,
       moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
       ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
-      ccGlobalStateKeys = ccContext.globalStateKeys;
+      ccGlobalStateKeys = ccContext.globalStateKeys,
+      globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_,
+      globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_,
+      globalKey_toModules_ = ccContext.globalKey_toModules_;
   var cl$1 = color$1;
   var ss$1 = styleStr$1;
   var me = makeError$1;
@@ -1358,7 +1380,7 @@
   }
 
   function extractStateByKeys(state, targetKeys) {
-    if (!isStateValid(state)) {
+    if (!isStateValid(state) || !util.isObjectNotNull(state)) {
       return {
         partialState: {},
         isStateEmpty: true
@@ -1493,7 +1515,7 @@
     };
   }
 
-  function checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys, globalMappingKey_sharedKey_) {
+  function checkSharedKeysAndGlobalKeys(module, ccClassKey, sharedStateKeys, globalStateKeys, globalMappingKey_sharedKey_, globalMappingKey_fromModule_) {
     var _verifyKeys = verifyKeys$1(sharedStateKeys, globalStateKeys),
         duplicate = _verifyKeys.duplicate,
         notArray = _verifyKeys.notArray,
@@ -1511,16 +1533,18 @@
       throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS, vbi$1("ccClassKey:" + ccClassKey + " globalStateKeys:" + globalStateKeys + " sharedStateKeys:" + sharedStateKeys));
     }
 
-    var hasGlobalMappingKey = false;
+    var hasGlobalMappingKeyInSharedStateKeys = false;
     var matchedGlobalKey, matchedSharedKey;
     var len = globalStateKeys.length;
 
     for (var i = 0; i < len; i++) {
       var gKey = globalStateKeys[i];
       var sharedKey = globalMappingKey_sharedKey_[gKey];
+      var fromModule = globalMappingKey_fromModule_[gKey]; //  if cc found one of the globalStateKeys of this module is just mapped from shared to global
+      //  it is strictly prohibited
 
-      if (sharedStateKeys.includes(sharedKey)) {
-        hasGlobalMappingKey = true;
+      if (fromModule == module && sharedStateKeys.includes(sharedKey)) {
+        hasGlobalMappingKeyInSharedStateKeys = true;
         matchedGlobalKey = gKey;
         matchedSharedKey = sharedKey;
         break;
@@ -1529,8 +1553,8 @@
     // but currently, this situation is strictly prohibited...... prevent from syncGlobalState and syncSharedState signal working badly
 
 
-    if (hasGlobalMappingKey) {
-      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY, "ccClassKey " + ccClassKey + ", invalid global key " + matchedGlobalKey + ", matched state key " + matchedSharedKey);
+    if (hasGlobalMappingKeyInSharedStateKeys) {
+      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY, vbi$1("ccClassKey [" + ccClassKey + "], invalid global key [" + matchedGlobalKey + "], matched state key [" + matchedSharedKey + "]"));
     }
   }
 
@@ -1538,7 +1562,7 @@
     if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
   }
 
-  function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, sharedStateKeys, globalStateKeys) {
+  function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedStateKeys, globalStateKeys) {
     var ccSetState = ccContext.store.setState;
 
     var _extractStateByKeys = extractStateByKeys(sourceState, sharedStateKeys),
@@ -1554,27 +1578,34 @@
         isPartialGlobalStateEmpty = _extractStateByKeys2.isStateEmpty;
 
     if (!isPartialGlobalStateEmpty) {
-      ccSetState(module, partialGlobalState);
-    } // any stateValue's key if it is a sharedToGlobalMappingKey, the stateValue will been collected to module_globalState_, 
-    // key means module name, key of originalState means sharedKey
+      ccSetState(MODULE_GLOBAL, partialGlobalState);
+    } //  any stateValue's key if it is a sharedToGlobalMappingKey, the stateValue will been collected to module_globalState_, 
+    //  key means module name, key of originalState means sharedKey
 
 
-    var module_globalState_ = {}; // see if sourceState includes globalMappingKeys, extract the target state that will been broadcasted to other module by globalMappingKey_sharedKey_
+    var module_globalState_ = {}; //  see if sourceState includes globalMappingKeys, extract the target state that will been broadcasted to other module by globalMappingKey_sharedKey_
 
     globalStateKeys.forEach(function (gKey) {
-      var sharedKeyDescriptor = globalMappingKey_sharedKey_[gKey];
+      var stateValue = sourceState[gKey];
 
-      if (sharedKeyDescriptor) {
-        //this global key is mapping to some other module's state key
-        var _module = sharedKeyDescriptor.module,
-            key = sharedKeyDescriptor.key;
-        var modulePartialGlobalState = module_globalState_[_module];
+      if (stateValue !== undefined) {
+        var sharedKey = globalMappingKey_sharedKey_[gKey];
+        var toModules, stateKey;
 
-        if (!modulePartialGlobalState) {
-          modulePartialGlobalState = module_globalState_[_module] = {};
+        if (sharedKey) {
+          //  this global key is created from some other module's sharedToGlobalMapping setting
+          toModules = globalMappingKey_toModules_[gKey];
+          stateKey = sharedKey;
+        } else {
+          //  this is normal global key
+          toModules = globalKey_toModules_[gKey];
+          stateKey = gKey;
         }
 
-        modulePartialGlobalState[key] = sourceState[gKey];
+        toModules.forEach(function (m) {
+          var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+          modulePartialGlobalState[stateKey] = stateValue;
+        });
       }
     });
     Object.keys(module_globalState_).forEach(function (moduleName) {
@@ -1598,6 +1629,16 @@
     if (!sharedStateKeysOfModule) sharedStateKeysOfModule = moduleName_sharedStateKeys_[moduleName] = [];
     partialSharedStateKeys.forEach(function (sKey) {
       if (!sharedStateKeysOfModule.includes(sKey)) sharedStateKeysOfModule.push(sKey);
+    });
+  }
+
+  function mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalStateKeys) {
+    globalStateKeys.forEach(function (gKey) {
+      var toModules = util.safeGetArrayFromObject(globalKey_toModules_, gKey); // because cc allow multi class register to a same module, so here judge if toModules includes module or not
+
+      if (!toModules.includes(_curStateModule)) {
+        toModules.push(_curStateModule);
+      }
     });
   } //to let cc know a specified module are watching what globalStateKeys
 
@@ -1692,10 +1733,11 @@
 
     checkStoreModule(_curStateModule);
     checkReducerModule(_reducerModule);
-    checkSharedKeysAndGlobalKeys(ccClassKey, sharedStateKeys, globalStateKeys, globalMappingKey_sharedKey_);
+    checkSharedKeysAndGlobalKeys(_curStateModule, ccClassKey, sharedStateKeys, globalStateKeys, globalMappingKey_sharedKey_, globalMappingKey_fromModule_);
     mapCcClassKeyAndCcClassContext(ccClassKey, _curStateModule, sharedStateKeys, globalStateKeys);
     mapModuleAndSharedStateKeys(_curStateModule, moduleName_sharedStateKeys_, sharedStateKeys);
     mapModuleAndGlobalStateKeys(_curStateModule, moduleName_globalStateKeys_, globalStateKeys);
+    mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalStateKeys);
     mapModuleAndCcClassKeys(_curStateModule, ccClassKey); //tell cc this ccClass is watching some globalStateKeys of global module
 
     if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
@@ -2295,7 +2337,7 @@
                 return justWarning$1(err.message + " prepareBroadcastState failed!");
               }
 
-              var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, targetSharedStateKeys, targetGlobalStateKeys),
+              var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, targetSharedStateKeys, targetGlobalStateKeys),
                   isPartialSharedStateEmpty = _extractStateToBeBroa.isPartialSharedStateEmpty,
                   isPartialGlobalStateEmpty = _extractStateToBeBroa.isPartialGlobalStateEmpty,
                   partialSharedState = _extractStateToBeBroa.partialSharedState,

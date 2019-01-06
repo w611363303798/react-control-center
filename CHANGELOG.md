@@ -1,5 +1,8 @@
 
 # Change Log
+#### 2018-01-06 12:00
+* fix bug: multi module watch a same globalMappingKey, state to be broadcasted is incorrectly
+
 #### 2018-01-05 19:00
 * rewrite ccInstance.setGlobalState and ccInstance.broadcastState
 * add 2 extraction strategy, if render hooker been called in different place, cc will extract committed state in different way

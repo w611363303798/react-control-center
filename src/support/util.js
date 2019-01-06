@@ -204,6 +204,22 @@ export function justTip(msg) {
   console.error(`%c${msg}`, 'color:green;border:1px solid green;');
 }
 
+export function safeGetObjectFromObject(object, key){
+  let childrenObject = object[key];
+  if(!childrenObject){
+    childrenObject = object[key] = {};
+  }
+  return childrenObject;
+}
+
+export function safeGetArrayFromObject(object, key){
+  let childrenArray = object[key];
+  if(!childrenArray){
+    childrenArray = object[key] = [];
+  }
+  return childrenArray;
+}
+
 export default {
   makeError,
   isHotReloadMode,
@@ -229,4 +245,6 @@ export default {
   styleStr,
   justWarning,
   justTip,
+  safeGetObjectFromObject,
+  safeGetArrayFromObject,
 }

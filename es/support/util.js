@@ -254,6 +254,24 @@ export function justTip(msg) {
   console.error(' ------------ CC TIP ------------');
   console.error("%c" + msg, 'color:green;border:1px solid green;');
 }
+export function safeGetObjectFromObject(object, key) {
+  var childrenObject = object[key];
+
+  if (!childrenObject) {
+    childrenObject = object[key] = {};
+  }
+
+  return childrenObject;
+}
+export function safeGetArrayFromObject(object, key) {
+  var childrenArray = object[key];
+
+  if (!childrenArray) {
+    childrenArray = object[key] = [];
+  }
+
+  return childrenArray;
+}
 export default {
   makeError: makeError,
   isHotReloadMode: isHotReloadMode,
@@ -278,5 +296,7 @@ export default {
   color: color,
   styleStr: styleStr,
   justWarning: justWarning,
-  justTip: justTip
+  justTip: justTip,
+  safeGetObjectFromObject: safeGetObjectFromObject,
+  safeGetArrayFromObject: safeGetArrayFromObject
 };

@@ -1,10 +1,12 @@
 import ccContext from '../../cc-context';
 import { MODULE_GLOBAL } from '../../support/constant';
+import util from '../../support/util';
 export default function (moduleName, sharedKey, globalMappingKey) {
   var _state = ccContext.store._state;
   var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
+  var globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_;
+  var globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_;
   var globalStateKeys = ccContext.globalStateKeys;
-  var moduleName_sharedKeysWhichMapToGlobal_ = ccContext.moduleName_sharedKeysWhichMapToGlobal_;
   var globalState = _state[MODULE_GLOBAL];
   var moduleState = _state[moduleName];
 
@@ -18,15 +20,8 @@ export default function (moduleName, sharedKey, globalMappingKey) {
 
   globalStateKeys.push(globalMappingKey);
   globalState[globalMappingKey] = moduleState[sharedKey];
-  globalMappingKey_sharedKey_[globalMappingKey] = {
-    module: moduleName,
-    key: sharedKey
-  };
-  var sharedKeysWhichMapToGlobal = moduleName_sharedKeysWhichMapToGlobal_[moduleName];
-
-  if (!sharedKeysWhichMapToGlobal) {
-    sharedKeysWhichMapToGlobal = moduleName_sharedKeysWhichMapToGlobal_[moduleName] = [];
-  }
-
-  sharedKeysWhichMapToGlobal.push(sharedKey);
+  globalMappingKey_sharedKey_[globalMappingKey] = sharedKey;
+  globalMappingKey_fromModule_[globalMappingKey] = moduleName;
+  var mappingKeyModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, globalMappingKey);
+  mappingKeyModules.push(moduleName);
 }

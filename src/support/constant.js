@@ -104,7 +104,7 @@ export const ERR_MESSAGE = {
   [ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY]: 'globalStateKeys or sharedStateKeys is not an Array!',
   [ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT]: 'globalStateKeys or sharedStateKeys include non string element!',
   [ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE]: 'some keys of configured global state have been included in store.globalState',
-  [ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY]: 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it',
+  [ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY]: 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it ',
 
   [ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID]: `action type's naming is invalid, correct one may like: fooModule/fooType. `,
   [ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE]: `action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!`,
