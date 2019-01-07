@@ -1538,14 +1538,46 @@
     };
   }
 
-  function checkSharedKeysAndGlobalKeys(module, ccClassKey, inputSharedStateKeys, inputGlobalStateKeys, globalMappingKey_sharedKey_, globalMappingKey_fromModule_) {
-    var sharedStateKeys = inputSharedStateKeys;
+  var stateKeyDuplicateInNonModuleWarning = "\nnow cc is running in non module mode, and cc found you are initializing a ccClass with inputSharedStateKeys='all' in register option, \nin this situation, the ccInstance's state will automatically take all the default state merge into it's own state, but some keys of ccInstance state\nduplicate with default module state keys, so cc will ignore the ccInstance state value of these duplicate state keys, and take their state value from\ndefault module! if this is not as you expected, please check your ccInstance state declaration statement!";
 
-    if (inputSharedStateKeys === 'all' || inputSharedStateKeys === undefined) {
-      sharedStateKeys = Object.keys(getState(module));
+  function getSharedKeysAndGlobalKeys(module, refState, ccClassKey, inputSharedStateKeys, inputGlobalStateKeys) {
+    var sharedStateKeys = inputSharedStateKeys,
+        globalStateKeys = inputGlobalStateKeys;
+
+    if (ccContext.isModuleMode) {
+      if (inputSharedStateKeys === 'all' || inputSharedStateKeys === undefined) {
+        sharedStateKeys = Object.keys(getState(module));
+      }
+    } else {
+      //  for non module mode, any ccClass must set inputSharedStateKeys as 'all' in register option if it want to watch default module's state changing
+      //  because if cc automatically let a ccClass watching default module's whole state keys, it is very easy and implicit to dirty the ccClass's instance state
+      if (inputSharedStateKeys === 'all') {
+        var defaultModuleState = getState(module);
+        var refStateKeys = Object.keys(refState);
+        var duplicateKeys = [];
+        refStateKeys.forEach(function (key) {
+          //  set state value to default module state dynamically while a ccInstance created
+          var stateValueOfDefault = defaultModuleState[key];
+
+          if (stateValueOfDefault === undefined) {
+            //  set ref state value to default module state implicitly
+            //  if cc want to support playback or time travel feature with immutable.js in the future, call setStateValue method ^_^
+            defaultModuleState[key] = refState[key];
+          } else {
+            refState[key] = stateValueOfDefault;
+            duplicateKeys.push(key);
+          }
+        });
+
+        if (duplicateKeys.lengthL > 0) {
+          justWarning$1(stateKeyDuplicateInNonModuleWarning + ' ' + verboseInfo$1("module " + module + ", ccClassKey" + ccClassKey + ", ccInstance state of these keys will been ignored: " + duplicateKeys.toString()));
+        }
+
+        sharedStateKeys = Object.keys(defaultModuleState);
+      } else if (inputSharedStateKeys === undefined) {
+        sharedStateKeys = [];
+      }
     }
-
-    var globalStateKeys = inputGlobalStateKeys;
 
     if (inputGlobalStateKeys === 'all') {
       globalStateKeys = Object.keys(getState(MODULE_GLOBAL));
@@ -1608,7 +1640,7 @@
     if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
   }
 
-  function extractStateToBeBroadcasted(module, sourceState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_, sharedStateKeys, globalStateKeys) {
+  function extractStateToBeBroadcasted(module, sourceState, sharedStateKeys, globalStateKeys) {
     var ccSetState = ccContext.store.setState;
     var globalState = getState(MODULE_GLOBAL);
 
@@ -1694,7 +1726,7 @@
   } //to let cc know a specified module are watching what sharedStateKeys
 
 
-  function mapModuleAndSharedStateKeys(moduleName, moduleName_sharedStateKeys_, partialSharedStateKeys) {
+  function mapModuleAndSharedStateKeys(moduleName, partialSharedStateKeys) {
     var sharedStateKeysOfModule = moduleName_sharedStateKeys_[moduleName];
     if (!sharedStateKeysOfModule) sharedStateKeysOfModule = moduleName_sharedStateKeys_[moduleName] = [];
     partialSharedStateKeys.forEach(function (sKey) {
@@ -1702,7 +1734,7 @@
     });
   }
 
-  function mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalStateKeys) {
+  function mapGlobalKeyAndToModules(_curStateModule, globalStateKeys) {
     globalStateKeys.forEach(function (gKey) {
       var toModules = util.safeGetArrayFromObject(globalKey_toModules_, gKey); // because cc allow multi class register to a same module, so here judge if toModules includes module or not
 
@@ -1712,23 +1744,20 @@
     });
   }
 
-  function mapGlobalMappingKeyAndToModules(_curStateModule, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalStateKeys) {
+  function mapGlobalMappingKeyAndToModules(_curStateModule, globalStateKeys) {
     globalStateKeys.forEach(function (gKey) {
       var toModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, gKey);
 
       if (globalMappingKey_sharedKey_[gKey]) {
         //  if this gKey is globalMappingKey
-        if (!toModules.includes(_curStateModule)) {
-          toModules.push(_curStateModule);
-        }
+        if (!toModules.includes(_curStateModule)) toModules.push(_curStateModule);
       }
     });
   } //to let cc know a specified module are watching what globalStateKeys
 
 
-  function mapModuleAndGlobalStateKeys(moduleName, moduleName_globalStateKeys_, partialGlobalStateKeys) {
-    var globalStateKeysOfModule = moduleName_globalStateKeys_[moduleName];
-    if (!globalStateKeysOfModule) globalStateKeysOfModule = moduleName_globalStateKeys_[moduleName] = [];
+  function mapModuleAndGlobalStateKeys(moduleName, partialGlobalStateKeys) {
+    var globalStateKeysOfModule = util.safeGetArrayFromObject(moduleName_globalStateKeys_, moduleName);
     partialGlobalStateKeys.forEach(function (gKey) {
       if (!globalStateKeysOfModule.includes(gKey)) globalStateKeysOfModule.push(gKey);
     });
@@ -1774,7 +1803,7 @@
    */
 
 
-  function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, moduleName_globalStateKeys_, moduleName_sharedStateKeys_, ccClassGlobalStateKeys, ccClassSharedStateKeys) {
+  function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, ccClassGlobalStateKeys, ccClassSharedStateKeys) {
     var globalStateKeys, sharedStateKeys;
 
     if (stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY) {
@@ -1790,6 +1819,25 @@
     return {
       globalStateKeys: globalStateKeys,
       sharedStateKeys: sharedStateKeys
+    };
+  }
+
+  function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, refState, sharedStateKeys, globalStateKeys) {
+    var _getSharedKeysAndGlob = getSharedKeysAndGlobalKeys(stateModule, refState, ccClassKey, sharedStateKeys, globalStateKeys),
+        targetSharedStateKeys = _getSharedKeysAndGlob.sharedStateKeys,
+        targetGlobalStateKeys = _getSharedKeysAndGlob.globalStateKeys;
+
+    mapCcClassKeyAndCcClassContext(ccClassKey, stateModule, targetSharedStateKeys, targetGlobalStateKeys);
+    mapModuleAndSharedStateKeys(stateModule, targetSharedStateKeys);
+    mapModuleAndGlobalStateKeys(stateModule, targetGlobalStateKeys);
+    mapGlobalKeyAndToModules(stateModule, targetGlobalStateKeys);
+    mapGlobalMappingKeyAndToModules(stateModule, targetGlobalStateKeys);
+    mapModuleAndCcClassKeys(stateModule, ccClassKey); //tell cc this ccClass is watching some globalStateKeys of global module
+
+    if (targetGlobalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
+    return {
+      sharedStateKeys: targetSharedStateKeys,
+      globalStateKeys: targetGlobalStateKeys
     };
   }
   /*
@@ -1820,19 +1868,16 @@
 
     checkStoreModule(_curStateModule);
     checkReducerModule(_reducerModule);
+    var sharedStateKeys, globalStateKeys;
 
-    var _checkSharedKeysAndGl = checkSharedKeysAndGlobalKeys(_curStateModule, ccClassKey, inputSharedStateKeys, inputGlobalStateKeys, globalMappingKey_sharedKey_, globalMappingKey_fromModule_),
-        sharedStateKeys = _checkSharedKeysAndGl.sharedStateKeys,
-        globalStateKeys = _checkSharedKeysAndGl.globalStateKeys;
+    if (ccContext.isModuleMode) {
+      var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, null, inputSharedStateKeys, inputGlobalStateKeys),
+          sKeys = _mapModuleAssociateDa.sharedStateKeys,
+          gKeys = _mapModuleAssociateDa.globalStateKeys;
 
-    mapCcClassKeyAndCcClassContext(ccClassKey, _curStateModule, sharedStateKeys, globalStateKeys);
-    mapModuleAndSharedStateKeys(_curStateModule, moduleName_sharedStateKeys_, sharedStateKeys);
-    mapModuleAndGlobalStateKeys(_curStateModule, moduleName_globalStateKeys_, globalStateKeys);
-    mapGlobalKeyAndToModules(_curStateModule, globalKey_toModules_, globalStateKeys);
-    mapGlobalMappingKeyAndToModules(_curStateModule, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalStateKeys);
-    mapModuleAndCcClassKeys(_curStateModule, ccClassKey); //tell cc this ccClass is watching some globalStateKeys of global module
+      sharedStateKeys = sKeys, globalStateKeys = gKeys;
+    }
 
-    if (globalStateKeys.length > 0) ccContext.globalCcClassKeys.push(ccClassKey);
     return function (ReactClass) {
       if (ReactClass.prototype.$$changeState && ReactClass.prototype.__$$mapCcToInstance) {
         throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi$1("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CcClass!"));
@@ -1860,6 +1905,14 @@
           if (ccOption.asyncLifecycleHook === undefined) ccOption.asyncLifecycleHook = _asyncLifecycleHook;
           var asyncLifecycleHook = ccOption.asyncLifecycleHook,
               storedStateKeys = ccOption.storedStateKeys;
+
+          if (!ccContext.isModuleMode) {
+            var _mapModuleAssociateDa2 = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, _this.state, inputSharedStateKeys, inputGlobalStateKeys),
+                _sKeys = _mapModuleAssociateDa2.sharedStateKeys,
+                _gKeys = _mapModuleAssociateDa2.globalStateKeys;
+
+            sharedStateKeys = _sKeys, globalStateKeys = _gKeys;
+          }
 
           var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
               ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
@@ -2422,14 +2475,14 @@
               var targetSharedStateKeys, targetGlobalStateKeys;
 
               try {
-                var result = getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, moduleName_globalStateKeys_, moduleName_sharedStateKeys_, globalStateKeys, sharedStateKeys);
+                var result = getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, globalStateKeys, sharedStateKeys);
                 targetSharedStateKeys = result.sharedStateKeys;
                 targetGlobalStateKeys = result.globalStateKeys;
               } catch (err) {
                 return justWarning$1(err.message + " prepareBroadcastState failed!");
               }
 
-              var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, globalMappingKey_sharedKey_, globalMappingKey_toModules_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_, targetSharedStateKeys, targetGlobalStateKeys),
+              var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, targetSharedStateKeys, targetGlobalStateKeys),
                   isPartialSharedStateEmpty = _extractStateToBeBroa.isPartialSharedStateEmpty,
                   isPartialGlobalStateEmpty = _extractStateToBeBroa.isPartialGlobalStateEmpty,
                   partialSharedState = _extractStateToBeBroa.partialSharedState,
@@ -2755,6 +2808,7 @@
 
   function configure (module, state, _temp) {
     var _ref = _temp === void 0 ? {} : _temp,
+        singleClass = _ref.singleClass,
         moduleReducer = _ref.moduleReducer,
         reducer = _ref.reducer,
         init = _ref.init,
@@ -2762,7 +2816,7 @@
         sharedToGlobalMapping = _ref.sharedToGlobalMapping;
 
     if (!ccContext.isCcAlreadyStartup) {
-      throw new Error('cc is not startup yet,you can not call cc.configure!');
+      throw new Error('cc is not startup yet, you can not call cc.configure!');
     }
 
     if (!ccContext.isModuleMode) {
@@ -2779,6 +2833,10 @@
     }
 
     _state[module] = state;
+
+    if (singleClass === true) {
+      ccContext.moduleSingleClass[module] = true;
+    }
 
     if (moduleReducer) {
       if (typeof moduleReducer !== 'function') {

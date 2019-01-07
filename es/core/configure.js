@@ -16,6 +16,7 @@ import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
 
 export default function (module, state, _temp) {
   var _ref = _temp === void 0 ? {} : _temp,
+      singleClass = _ref.singleClass,
       moduleReducer = _ref.moduleReducer,
       reducer = _ref.reducer,
       init = _ref.init,
@@ -23,7 +24,7 @@ export default function (module, state, _temp) {
       sharedToGlobalMapping = _ref.sharedToGlobalMapping;
 
   if (!ccContext.isCcAlreadyStartup) {
-    throw new Error('cc is not startup yet,you can not call cc.configure!');
+    throw new Error('cc is not startup yet, you can not call cc.configure!');
   }
 
   if (!ccContext.isModuleMode) {
@@ -40,6 +41,10 @@ export default function (module, state, _temp) {
   }
 
   _state[module] = state;
+
+  if (singleClass === true) {
+    ccContext.moduleSingleClass[module] = true;
+  }
 
   if (moduleReducer) {
     if (typeof moduleReducer !== 'function') {
