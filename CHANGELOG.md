@@ -1,5 +1,9 @@
 
 # Change Log
+#### 2018-01-07 08:00
+* feature add: cc.configure support to control the configured module can only register one react class by set singleClass as true in option
+
+
 #### 2018-01-06 16:30
 * fix bug: forget to check if any key of globalStateKeys is included in global state
 * feature add: startup allow config moduleSingleClass to control some module to only allow register one react class

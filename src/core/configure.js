@@ -14,7 +14,7 @@ import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
  * @param {Option？} [option.moduleReducer]  if you specify moduleReducer for module, 
  * the reducer's module name is equal to statue module name, and the reducer will be ignored automatically
  */
-export default function (module, state, { moduleReducer, reducer, init, globalState, sharedToGlobalMapping } = {}) {
+export default function (module, state, { singleClass, moduleReducer, reducer, init, globalState, sharedToGlobalMapping } = {}) {
   if (!ccContext.isCcAlreadyStartup) {
     throw new Error('cc is not startup yet,you can not call cc.configure!');
   }
@@ -31,6 +31,10 @@ export default function (module, state, { moduleReducer, reducer, init, globalSt
     throw makeError(ERR.CC_MODULE_NAME_DUPLICATE, verboseInfo(`moduleName ${module}`));
   }
   _state[module] = state;
+
+  if (singleClass === true) {
+    ccContext.moduleSingleClass[module] = true;
+  }
 
   if (moduleReducer) {
     if (typeof moduleReducer !== 'function') {
