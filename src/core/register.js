@@ -487,7 +487,7 @@ export default function register(ccClassKey, {
         if (ccOption.asyncLifecycleHook === undefined) ccOption.asyncLifecycleHook = _asyncLifecycleHook;
         const { asyncLifecycleHook, storedStateKeys } = ccOption;
 
-        if (!ccClassContext.isModuleMode) {
+        if (!ccContext.isModuleMode) {
           const { sharedStateKeys: sKeys, globalStateKeys: gKeys } = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, this.state, inputSharedStateKeys, inputGlobalStateKeys);
           sharedStateKeys = sKeys, globalStateKeys = gKeys;
         }
