@@ -16,7 +16,7 @@ import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
  */
 export default function (module, state, { singleClass, moduleReducer, reducer, init, globalState, sharedToGlobalMapping } = {}) {
   if (!ccContext.isCcAlreadyStartup) {
-    throw new Error('cc is not startup yet,you can not call cc.configure!');
+    throw new Error('cc is not startup yet, you can not call cc.configure!');
   }
   if (!ccContext.isModuleMode) {
     throw new Error('cc is running in non module node, can not call cc.configure');
