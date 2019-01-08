@@ -6,3 +6,5 @@ export { default as handleModuleSharedToGlobalMapping } from './handle-module-sh
 export { default as setState } from './set-state';
 export { default as setGlobalState } from './set-global-state';
 export { default as getStateHandlerForInit } from './get-state-handler-for-init';
+export { default as extractStateByKeys } from './extract-state-by-keys';
+export { default as getAndStoreValidGlobalState } from './get-and-store-valid-global-state';

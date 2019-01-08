@@ -19,12 +19,11 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
   const pureGlobalStateKeys = ccContext.pureGlobalStateKeys;
 
   const _state = ccContext.store._state;
+  let globalState = store[MODULE_GLOBAL];
   _state[MODULE_CC] = {};
 
   if (isModuleMode) {
     const moduleNames = Object.keys(store);
-
-    let globalState = store[MODULE_GLOBAL];
     if (globalState) {
       if (!util.isModuleStateValid(globalState)) {
         throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(`moduleName:${MODULE_GLOBAL}'s value is invalid!`));
@@ -32,7 +31,6 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         console.log(ss('$$global module state found while startup cc!'), cl());
         Object.keys(globalState).forEach(key => {
           globalStateKeys.push(key);
-          pureGlobalStateKeys.push(key);
         });
       }
     } else {
@@ -93,17 +91,17 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
         } else {
-          _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
-          Object.keys(store[MODULE_GLOBAL]).forEach(key => {
+          globalState = store[MODULE_GLOBAL];
+          Object.keys(globalState).forEach(key => {
             globalStateKeys.push(key);
-            pureGlobalStateKeys.push(key);
           });
           invalidKeyCount += 1;
           console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
         }
       } else {
-        _state[MODULE_GLOBAL] = {};
+        globalState = {};
       }
+      _state[MODULE_GLOBAL] = globalState;
 
       if (Object.keys(store).length > invalidKeyCount) {
         justWarning(`now cc is startup with non module mode, cc only allow you define store like {"$$default":{}, "$$global":{}}, cc will ignore other module keys`);
@@ -115,6 +113,13 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       _state[MODULE_DEFAULT] = store;
     }
   }
+
+  const globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
+  globalStateKeys.reduce((pKeys, gKey) => {
+    if (!globalMappingKey_sharedKey_[gKey]) pKeys.push(gKey);
+    return pKeys;
+  }, pureGlobalStateKeys);
+
 }
 
 /**

@@ -1,6 +1,12 @@
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 
 const refs = {};
+const setStateByModule = (module, partialState) => {
+  const _state = ccContext.store._state;
+  const fullState = _state[module];
+  const mergedState = { ...fullState, ...partialState };
+  _state[module] = mergedState;
+}
 
 const ccContext = {
   isDebug: false,
@@ -88,17 +94,11 @@ const ccContext = {
       if (module) return ccContext.store._state[module];
       else return ccContext.store._state;
     },
-    setState: function (module, _partialSharedState) {
-      const _state = ccContext.store._state;
-      const fullSharedState = _state[module];
-      const mergedState = { ...fullSharedState, ..._partialSharedState };
-      _state[module] = mergedState;
+    setState: function (module, partialSharedState) {
+      setStateByModule(module, partialSharedState);
     },
     setGlobalState: function (partialGlobalState) {
-      const _state = ccContext.store._state;
-      const fullGlobalState = _state[MODULE_GLOBAL];
-      const mergedState = { ...fullGlobalState, ...partialGlobalState };
-      _state[MODULE_GLOBAL] = mergedState;
+      setStateByModule(MODULE_GLOBAL, partialGlobalState);
     },
     getGlobalState: function () {
       return ccContext.store._state[MODULE_GLOBAL];

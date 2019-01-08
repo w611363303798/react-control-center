@@ -227,6 +227,14 @@ export function safeAssignObjectValue(assignTo, assignFrom) {
   });
 }
 
+export function isStateValid(state) {
+  if (!state || !isPlainJsonObject(state)) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 export default {
   makeError,
   isHotReloadMode,
@@ -242,6 +250,7 @@ export default {
   isPlainJsonObject,
   isObjectNotNull,
   isValueNotNull,
+  isStateValid,
   disassembleActionType,
   verboseInfo,
   bindThis,
