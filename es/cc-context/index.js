@@ -4,6 +4,16 @@ var _state2, _reducer;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 var refs = {};
+
+var setStateByModule = function setStateByModule(module, partialState) {
+  var _state = ccContext.store._state;
+  var fullState = _state[module];
+
+  var mergedState = _extends({}, fullState, partialState);
+
+  _state[module] = mergedState;
+};
+
 var ccContext = {
   isDebug: false,
   // if isStrict is true, every error will be throw out instead of console.error, 
@@ -57,21 +67,11 @@ var ccContext = {
     getState: function getState(module) {
       if (module) return ccContext.store._state[module];else return ccContext.store._state;
     },
-    setState: function setState(module, _partialSharedState) {
-      var _state = ccContext.store._state;
-      var fullSharedState = _state[module];
-
-      var mergedState = _extends({}, fullSharedState, _partialSharedState);
-
-      _state[module] = mergedState;
+    setState: function setState(module, partialSharedState) {
+      setStateByModule(module, partialSharedState);
     },
     setGlobalState: function setGlobalState(partialGlobalState) {
-      var _state = ccContext.store._state;
-      var fullGlobalState = _state[MODULE_GLOBAL];
-
-      var mergedState = _extends({}, fullGlobalState, partialGlobalState);
-
-      _state[MODULE_GLOBAL] = mergedState;
+      setStateByModule(MODULE_GLOBAL, partialGlobalState);
     },
     getGlobalState: function getGlobalState() {
       return ccContext.store._state[MODULE_GLOBAL];

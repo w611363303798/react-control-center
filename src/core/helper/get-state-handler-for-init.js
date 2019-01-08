@@ -13,12 +13,14 @@ export default function (module) {
       if (module == MODULE_GLOBAL) {
         getAndStoreValidGlobalState(state);
       } else {
-        const sharedStateKeys = ccContext.moduleName_sharedStateKeys_[module];
-        if (!sharedStateKeys) {
+        const moduleState = ccContext.store.getState(module);
+        if (!moduleState) {
           return util.justWarning(`invalid module ${module}`);
         }
-        const validState = extractStateByKeys(state, sharedStateKeys);
-        ccContext.store.setState(module, validState);//store this state;
+
+        const keys = Object.keys(moduleState);
+        const { partialState: validModuleState, isStateEmpty } = extractStateByKeys(state, keys);
+        if (!isStateEmpty) ccContext.store.setState(module, validModuleState);//store this state;
       }
 
       util.justTip(`no ccInstance found for module ${module} currently, cc will just store it, lately ccInstance will pick this state to render`);

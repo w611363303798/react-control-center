@@ -283,6 +283,11 @@ export default function ({
   sharedToGlobalMapping = {},
   init = null,
 } = {}) {
+  if (window) {
+    window.CC_CONTEXT = ccContext;
+    window.ccc = ccContext;
+  }
+
   if (ccContext.isCcAlreadyStartup) {
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
   }
@@ -303,8 +308,4 @@ export default function ({
   }
 
   ccContext.isCcAlreadyStartup = true;
-  if (window) {
-    window.CC_CONTEXT = ccContext;
-    window.ccc = ccContext;
-  }
 }

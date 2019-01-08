@@ -6,6 +6,9 @@ import ccContext, { getCcContext } from '../cc-context';
 import util, { isPlainJsonObject } from '../support/util';
 import uuid from 'uuid';
 import co from 'co';
+import * as helper from './helper';
+var extractStateByKeys = helper.extractStateByKeys,
+    getAndStoreValidGlobalState = helper.getAndStoreValidGlobalState;
 var verifyKeys = util.verifyKeys,
     ccClassDisplayName = util.ccClassDisplayName,
     styleStr = util.styleStr,
@@ -16,6 +19,7 @@ var verifyKeys = util.verifyKeys,
 var _ccContext$store = ccContext.store,
     _state = _ccContext$store._state,
     getState = _ccContext$store.getState,
+    ccStoreSetState = _ccContext$store.setState,
     _reducer = ccContext.reducer._reducer,
     refStore = ccContext.refStore,
     globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
@@ -26,7 +30,6 @@ var _ccContext$store = ccContext.store,
     globalCcClassKeys = ccContext.globalCcClassKeys,
     moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
     ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
-    ccGlobalStateKeys = ccContext.globalStateKeys,
     globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_,
     globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_,
     globalKey_toModules_ = ccContext.globalKey_toModules_,
@@ -51,38 +54,6 @@ function getCcKeyInsCount(ccUniqueKey) {
 
 function paramCallBackShouldNotSupply(module, currentModule) {
   return "if you pass param reactCallback, param module must equal current CCInstance's module, module: " + module + ", CCInstance's module:" + currentModule + ", now the cb will never been triggered! ";
-}
-
-function isStateValid(state) {
-  if (!state || !util.isPlainJsonObject(state)) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
-function extractStateByKeys(state, targetKeys) {
-  if (!isStateValid(state) || !util.isObjectNotNull(state)) {
-    return {
-      partialState: {},
-      isStateEmpty: true
-    };
-  }
-
-  var partialState = {};
-  var isStateEmpty = true;
-  targetKeys.forEach(function (key) {
-    var value = state[key];
-
-    if (value !== undefined) {
-      partialState[key] = value;
-      isStateEmpty = false;
-    }
-  });
-  return {
-    partialState: partialState,
-    isStateEmpty: isStateEmpty
-  };
 }
 
 function handleError(err, throwError) {
@@ -304,25 +275,16 @@ function checkCcStartupOrNot() {
   if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
 }
 
-function extractStateToBeBroadcasted(module, sourceState, sharedStateKeys, globalStateKeys) {
-  var ccSetState = ccContext.store.setState;
+function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, globalStateKeys) {
   var globalState = getState(MODULE_GLOBAL);
 
   var _extractStateByKeys = extractStateByKeys(sourceState, sharedStateKeys),
       partialSharedState = _extractStateByKeys.partialState,
       isPartialSharedStateEmpty = _extractStateByKeys.isStateEmpty;
 
-  if (!isPartialSharedStateEmpty) {
-    ccSetState(module, partialSharedState);
-  }
-
   var _extractStateByKeys2 = extractStateByKeys(sourceState, globalStateKeys),
       partialGlobalState = _extractStateByKeys2.partialState,
-      isPartialGlobalStateEmpty = _extractStateByKeys2.isStateEmpty;
-
-  if (!isPartialGlobalStateEmpty) {
-    ccSetState(MODULE_GLOBAL, partialGlobalState);
-  } //  any stateValue's key if it is a global key (a normal global key , or a global key mapped from a state key)
+      isPartialGlobalStateEmpty = _extractStateByKeys2.isStateEmpty; //  any stateValue's key if it is a global key (a normal global key , or a global key mapped from a state key)
   //  the stateValue will been collected to module_globalState_, 
   //  any stateValue's key if it is a shared key that mapped to global key,
   //  the stateValue will been collected to module_globalState_ also,
@@ -349,8 +311,11 @@ function extractStateToBeBroadcasted(module, sourceState, sharedStateKeys, globa
       }
 
       toModules.forEach(function (m) {
-        var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-        modulePartialGlobalState[stateKey] = stateValue;
+        if (m != refModule) {
+          // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
+          var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+          modulePartialGlobalState[stateKey] = stateValue;
+        }
       });
     }
   }); //  see if sourceState includes sharedStateKey which are mapped to globalStateKey
@@ -365,17 +330,17 @@ function extractStateToBeBroadcasted(module, sourceState, sharedStateKeys, globa
         var globalMappingKey = descriptor.globalMappingKey;
         var toModules = globalMappingKey_toModules_[globalMappingKey];
         toModules.forEach(function (m) {
-          var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-          modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
-          //  can recover it correctly while they are mounted again!
+          if (m != refModule) {
+            // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
+            var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+            modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
+            //  can recover it correctly while they are mounted again!
 
-          globalState[globalMappingKey] = stateValue;
+            globalState[globalMappingKey] = stateValue;
+          }
         });
       }
     }
-  });
-  Object.keys(module_globalState_).forEach(function (moduleName) {
-    ccSetState(moduleName, module_globalState_[moduleName]);
   }); // partialSharedState is prepared for input module 
   // partialGlobalState is prepared for input module 
   // module_globalState_ is prepared for other module 
@@ -732,8 +697,8 @@ export default function register(ccClassKey, _temp) {
           },
           setState: function setState(state, cb) {
             _this2.$$changeState(state, {
-              stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
               module: currentModule,
+              stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
               cb: cb
             });
           },
@@ -742,12 +707,9 @@ export default function register(ccClassKey, _temp) {
               broadcastTriggeredBy = BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE;
             }
 
-            ccContext.store.setGlobalState(partialGlobalState);
-
             _this2.$$changeState(partialGlobalState, {
-              module: currentModule,
-              broadcastTriggeredBy: broadcastTriggeredBy,
-              isStateGlobal: true
+              module: MODULE_GLOBAL,
+              broadcastTriggeredBy: broadcastTriggeredBy
             });
           },
           forceUpdate: function forceUpdate(cb) {
@@ -1107,13 +1069,9 @@ export default function register(ccClassKey, _temp) {
             }
           },
           prepareBroadcastGlobalState: function prepareBroadcastGlobalState(broadcastTriggeredBy, globalState) {
-            var _extractStateByKeys6 = extractStateByKeys(globalState, ccGlobalStateKeys),
-                partialGlobalState = _extractStateByKeys6.partialState,
-                isStateEmpty = _extractStateByKeys6.isStateEmpty;
-
-            if (Object.keys(partialGlobalState) < Object.keys(globalState)) {
-              justWarning("\n                note! you are calling method setGlobalState, but the state you commit include some invalid keys which is not declared in cc's global state, \n                cc will ignore them, but if this result is not as you expected, please check your committed global state!");
-            }
+            var _getAndStoreValidGlob = getAndStoreValidGlobalState(globalState),
+                validGlobalState = _getAndStoreValidGlob.partialState,
+                isStateEmpty = _getAndStoreValidGlob.isStateEmpty;
 
             if (!isStateEmpty) {
               if (_this2.$$beforeBroadcastState) {
@@ -1122,17 +1080,17 @@ export default function register(ccClassKey, _temp) {
                   _this2.$$beforeBroadcastState({
                     broadcastTriggeredBy: broadcastTriggeredBy
                   }, function () {
-                    _this2.cc.broadcastGlobalState(partialGlobalState);
+                    _this2.cc.broadcastGlobalState(validGlobalState);
                   });
                 } else {
                   _this2.$$beforeBroadcastState({
                     broadcastTriggeredBy: broadcastTriggeredBy
                   });
 
-                  _this2.cc.broadcastGlobalState(partialGlobalState);
+                  _this2.cc.broadcastGlobalState(validGlobalState);
                 }
               } else {
-                _this2.cc.broadcastGlobalState(partialGlobalState);
+                _this2.cc.broadcastGlobalState(validGlobalState);
               }
             }
           },
@@ -1155,6 +1113,12 @@ export default function register(ccClassKey, _temp) {
                 module_globalState_ = _extractStateToBeBroa.module_globalState_;
 
             if (!isPartialSharedStateEmpty || !isPartialGlobalStateEmpty) {
+              if (!isPartialSharedStateEmpty) ccStoreSetState(moduleName, partialSharedState);
+              if (!isPartialGlobalStateEmpty) ccStoreSetState(MODULE_GLOBAL, partialGlobalState);
+              Object.keys(module_globalState_).forEach(function (moduleName) {
+                ccStoreSetState(moduleName, module_globalState_[moduleName]);
+              });
+
               if (_this2.$$beforeBroadcastState) {
                 //check if user define a life cycle hook $$beforeBroadcastState
                 if (asyncLifecycleHook) {
@@ -1179,7 +1143,6 @@ export default function register(ccClassKey, _temp) {
             var _partialSharedState = partialSharedState;
             if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
 
-            ccContext.store.setState(moduleName, _partialSharedState);
             var currentCcKey = _this2.cc.ccState.ccUniqueKey;
             var ccClassKey_isHandled_ = {}; //record which ccClassKey has been handled
             // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
@@ -1200,17 +1163,17 @@ export default function register(ccClassKey, _temp) {
                 if (ccKeys.length === 0) return;
                 if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
 
-                var _extractStateByKeys7 = extractStateByKeys(_partialSharedState, sharedStateKeys),
-                    sharedStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                    isSharedStateEmpty = _extractStateByKeys7.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
+                var _extractStateByKeys6 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                    sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
+                    isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
                 //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
                 //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
                 //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-                var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
+                var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
 
                 if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
@@ -1262,9 +1225,9 @@ export default function register(ccClassKey, _temp) {
                   if (ccKeys.length === 0) return;
                   if (globalStateKeys.length === 0) return;
 
-                  var _extractStateByKeys9 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                      globalStateForCurrentCcClass = _extractStateByKeys9.partialState,
-                      isPartialGlobalStateEmpty = _extractStateByKeys9.isStateEmpty;
+                  var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
                   if (isPartialGlobalStateEmpty) return;
                   ccKeys.forEach(function (ccKey) {
@@ -1292,9 +1255,9 @@ export default function register(ccClassKey, _temp) {
                   globalStateKeys = _ccClassKey_ccClassCo.globalStateKeys,
                   ccKeys = _ccClassKey_ccClassCo.ccKeys;
 
-              var _extractStateByKeys10 = extractStateByKeys(globalSate, globalStateKeys),
-                  partialState = _extractStateByKeys10.partialState,
-                  isStateEmpty = _extractStateByKeys10.isStateEmpty;
+              var _extractStateByKeys9 = extractStateByKeys(globalSate, globalStateKeys),
+                  partialState = _extractStateByKeys9.partialState,
+                  isStateEmpty = _extractStateByKeys9.isStateEmpty;
 
               if (!isStateEmpty) {
                 ccKeys.forEach(function (ccKey) {
@@ -1363,8 +1326,6 @@ export default function register(ccClassKey, _temp) {
         var _ref9 = _temp9 === void 0 ? {} : _temp9,
             _ref9$stateFor = _ref9.stateFor,
             stateFor = _ref9$stateFor === void 0 ? STATE_FOR_ONE_CC_INSTANCE_FIRSTLY : _ref9$stateFor,
-            _ref9$isStateGlobal = _ref9.isStateGlobal,
-            isStateGlobal = _ref9$isStateGlobal === void 0 ? false : _ref9$isStateGlobal,
             module = _ref9.module,
             broadcastTriggeredBy = _ref9.broadcastTriggeredBy,
             changeBy = _ref9.changeBy,
@@ -1376,7 +1337,7 @@ export default function register(ccClassKey, _temp) {
           justWarning("cc found your commit state is not a plain json object!");
         }
 
-        if (isStateGlobal) {
+        if (module == MODULE_GLOBAL) {
           this.cc.prepareBroadcastGlobalState(broadcastTriggeredBy, state);
         } else {
           var ccState = this.cc.ccState;

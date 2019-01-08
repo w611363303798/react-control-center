@@ -19,11 +19,11 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
   var globalStateKeys = ccContext.globalStateKeys;
   var pureGlobalStateKeys = ccContext.pureGlobalStateKeys;
   var _state = ccContext.store._state;
+  var globalState = store[MODULE_GLOBAL];
   _state[MODULE_CC] = {};
 
   if (isModuleMode) {
     var moduleNames = Object.keys(store);
-    var globalState = store[MODULE_GLOBAL];
 
     if (globalState) {
       if (!util.isModuleStateValid(globalState)) {
@@ -32,7 +32,6 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         console.log(ss('$$global module state found while startup cc!'), cl());
         Object.keys(globalState).forEach(function (key) {
           globalStateKeys.push(key);
-          pureGlobalStateKeys.push(key);
         });
       }
     } else {
@@ -97,17 +96,18 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
         } else {
-          _state[MODULE_GLOBAL] = store[MODULE_GLOBAL];
-          Object.keys(store[MODULE_GLOBAL]).forEach(function (key) {
+          globalState = store[MODULE_GLOBAL];
+          Object.keys(globalState).forEach(function (key) {
             globalStateKeys.push(key);
-            pureGlobalStateKeys.push(key);
           });
           invalidKeyCount += 1;
           console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
         }
       } else {
-        _state[MODULE_GLOBAL] = {};
+        globalState = {};
       }
+
+      _state[MODULE_GLOBAL] = globalState;
 
       if (Object.keys(store).length > invalidKeyCount) {
         justWarning("now cc is startup with non module mode, cc only allow you define store like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
@@ -121,6 +121,12 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       _state[MODULE_DEFAULT] = store;
     }
   }
+
+  var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
+  globalStateKeys.reduce(function (pKeys, gKey) {
+    if (!globalMappingKey_sharedKey_[gKey]) pKeys.push(gKey);
+    return pKeys;
+  }, pureGlobalStateKeys);
 }
 /**
  * @description
@@ -306,6 +312,11 @@ export default function (_temp) {
       _ref$init = _ref.init,
       init = _ref$init === void 0 ? null : _ref$init;
 
+  if (window) {
+    window.CC_CONTEXT = ccContext;
+    window.ccc = ccContext;
+  }
+
   if (ccContext.isCcAlreadyStartup) {
     throw util.makeError(ERR.CC_ALREADY_STARTUP);
   }
@@ -324,9 +335,4 @@ export default function (_temp) {
   }
 
   ccContext.isCcAlreadyStartup = true;
-
-  if (window) {
-    window.CC_CONTEXT = ccContext;
-    window.ccc = ccContext;
-  }
 }
