@@ -80,7 +80,7 @@ export const ERR_MESSAGE = {
   [ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE]: `sharedToGlobalMapping is not allowed to supply to startup's options in non module. `,
   [ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument moduleReducer is invalid, must be a function!`,
   [ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer is invalid, must be a plain json object(not an array also)!`,
-  [ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer's value is invalid, must be a plain json object(not an array also)!`,
+  [ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer's value is invalid, must be a plain json object(not an array also), maybe you can use moduleReducer to config the reducer for this module!`,
 
 
   [ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE]: `ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   `,

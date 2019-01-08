@@ -46,16 +46,17 @@ cc内置的store和reducer可以被模块化拆分，方便你的视图逻辑和
 ---
 ## 核心api
 
-### startup
->项目的头文件里调用startup，接下来你可以在任何地方调用cc的其他功能了
-
+  ### startup
+> 启动cc后，才能在项目其他任何地方使用cc的所有功能，通常将cc的启动操作放在整个应用的入口文件的第一行
+> * 非模块化模式，直接启动cc，cc默认将所有cc实例的状态存储到$$default模块，可以在console里通过ccc.store.getState()查看cc管理的所有状态，注册一个ccClass时，如果设置了sharedStateKeys标记想要共享的状态key，则该ccClass的所有实例都共享这些key对应的值，不设置sharedStateKeys则表示该ccClass的所有实例里的状态都是各自独立的，并不会相互共享。
+随着应用规模越来越大，组件越来越多，组件间的状态都应该属于各自专有领域对应的模块，所以生产环境建议使用模块的方式来使用cc。
 ```
 import cc from 'react-control-center';
 
 cc.startup()
 
 ```
->配置store，reducer启动项目
+> * 非模块化模式，配置store，reducer, init 启动cc, store和reducer都将默认归属到$$default模块
 ```
 import cc from 'react-control-center';
 
@@ -72,12 +73,23 @@ cc.startup(
         const newBookList = payload;
         setState({bookList:newBookList});
       }
+    },
+    init: setState=>{
+      api.getBooks(books=>{
+        setState({books})
+      });
     }
   }
 )
 
 ```
->配置模块化的store，reducer启动项目
+> * 配置模块化的store，reducer, init启动cc,
+>> {Object} [startOption]
+>> {Boolean} [startOption.isStoreModuleMode] 设置为true，表示以模块化的方式启动cc
+>> {Object} [startOption.store] 配置的store, key代表名，value代表整个模块对应的初始化state
+>> {Object} [startOption.reducer] 配置的reducer， key代表reducerModule, 可以让reducerModule和store的名称保持一致，这样在ccInstance里调用this.$$dispatch时只需要指定type，cc自动会寻找同一个模块的type对应函数去处理action，当然你也可以自定义reducerModule为别的值，dispatch时设置reducerModule和type，表示寻找指定的reducerModule下的指定type的函数去处理action.
+value代表reducer function -- rfn.
+cc支持rfn为普通函数，生成器函数，async函数
 ```
 import cc from 'react-control-center';
 
@@ -94,13 +106,13 @@ cc.startup(
     },
     reducer:{
       user:{
-          'serUser':(setState, payload:user, [dispatchContext])=>{
+          serUser:({state, payload:user, dispatch, effect, xeffect})=>{
           //your code here
-          setState({user});
+          return {user}
          }
       }
       product:{
-          'setProducts':(setState, payload:products, [dispatchContext])=>{
+          setProducts:({payload:products})=>{
           //your code here
           setState({products});
          }
