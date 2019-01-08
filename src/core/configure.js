@@ -37,7 +37,7 @@ export default function (module, state, { singleClass, moduleReducer, reducer, i
   }
 
   if (moduleReducer) {
-    if (typeof moduleReducer !== 'function') {
+    if (!isPlainJsonObject(moduleReducer)) {
       throw makeError(ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID, verboseInfo(`moduleName ${module} 's moduleReducer is invalid`));
     }
     _reducer[module] = moduleReducer;
