@@ -51,6 +51,13 @@ const ccContext = {
   globalKey_toModules_: {
 
   },
+  sharedToGlobalMapping: {
+
+  },
+  //  translate sharedToGlobalMapping object to another shape: {sharedKey: {globalMappingKey, fromModule}, ... }
+  sharedKey_globalMappingKeyDescriptor_: {
+
+  },
   // [globalKey]:${sharedKey}
   globalMappingKey_sharedKey_: {
 
@@ -74,13 +81,6 @@ const ccContext = {
   pureGlobalStateKeys: [
 
   ],
-  sharedToGlobalMapping: {
-
-  },
-  //  translate sharedToGlobalMapping object to another shape: {sharedKey: {globalMappingKey, fromModule}, ... }
-  sharedKey_globalMappingKeyDescriptor_: {
-
-  },
   store: {
     _state: {
       [MODULE_GLOBAL]: {

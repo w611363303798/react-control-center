@@ -1,5 +1,7 @@
 import startup from './core/startup';
 import register from './core/register';
+import registerToDefault from './core/register-to-default';
+import registerSingleClassToDefault from './core/register-single-class-to-default';
 import configure from './core/configure';
 import invoke from './core/invoke';
 import invokeSingle from './core/invoke-single';
@@ -10,6 +12,8 @@ import ccContext from './cc-context';
 const defaultExport = {
   startup,
   register,
+  registerToDefault,
+  registerSingleClassToDefault,
   configure,
   invoke,
   invokeSingle,
