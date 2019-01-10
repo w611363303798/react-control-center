@@ -140,7 +140,9 @@ function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
     // const { moduleName } = util.disassembleActionType(actionType);
     _reducer[actionType] = namespacedKeyReducer[actionType];
   }
-  throw new Error('now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, it will coming soon!');
+  throw new Error(`now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, 
+    it may comme in the future, but i think modular reducer is the best practice!
+  `);
 }
 
 /**
@@ -170,6 +172,48 @@ function bindReducerToCcContext(reducer, isModuleMode) {
 
     if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];
     else _reducer[MODULE_GLOBAL] = {};
+  }
+}
+
+function bindComputedToCcContext(computed, isModuleMode) {
+  if (!isPlainJsonObject(computed)) {
+    throw new Error(`the computed value of ccStartUpOption is not a plain json object!`);
+  }
+
+  function mapComputed(m, moduleComputed) {
+    const moduleState = _state[m];
+    if (!moduleState) {
+      throw util.makeError(ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION, vbi(` moduleName in computed: ${m}`));
+    }
+    if (!isPlainJsonObject(moduleComputed)) {
+      throw new Error(`the value of one key of the computed object is not a plain json object!`);
+    }
+    const keys = Object.keys(moduleComputed);
+    keys.forEach(key => {
+      const originalValue = moduleState[key];
+      if (originalValue !== undefined) {
+        const moduleComputedFn = util.safeGetObjectFromObject(_computedFn, m);
+        const fn = moduleComputed[key];
+        moduleComputedFn[key] = fn;
+
+        const computedValue = fn(originalValue, moduleState);
+        const moduleComputedValue = util.safeGetObjectFromObject(_computedValue, m);
+        moduleComputedValue[key] = computedValue;
+      } else {
+        justWarning(`key:${key} of module:${m} of computed object is not declared in module:${m} of store!`);
+      }
+    });
+  }
+
+  const { _computedFn, _computedValue } = ccContext.computed;
+  const _state = ccContext.store._state;
+  if (isModuleMode) {
+    const moduleNames = Object.keys(computed);
+    moduleNames.forEach(m => {
+      mapComputed(m, computed[m]);
+    });
+  } else {
+    mapComputed(MODULE_DEFAULT, computed);
   }
 }
 
@@ -275,6 +319,7 @@ init = {
 export default function ({
   store = {},
   reducer = {},
+  computed = {},
   isModuleMode = false,
   moduleSingleClass = {},
   isReducerKeyMeanNamespacedActionType = false,
@@ -301,6 +346,8 @@ export default function ({
 
   if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);
   else bindReducerToCcContext(reducer, isModuleMode);
+
+  bindComputedToCcContext(computed, isModuleMode)
 
   if (init) {
     const computedStore = ccContext.store._state;

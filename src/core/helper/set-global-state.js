@@ -1,5 +1,9 @@
 import util from '../../support/util';
-import { BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE, MODULE_GLOBAL } from '../../support/constant';
+import { 
+  BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE, 
+  STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
+  MODULE_GLOBAL 
+} from '../../support/constant';
 import pickOneRef from './pick-one-ref';
 
 /****

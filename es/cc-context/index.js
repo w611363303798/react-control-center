@@ -6,14 +6,39 @@ import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 var refs = {};
 
 var setStateByModule = function setStateByModule(module, partialState) {
-  var _state = ccContext.store._state;
-  var fullState = _state[module];
-
-  var mergedState = _extends({}, fullState, partialState);
-
-  _state[module] = mergedState;
+  // const fullState = getState(module);
+  // const mergedState = { ...fullState, ...partialState };
+  // _state[module] = mergedState;
+  Object.keys(partialState).forEach(function (key) {
+    setStateByModuleAndKey(module, key, partialState[key]);
+  });
 };
 
+var _getState = function getState(module) {
+  var _state = ccContext.store._state;
+  return _state[module];
+};
+
+var setStateByModuleAndKey = function setStateByModuleAndKey(module, key, value) {
+  var moduleState = _getState(module);
+
+  moduleState[key] = value;
+  var moduleComputedFn = computed._computedFn[module];
+
+  if (moduleComputedFn) {
+    var fn = moduleComputedFn[key];
+
+    if (fn) {
+      var computedValue = fn(value);
+      computed._computedValue[module][key] = computedValue;
+    }
+  }
+};
+
+var computed = {
+  _computedValue: {},
+  _computedFn: {}
+};
 var ccContext = {
   isDebug: false,
   // if isStrict is true, every error will be throw out instead of console.error, 
@@ -46,6 +71,9 @@ var ccContext = {
   ccClassKey_ccClassContext_: {},
   // [globalKey]:${modules}, let cc know what modules are watching a same globalKey
   globalKey_toModules_: {},
+  sharedToGlobalMapping: {},
+  //  translate sharedToGlobalMapping object to another shape: {sharedKey: {globalMappingKey, fromModule}, ... }
+  sharedKey_globalMappingKeyDescriptor_: {},
   // [globalKey]:${sharedKey}
   globalMappingKey_sharedKey_: {},
   // [globalKey]:${modules}, let cc know what modules are watching a same globalMappingKey
@@ -59,19 +87,20 @@ var ccContext = {
   globalStateKeys: [],
   //  all global keys that exclude sharedToGlobalMapping keys
   pureGlobalStateKeys: [],
-  sharedToGlobalMapping: {},
-  //  translate sharedToGlobalMapping object to another shape: {sharedKey: {globalMappingKey, fromModule}, ... }
-  sharedKey_globalMappingKeyDescriptor_: {},
   store: {
     _state: (_state2 = {}, _state2[MODULE_GLOBAL] = {}, _state2[MODULE_CC] = {}, _state2),
     getState: function getState(module) {
-      if (module) return ccContext.store._state[module];else return ccContext.store._state;
+      if (module) return _getState(module);else return ccContext.store._state;
     },
     setState: function setState(module, partialSharedState) {
       setStateByModule(module, partialSharedState);
     },
+    setStateByModuleAndKey: setStateByModuleAndKey,
     setGlobalState: function setGlobalState(partialGlobalState) {
       setStateByModule(MODULE_GLOBAL, partialGlobalState);
+    },
+    setGlobalStateByKey: function setGlobalStateByKey(key, value) {
+      setStateByModuleAndKey(MODULE_GLOBAL, key, value);
     },
     getGlobalState: function getGlobalState() {
       return ccContext.store._state[MODULE_GLOBAL];
@@ -80,6 +109,7 @@ var ccContext = {
   reducer: {
     _reducer: (_reducer = {}, _reducer[MODULE_GLOBAL] = {}, _reducer[MODULE_CC] = {}, _reducer)
   },
+  computed: computed,
   refStore: {
     _state: {},
     setState: function setState(ccUniqueKey, partialStoredState) {

@@ -20,9 +20,11 @@ var _ccContext$store = ccContext.store,
     _state = _ccContext$store._state,
     getState = _ccContext$store.getState,
     ccStoreSetState = _ccContext$store.setState,
+    setStateByModuleAndKey = _ccContext$store.setStateByModuleAndKey,
     _reducer = ccContext.reducer._reducer,
     refStore = ccContext.refStore,
     globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
+    _computedValue = ccContext.computed._computedValue,
     moduleName_sharedStateKeys_ = ccContext.moduleName_sharedStateKeys_,
     moduleName_globalStateKeys_ = ccContext.moduleName_globalStateKeys_,
     ccKey_ref_ = ccContext.ccKey_ref_,
@@ -173,45 +175,12 @@ function computeCcUniqueKey(isClassSingle, ccClassKey, ccKey) {
   };
 }
 
-var stateKeyDuplicateInNonModuleWarning = "\nnow cc is running in non module mode, and cc found you are initializing a ccClass with inputSharedStateKeys='all' in register option, \nin this situation, the ccInstance's state will automatically take all the default state merge into it's own state, but some keys of ccInstance state\nduplicate with default module state keys, so cc will ignore the ccInstance state value of these duplicate state keys, and take their state value from\ndefault module! if this is not as you expected, please check your ccInstance state declaration statement!";
-
-function getSharedKeysAndGlobalKeys(module, refState, ccClassKey, inputSharedStateKeys, inputGlobalStateKeys) {
+function getSharedKeysAndGlobalKeys(module, ccClassKey, inputSharedStateKeys, inputGlobalStateKeys) {
   var sharedStateKeys = inputSharedStateKeys,
       globalStateKeys = inputGlobalStateKeys;
 
-  if (ccContext.isModuleMode) {
-    if (inputSharedStateKeys === 'all' || inputSharedStateKeys === undefined) {
-      sharedStateKeys = Object.keys(getState(module));
-    }
-  } else {
-    //  for non module mode, any ccClass must set inputSharedStateKeys as 'all' in register option if it want to watch default module's state changing
-    //  because if cc automatically let a ccClass watching default module's whole state keys, it is very easy and implicit to dirty the ccClass's instance state
-    if (inputSharedStateKeys === 'all') {
-      var defaultModuleState = getState(module);
-      var refStateKeys = Object.keys(refState);
-      var duplicateKeys = [];
-      refStateKeys.forEach(function (key) {
-        //  set state value to default module state dynamically while a ccInstance created
-        var stateValueOfDefault = defaultModuleState[key];
-
-        if (stateValueOfDefault === undefined) {
-          //  set ref state value to default module state implicitly
-          //  if cc want to support playback or time travel feature with immutable.js in the future, call setStateValue method ^_^
-          defaultModuleState[key] = refState[key];
-        } else {
-          refState[key] = stateValueOfDefault;
-          duplicateKeys.push(key);
-        }
-      });
-
-      if (duplicateKeys.lengthL > 0) {
-        justWarning(stateKeyDuplicateInNonModuleWarning + ' ' + verboseInfo("module " + module + ", ccClassKey" + ccClassKey + ", ccInstance state of these keys will been ignored: " + duplicateKeys.toString()));
-      }
-
-      sharedStateKeys = Object.keys(defaultModuleState);
-    } else if (inputSharedStateKeys === undefined) {
-      sharedStateKeys = [];
-    }
+  if (inputSharedStateKeys === 'all') {
+    sharedStateKeys = Object.keys(getState(module));
   }
 
   if (inputGlobalStateKeys === 'all') {
@@ -276,8 +245,6 @@ function checkCcStartupOrNot() {
 }
 
 function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, globalStateKeys) {
-  var globalState = getState(MODULE_GLOBAL);
-
   var _extractStateByKeys = extractStateByKeys(sourceState, sharedStateKeys),
       partialSharedState = _extractStateByKeys.partialState,
       isPartialSharedStateEmpty = _extractStateByKeys.isStateEmpty;
@@ -336,7 +303,7 @@ function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, gl
             modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
             //  can recover it correctly while they are mounted again!
 
-            globalState[globalMappingKey] = stateValue;
+            setStateByModuleAndKey(MODULE_GLOBAL, globalMappingKey, stateValue);
           }
         });
       }
@@ -451,8 +418,8 @@ function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, ccCl
   };
 }
 
-function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, refState, sharedStateKeys, globalStateKeys) {
-  var _getSharedKeysAndGlob = getSharedKeysAndGlobalKeys(stateModule, refState, ccClassKey, sharedStateKeys, globalStateKeys),
+function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys) {
+  var _getSharedKeysAndGlob = getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys),
       targetSharedStateKeys = _getSharedKeysAndGlob.sharedStateKeys,
       targetGlobalStateKeys = _getSharedKeysAndGlob.globalStateKeys;
 
@@ -469,6 +436,22 @@ function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, refState, sh
     globalStateKeys: targetGlobalStateKeys
   };
 }
+
+function computeValueForRef(computed, refComputed, state) {
+  if (computed) {
+    var toBeComputed = computed();
+    var toBeComputedKeys = Object.keys(toBeComputed);
+    toBeComputedKeys.forEach(function (key) {
+      var fn = toBeComputed[key];
+      var originalValue = state[key];
+
+      if (originalValue !== undefined) {
+        var computedValue = fn(originalValue, state);
+        refComputed[key] = computedValue;
+      }
+    });
+  }
+}
 /*
 options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
@@ -484,7 +467,8 @@ export default function register(ccClassKey, _temp) {
       _ref$module = _ref.module,
       module = _ref$module === void 0 ? MODULE_DEFAULT : _ref$module,
       reducerModule = _ref.reducerModule,
-      inputSharedStateKeys = _ref.sharedStateKeys,
+      _ref$sharedStateKeys = _ref.sharedStateKeys,
+      inputSharedStateKeys = _ref$sharedStateKeys === void 0 ? [] : _ref$sharedStateKeys,
       _ref$globalStateKeys = _ref.globalStateKeys,
       inputGlobalStateKeys = _ref$globalStateKeys === void 0 ? [] : _ref$globalStateKeys;
 
@@ -497,17 +481,13 @@ export default function register(ccClassKey, _temp) {
 
   checkStoreModule(_curStateModule);
   checkReducerModule(_reducerModule);
-  var sharedStateKeys, globalStateKeys;
 
-  if (ccContext.isModuleMode) {
-    var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, null, inputSharedStateKeys, inputGlobalStateKeys),
-        sKeys = _mapModuleAssociateDa.sharedStateKeys,
-        gKeys = _mapModuleAssociateDa.globalStateKeys;
+  var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys),
+      sKeys = _mapModuleAssociateDa.sharedStateKeys,
+      gKeys = _mapModuleAssociateDa.globalStateKeys;
 
-    sharedStateKeys = sKeys, globalStateKeys = gKeys;
-  } else {//  for non module mode, map operation delay execute until one ccInstance generated
-  }
-
+  var sharedStateKeys = sKeys,
+      globalStateKeys = gKeys;
   return function (ReactClass) {
     if (ReactClass.prototype.$$changeState && ReactClass.prototype.__$$mapCcToInstance) {
       throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CcClass!"));
@@ -535,14 +515,6 @@ export default function register(ccClassKey, _temp) {
         if (ccOption.asyncLifecycleHook === undefined) ccOption.asyncLifecycleHook = _asyncLifecycleHook;
         var asyncLifecycleHook = ccOption.asyncLifecycleHook,
             storedStateKeys = ccOption.storedStateKeys;
-
-        if (!ccContext.isModuleMode) {
-          var _mapModuleAssociateDa2 = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, _this.state, inputSharedStateKeys, inputGlobalStateKeys),
-              _sKeys = _mapModuleAssociateDa2.sharedStateKeys,
-              _gKeys = _mapModuleAssociateDa2.globalStateKeys;
-
-          sharedStateKeys = _sKeys, globalStateKeys = _gKeys;
-        }
 
         var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
             ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
@@ -594,7 +566,11 @@ export default function register(ccClassKey, _temp) {
         }
 
         var selfState = this.state;
-        this.state = _extends({}, selfState, refState, partialSharedState, partialGlobalState);
+
+        var entireState = _extends({}, selfState, refState, partialSharedState, partialGlobalState);
+
+        this.state = entireState;
+        computeValueForRef(this.$$computed, this.$$refComputed, entireState);
       };
 
       _proto.__$$bindDataToCcClassContext = function __$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
@@ -1011,7 +987,8 @@ export default function register(ccClassKey, _temp) {
                 type: type,
                 dispatch: contextDispatch,
                 payload: payload,
-                state: getState(targetStateModule),
+                state: _this2.state,
+                moduleState: getState(targetStateModule),
                 effect: _this2.$$effect,
                 xeffect: _this2.$$xeffect,
                 forceSync: forceSync,
@@ -1023,8 +1000,6 @@ export default function register(ccClassKey, _temp) {
             });
           },
           prepareReactSetState: function prepareReactSetState(changeBy, state, next, reactCallback) {
-            var _targetState = null;
-
             if (storedStateKeys.length > 0) {
               var _extractStateByKeys5 = extractStateByKeys(state, storedStateKeys),
                   partialState = _extractStateByKeys5.partialState,
@@ -1035,11 +1010,11 @@ export default function register(ccClassKey, _temp) {
               }
             }
 
-            _targetState = state;
-
-            if (!_targetState) {
+            if (!state) {
               if (next) next();
               return;
+            } else {
+              computeValueForRef(_this2.$$computed, _this2.$$refComputed, state);
             }
 
             if (_this2.$$beforeSetState) {
@@ -1302,6 +1277,9 @@ export default function register(ccClassKey, _temp) {
         this.$$effect = this.cc.effect.bind(this); // commit state to cc directly, userFn can only be normal function
 
         this.$$xeffect = this.cc.xeffect.bind(this);
+        this.$$refComputed = {};
+        this.$$moduleComputed = _computedValue[currentModule] || {};
+        this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};
         this.setState = this.cc.setState; //let setState call cc.setState
 
         this.setGlobalState = this.cc.setGlobalState; //let setState call cc.setState

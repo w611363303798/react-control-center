@@ -1,6 +1,11 @@
 
 # Change Log
 
+#### 2018-01-10 08:00
+* feature add: now cc support computed, you can define computed in startup option, it means this computed working for module, and
+you can also define it in a cc instance by dealer $$computed method, it means this computed working for only this instance, 
+you can get refComputed with this.$$refComputed, get moduleComputed with this.$$moduleComputed, and get globalComputed with this.$$globalComputed
+
 #### 2018-01-08 08:00
 * code optimize: optimize cc.setGlobalState
   

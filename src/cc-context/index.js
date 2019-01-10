@@ -2,11 +2,41 @@ import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
 
 const refs = {};
 const setStateByModule = (module, partialState) => {
-  const _state = ccContext.store._state;
-  const fullState = _state[module];
-  const mergedState = { ...fullState, ...partialState };
-  _state[module] = mergedState;
+  // const fullState = getState(module);
+  // const mergedState = { ...fullState, ...partialState };
+  // _state[module] = mergedState;
+  Object.keys(partialState).forEach(key => {
+    setStateByModuleAndKey(module, key, partialState[key]);
+  });
 }
+
+const getState = (module) => {
+  const _state = ccContext.store._state;
+  return _state[module];
+}
+
+const setStateByModuleAndKey = (module, key, value) => {
+  const moduleState = getState(module);
+  moduleState[key] = value;
+
+  const moduleComputedFn = computed._computedFn[module];
+  if (moduleComputedFn) {
+    const fn = moduleComputedFn[key];
+    if (fn) {
+      const computedValue = fn(value);
+      computed._computedValue[module][key] = computedValue;
+    }
+  }
+}
+
+const computed = {
+  _computedValue: {
+
+  },
+  _computedFn: {
+
+  }
+};
 
 const ccContext = {
   isDebug: false,
@@ -91,14 +121,18 @@ const ccContext = {
       }
     },
     getState: function (module) {
-      if (module) return ccContext.store._state[module];
+      if (module) return getState(module);
       else return ccContext.store._state;
     },
     setState: function (module, partialSharedState) {
       setStateByModule(module, partialSharedState);
     },
+    setStateByModuleAndKey,
     setGlobalState: function (partialGlobalState) {
       setStateByModule(MODULE_GLOBAL, partialGlobalState);
+    },
+    setGlobalStateByKey: function (key, value) {
+      setStateByModuleAndKey(MODULE_GLOBAL, key, value);
     },
     getGlobalState: function () {
       return ccContext.store._state[MODULE_GLOBAL];
@@ -114,6 +148,7 @@ const ccContext = {
       }
     }
   },
+  computed,
   refStore: {
     _state: {
 

@@ -21,7 +21,9 @@ import * as helper from './helper';
 const { extractStateByKeys, getAndStoreValidGlobalState } = helper;
 const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning } = util;
 const {
-  store: { _state, getState, setState: ccStoreSetState }, reducer: { _reducer }, refStore, globalMappingKey_sharedKey_,
+  store: { _state, getState, setState: ccStoreSetState, setStateByModuleAndKey },
+  reducer: { _reducer }, refStore, globalMappingKey_sharedKey_,
+  computed: { _computedValue },
   moduleName_sharedStateKeys_, moduleName_globalStateKeys_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_,
   globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_
@@ -205,7 +207,6 @@ function checkCcStartupOrNot() {
 }
 
 function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, globalStateKeys) {
-  const globalState = getState(MODULE_GLOBAL);
   const { partialState: partialSharedState, isStateEmpty: isPartialSharedStateEmpty } = extractStateByKeys(sourceState, sharedStateKeys);
   const { partialState: partialGlobalState, isStateEmpty: isPartialGlobalStateEmpty } = extractStateByKeys(sourceState, globalStateKeys);
 
@@ -252,7 +253,7 @@ function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, gl
             modulePartialGlobalState[globalMappingKey] = stateValue;
             //  !!!set this state to globalState, let other module that watching this globalMappingKey
             //  can recover it correctly while they are mounted again!
-            globalState[globalMappingKey] = stateValue;
+            setStateByModuleAndKey(MODULE_GLOBAL, globalMappingKey, stateValue);
           }
         });
       }
@@ -368,6 +369,21 @@ function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateK
   return { sharedStateKeys: targetSharedStateKeys, globalStateKeys: targetGlobalStateKeys };
 }
 
+function computeValueForRef(computed, refComputed, state) {
+  if (computed) {
+    const toBeComputed = computed();
+    const toBeComputedKeys = Object.keys(toBeComputed);
+    toBeComputedKeys.forEach(key => {
+      const fn = toBeComputed[key];
+      const originalValue = state[key];
+      if (originalValue !== undefined) {
+        const computedValue = fn(originalValue, state);
+        refComputed[key] = computedValue;
+      }
+    })
+  }
+}
+
 /*
 options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
@@ -448,7 +464,9 @@ export default function register(ccClassKey, {
         }
 
         const selfState = this.state;
-        this.state = { ...selfState, ...refState, ...partialSharedState, ...partialGlobalState };
+        const entireState = { ...selfState, ...refState, ...partialSharedState, ...partialGlobalState };
+        this.state = entireState;
+        computeValueForRef(this.$$computed, this.$$refComputed, entireState);
       }
 
       __$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
@@ -620,25 +638,25 @@ export default function register(ccClassKey, {
             isStateModuleValid(targetStateModule, currentModule, reactCallback, (newCb) => {
               const executionContext = {
                 stateFor, ccUniqueKey, ccOption, module: targetStateModule, reducerModule: targetReducerModule, type, dispatch: contextDispatch,
-                payload, state: getState(targetStateModule), effect: this.$$effect, xeffect: this.$$xeffect, forceSync, cb: newCb, context: true
+                payload, state: this.state, moduleState: getState(targetStateModule), effect: this.$$effect, xeffect: this.$$xeffect, forceSync, cb: newCb, context: true
               };
 
               this.cc.__invokeWith(reducerFn, executionContext);
             });
           },
           prepareReactSetState: (changeBy, state, next, reactCallback) => {
-            let _targetState = null;
             if (storedStateKeys.length > 0) {
               const { partialState, isStateEmpty } = extractStateByKeys(state, storedStateKeys);
               if (!isStateEmpty) {
                 refStore.setState(ccUniqueKey, partialState);
               }
             }
-            _targetState = state;
 
-            if (!_targetState) {
+            if (!state) {
               if (next) next();
               return;
+            } else {
+              computeValueForRef(this.$$computed, this.$$refComputed, state);
             }
 
             if (this.$$beforeSetState) {
@@ -861,6 +879,9 @@ export default function register(ccClassKey, {
         this.$$commitWith = this.cc.commitWith.bind(this);
         this.$$effect = this.cc.effect.bind(this);// commit state to cc directly, userFn can only be normal function
         this.$$xeffect = this.cc.xeffect.bind(this);
+        this.$$refComputed = {};
+        this.$$moduleComputed = _computedValue[currentModule] || {};
+        this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};
 
         this.setState = this.cc.setState;//let setState call cc.setState
         this.setGlobalState = this.cc.setGlobalState;//let setState call cc.setState
