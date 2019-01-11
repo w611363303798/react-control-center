@@ -230,12 +230,14 @@ function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, gl
         toModules = globalKey_toModules_[gKey];
         stateKey = gKey;
       }
-      toModules.forEach(m => {
-        if (m != refModule) {// current ref's module global state has been extracted into partialGlobalState above, so here exclude it
-          let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-          modulePartialGlobalState[stateKey] = stateValue;
-        }
-      });
+      if (toModules) {
+        toModules.forEach(m => {
+          if (m != refModule) {// current ref's module global state has been extracted into partialGlobalState above, so here exclude it
+            let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+            modulePartialGlobalState[stateKey] = stateValue;
+          }
+        });
+      }
     }
   });
 
@@ -247,15 +249,17 @@ function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, gl
       if (descriptor) {
         const { globalMappingKey } = descriptor;
         const toModules = globalMappingKey_toModules_[globalMappingKey];
-        toModules.forEach(m => {
-          if (m != refModule) {// current ref's module global state has been extracted into partialGlobalState above, so here exclude it
-            let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-            modulePartialGlobalState[globalMappingKey] = stateValue;
-            //  !!!set this state to globalState, let other module that watching this globalMappingKey
-            //  can recover it correctly while they are mounted again!
-            setStateByModuleAndKey(MODULE_GLOBAL, globalMappingKey, stateValue);
-          }
-        });
+        if (toModules) {
+          toModules.forEach(m => {
+            if (m != refModule) {// current ref's module global state has been extracted into partialGlobalState above, so here exclude it
+              let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+              modulePartialGlobalState[globalMappingKey] = stateValue;
+              //  !!!set this state to globalState, let other module that watching this globalMappingKey
+              //  can recover it correctly while they are mounted again!
+              setStateByModuleAndKey(MODULE_GLOBAL, globalMappingKey, stateValue);
+            }
+          });
+        }
       }
     }
   });
@@ -595,11 +599,11 @@ export default function register(ccClassKey, {
           },
           // change other module's state, cc will give userLogicFn EffectContext object as first param
           xeffect: (targetModule, userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, state: getState(targetModule), context: true, module: targetModule }, ...args);
+            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, moduleState: getState(targetModule), state:this.state, context: true, module: targetModule }, ...args);
           },
           invokeWith: (userLogicFn, option, ...args) => {
             const { module = currentModule, context = false, forceSync = false, cb } = option;
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, state: getState(module), context, forceSync, cb }, ...args);
+            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, moduleState: getState(module), state:this.state, context, forceSync, cb }, ...args);
           },
           __invokeWith: (userLogicFn, executionContext, ...args) => {
             const { stateFor, module: targetModule = currentModule, context = false, forceSync = false, cb } = executionContext;

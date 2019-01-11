@@ -35,7 +35,9 @@ cc内建了一个CC_CONTEXT管理所有的CC组件，可以方便你直接呼叫
 支持类redux模式的store、reducer、action、dispatch等概念的编程体验，但是更容易与现有项目集成，不需要顶层包裹Provider来提供redux上下文，但是如果你的项目不需要这些概念的引入，你仅仅只需要setState，数据从this.state获取，其他的都交给cc去完成吧,cc本身也可以在redux使用，并不会入侵redux现有的模式，可以局部引入cc，渐进式的体验它的优雅。
 <li style="font-size:16px;color:#4EB899">可模块化管理的store、reducer</li>
 cc内置的store和reducer可以被模块化拆分，方便你的视图逻辑和业务逻辑组织得更低耦合高内聚
-<li style="font-size:16px;color:#4EB899"></li>
+<li style="font-size:16px;color:#4EB899">支持cc实例定义$$computed属性</li>
+computed属性计算出的值会被缓存，如果对应的key的原始值不发生变化，computed对应的值不会再次计算
+<li style="font-size:16px;color:#4EB899">支持cc实例方法内通过调用$$emit, $$on和其他cc示例完成通信 </li>
 </ul>
 
 <h2 style="text-align:left;color:#4EB899">其他</h2>
@@ -44,7 +46,7 @@ cc内置的store和reducer可以被模块化拆分，方便你的视图逻辑和
 - 更多信息请参考 待添加。
 - ![工作示意图](http://cdn.boldseas.com/img/cc-1.png)
 ---
-## 核心api
+## 核心api -- 顶层api
 
   ### startup
 > 启动cc后，才能在项目其他任何地方使用cc的所有功能，通常将cc的启动操作放在整个应用的入口文件的第一行
@@ -206,7 +208,57 @@ export default class App extends react.Component{
 starup后，cc的CC_CONTEXT管理着所有cc实例的引用，可以直接调用实例的任何方法
 
 ---
+## 核心api -- cc实例定义的函数
 
+### cc实例的自定义生命周期函数 
+```
+$$beforeSetState, $$beforeBroadcastState，$$afterSetState 各自的触发时机处于以下位置
+
+$$beforeSetState
+$$beforeBroadcastState（如果存在要广播的状态，此方法被调用）
+componentWillReceiveProps
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+$$afterSetState
+```
+### cc实例的自定义$$computed函数 
+```
+@cc.register('Foo');
+class Foo extends React.Component{
+  constructor(props, context){
+    super(props, context);
+    this.state = {
+      foo: 'foo',
+      bar: 'bar',
+    };
+  }
+  $$computed = ()=>{
+    return {
+      foo: foo=> `wrapped foo:${foo}`,
+      bar: bar=> `reversed bar:${bar.split('').reverse().join('')}`
+    }
+  }
+  render(){
+    const {foo, bar} = this.state;
+    const {foo:cFoo, bar:cBar} = this.$$refComputed;
+    return (
+      <div>
+        <p>foo {foo}</p>
+        <p>bar {bar}</p>
+        <p>computed foo {cFoo}</p>
+        <p>computed bar {cBar}</p>
+      </div>
+    );
+  }
+}
+```
+---
+## 核心api -- cc实例运行时可以调用的函数
+### cc实例的自定义$$computed函数 
+
+---
 ### 结语
 * 此项目启发于redux的高阶函数，在脑海里构思了一周左右，觉得通过控制引用接管setState函数，可以精确的控制想要渲染的组件，数据都从state降低编程的复杂度
 * 所有cc组件都具有相互感知到共享的key的数据变化，且组件销毁后数据能够存储的store里，使得再次实例化组件时数据能够自动恢复，让state能够变得更智能
