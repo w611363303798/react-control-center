@@ -480,6 +480,8 @@
       }
     },
     ccKey_ref_: refs,
+    //  key:eventName,  value: Array<{ccKey, identity,  handler}>
+    event_handlers_: {},
     ccKey_option_: {},
     refs: refs,
     info: {
@@ -1527,6 +1529,7 @@
       refStore = ccContext.refStore,
       globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
       _computedValue = ccContext.computed._computedValue,
+      event_handlers_ = ccContext.event_handlers_,
       moduleName_sharedStateKeys_ = ccContext.moduleName_sharedStateKeys_,
       moduleName_globalStateKeys_ = ccContext.moduleName_globalStateKeys_,
       ccKey_ref_ = ccContext.ccKey_ref_,
@@ -1950,6 +1953,53 @@
       });
     }
   }
+
+  function bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler) {
+    var handlers = util.safeGetArrayFromObject(event_handlers_, event);
+
+    if (typeof handler !== 'function') {
+      return justWarning$2("event " + event + "'s handler is not a function!");
+    }
+
+    var targetHandler = handlers.find(function (v) {
+      return v.ccKey === ccUniqueKey && v.identity === identity;
+    }); //  that means the component of ccUniqueKey mounted again 
+    //  or user call $$on for a same event in a same instance more than once
+
+    if (targetHandler) {
+      //  cc will alway use the latest handler
+      targetHandler.handler = handler;
+    } else {
+      handlers.push({
+        ccKey: ccUniqueKey,
+        identity: identity,
+        handler: handler
+      });
+    }
+  }
+
+  function findEventHandlersToPerform(event, inputIdentity) {
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+
+    var handlers = event_handlers_[event];
+
+    if (handlers) {
+      handlers.forEach(function (_ref) {
+        var ccKey = _ref.ccKey,
+            identity = _ref.identity,
+            handler = _ref.handler;
+
+        if (ccKey_ref_[ccKey]) {
+          //  confirm the instance is mounted
+          if (inputIdentity === identity) {
+            handler.apply(void 0, args);
+          }
+        }
+      });
+    }
+  }
   /*
   options.module = 'xxx'
   options.sharedStateKeys = ['aa', 'bbb']
@@ -1957,18 +2007,18 @@
 
 
   function register(ccClassKey, _temp) {
-    var _ref = _temp === void 0 ? {} : _temp,
-        _ref$isSingle = _ref.isSingle,
-        isSingle = _ref$isSingle === void 0 ? false : _ref$isSingle,
-        _ref$asyncLifecycleHo = _ref.asyncLifecycleHook,
-        asyncLifecycleHook = _ref$asyncLifecycleHo === void 0 ? false : _ref$asyncLifecycleHo,
-        _ref$module = _ref.module,
-        module = _ref$module === void 0 ? MODULE_DEFAULT : _ref$module,
-        reducerModule = _ref.reducerModule,
-        _ref$sharedStateKeys = _ref.sharedStateKeys,
-        inputSharedStateKeys = _ref$sharedStateKeys === void 0 ? [] : _ref$sharedStateKeys,
-        _ref$globalStateKeys = _ref.globalStateKeys,
-        inputGlobalStateKeys = _ref$globalStateKeys === void 0 ? [] : _ref$globalStateKeys;
+    var _ref2 = _temp === void 0 ? {} : _temp,
+        _ref2$isSingle = _ref2.isSingle,
+        isSingle = _ref2$isSingle === void 0 ? false : _ref2$isSingle,
+        _ref2$asyncLifecycleH = _ref2.asyncLifecycleHook,
+        asyncLifecycleHook = _ref2$asyncLifecycleH === void 0 ? false : _ref2$asyncLifecycleH,
+        _ref2$module = _ref2.module,
+        module = _ref2$module === void 0 ? MODULE_DEFAULT : _ref2$module,
+        reducerModule = _ref2.reducerModule,
+        _ref2$sharedStateKeys = _ref2.sharedStateKeys,
+        inputSharedStateKeys = _ref2$sharedStateKeys === void 0 ? [] : _ref2$sharedStateKeys,
+        _ref2$globalStateKeys = _ref2.globalStateKeys,
+        inputGlobalStateKeys = _ref2$globalStateKeys === void 0 ? [] : _ref2$globalStateKeys;
 
     checkCcStartupOrNot();
     var _curStateModule = module;
@@ -2197,8 +2247,8 @@
             invoke: function invoke(userLogicFn) {
               var _this2$cc;
 
-              for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                args[_key - 1] = arguments[_key];
+              for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+                args[_key2 - 1] = arguments[_key2];
               }
 
               (_this2$cc = _this2.cc).__invokeWith.apply(_this2$cc, [userLogicFn, {
@@ -2211,8 +2261,8 @@
             effect: function effect(targetModule, userLogicFn) {
               var _this2$cc2;
 
-              for (var _len2 = arguments.length, args = new Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-                args[_key2 - 2] = arguments[_key2];
+              for (var _len3 = arguments.length, args = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
+                args[_key3 - 2] = arguments[_key3];
               }
 
               (_this2$cc2 = _this2.cc).__invokeWith.apply(_this2$cc2, [userLogicFn, {
@@ -2225,8 +2275,8 @@
             xeffect: function xeffect(targetModule, userLogicFn) {
               var _this2$cc3;
 
-              for (var _len3 = arguments.length, args = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
-                args[_key3 - 2] = arguments[_key3];
+              for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
+                args[_key4 - 2] = arguments[_key4];
               }
 
               (_this2$cc3 = _this2.cc).__invokeWith.apply(_this2$cc3, [userLogicFn, {
@@ -2247,8 +2297,8 @@
                   forceSync = _option$forceSync === void 0 ? false : _option$forceSync,
                   cb = option.cb;
 
-              for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
-                args[_key4 - 2] = arguments[_key4];
+              for (var _len5 = arguments.length, args = new Array(_len5 > 2 ? _len5 - 2 : 0), _key5 = 2; _key5 < _len5; _key5++) {
+                args[_key5 - 2] = arguments[_key5];
               }
 
               (_this2$cc4 = _this2.cc).__invokeWith.apply(_this2$cc4, [userLogicFn, {
@@ -2261,8 +2311,8 @@
               }].concat(args));
             },
             __invokeWith: function __invokeWith(userLogicFn, executionContext) {
-              for (var _len5 = arguments.length, args = new Array(_len5 > 2 ? _len5 - 2 : 0), _key5 = 2; _key5 < _len5; _key5++) {
-                args[_key5 - 2] = arguments[_key5];
+              for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
+                args[_key6 - 2] = arguments[_key6];
               }
 
               var stateFor = executionContext.stateFor,
@@ -2288,8 +2338,8 @@
             call: function call(userLogicFn) {
               var _this2$cc5;
 
-              for (var _len6 = arguments.length, args = new Array(_len6 > 1 ? _len6 - 1 : 0), _key6 = 1; _key6 < _len6; _key6++) {
-                args[_key6 - 1] = arguments[_key6];
+              for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
+                args[_key7 - 1] = arguments[_key7];
               }
 
               (_this2$cc5 = _this2.cc).__callWith.apply(_this2$cc5, [userLogicFn, {
@@ -2300,15 +2350,15 @@
             callWith: function callWith(userLogicFn, _temp2) {
               var _this2$cc6;
 
-              var _ref2 = _temp2 === void 0 ? {} : _temp2,
-                  _ref2$module = _ref2.module,
-                  module = _ref2$module === void 0 ? currentModule : _ref2$module,
-                  _ref2$forceSync = _ref2.forceSync,
-                  forceSync = _ref2$forceSync === void 0 ? false : _ref2$forceSync,
-                  cb = _ref2.cb;
+              var _ref3 = _temp2 === void 0 ? {} : _temp2,
+                  _ref3$module = _ref3.module,
+                  module = _ref3$module === void 0 ? currentModule : _ref3$module,
+                  _ref3$forceSync = _ref3.forceSync,
+                  forceSync = _ref3$forceSync === void 0 ? false : _ref3$forceSync,
+                  cb = _ref3.cb;
 
-              for (var _len7 = arguments.length, args = new Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
-                args[_key7 - 2] = arguments[_key7];
+              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+                args[_key8 - 2] = arguments[_key8];
               }
 
               (_this2$cc6 = _this2.cc).__callWith.apply(_this2$cc6, [userLogicFn, {
@@ -2319,16 +2369,16 @@
               }].concat(args));
             },
             __callWith: function __callWith(userLogicFn, _temp3) {
-              var _ref3 = _temp3 === void 0 ? {} : _temp3,
-                  stateFor = _ref3.stateFor,
-                  _ref3$module = _ref3.module,
-                  module = _ref3$module === void 0 ? currentModule : _ref3$module,
-                  _ref3$forceSync = _ref3.forceSync,
-                  forceSync = _ref3$forceSync === void 0 ? false : _ref3$forceSync,
-                  cb = _ref3.cb;
+              var _ref4 = _temp3 === void 0 ? {} : _temp3,
+                  stateFor = _ref4.stateFor,
+                  _ref4$module = _ref4.module,
+                  module = _ref4$module === void 0 ? currentModule : _ref4$module,
+                  _ref4$forceSync = _ref4.forceSync,
+                  forceSync = _ref4$forceSync === void 0 ? false : _ref4$forceSync,
+                  cb = _ref4.cb;
 
-              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
-                args[_key8 - 2] = arguments[_key8];
+              for (var _len9 = arguments.length, args = new Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
+                args[_key9 - 2] = arguments[_key9];
               }
 
               isStateModuleValid(module, currentModule, cb, function (newCb) {
@@ -2343,8 +2393,8 @@
             callThunk: function callThunk(userLogicFn) {
               var _this2$cc7;
 
-              for (var _len9 = arguments.length, args = new Array(_len9 > 1 ? _len9 - 1 : 0), _key9 = 1; _key9 < _len9; _key9++) {
-                args[_key9 - 1] = arguments[_key9];
+              for (var _len10 = arguments.length, args = new Array(_len10 > 1 ? _len10 - 1 : 0), _key10 = 1; _key10 < _len10; _key10++) {
+                args[_key10 - 1] = arguments[_key10];
               }
 
               (_this2$cc7 = _this2.cc).__callThunkWith.apply(_this2$cc7, [userLogicFn, {
@@ -2355,15 +2405,15 @@
             callThunkWith: function callThunkWith(userLogicFn, _temp4) {
               var _this2$cc8;
 
-              var _ref4 = _temp4 === void 0 ? {} : _temp4,
-                  _ref4$module = _ref4.module,
-                  module = _ref4$module === void 0 ? currentModule : _ref4$module,
-                  _ref4$forceSync = _ref4.forceSync,
-                  forceSync = _ref4$forceSync === void 0 ? false : _ref4$forceSync,
-                  cb = _ref4.cb;
+              var _ref5 = _temp4 === void 0 ? {} : _temp4,
+                  _ref5$module = _ref5.module,
+                  module = _ref5$module === void 0 ? currentModule : _ref5$module,
+                  _ref5$forceSync = _ref5.forceSync,
+                  forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
+                  cb = _ref5.cb;
 
-              for (var _len10 = arguments.length, args = new Array(_len10 > 2 ? _len10 - 2 : 0), _key10 = 2; _key10 < _len10; _key10++) {
-                args[_key10 - 2] = arguments[_key10];
+              for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
+                args[_key11 - 2] = arguments[_key11];
               }
 
               (_this2$cc8 = _this2.cc).__callThunkWith.apply(_this2$cc8, [userLogicFn, {
@@ -2374,16 +2424,16 @@
               }].concat(args));
             },
             __callThunkWith: function __callThunkWith(userLogicFn, _temp5) {
-              var _ref5 = _temp5 === void 0 ? {} : _temp5,
-                  stateFor = _ref5.stateFor,
-                  _ref5$module = _ref5.module,
-                  module = _ref5$module === void 0 ? currentModule : _ref5$module,
-                  _ref5$forceSync = _ref5.forceSync,
-                  forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
-                  cb = _ref5.cb;
+              var _ref6 = _temp5 === void 0 ? {} : _temp5,
+                  stateFor = _ref6.stateFor,
+                  _ref6$module = _ref6.module,
+                  module = _ref6$module === void 0 ? currentModule : _ref6$module,
+                  _ref6$forceSync = _ref6.forceSync,
+                  forceSync = _ref6$forceSync === void 0 ? false : _ref6$forceSync,
+                  cb = _ref6.cb;
 
-              for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
-                args[_key11 - 2] = arguments[_key11];
+              for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
+                args[_key12 - 2] = arguments[_key12];
               }
 
               isStateModuleValid(module, currentModule, cb, function (newCb) {
@@ -2398,8 +2448,8 @@
             commit: function commit(userLogicFn) {
               var _this2$cc9;
 
-              for (var _len12 = arguments.length, args = new Array(_len12 > 1 ? _len12 - 1 : 0), _key12 = 1; _key12 < _len12; _key12++) {
-                args[_key12 - 1] = arguments[_key12];
+              for (var _len13 = arguments.length, args = new Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
+                args[_key13 - 1] = arguments[_key13];
               }
 
               (_this2$cc9 = _this2.cc).__commitWith.apply(_this2$cc9, [userLogicFn, {
@@ -2410,15 +2460,15 @@
             commitWith: function commitWith(userLogicFn, _temp6) {
               var _this2$cc10;
 
-              var _ref6 = _temp6 === void 0 ? {} : _temp6,
-                  _ref6$module = _ref6.module,
-                  module = _ref6$module === void 0 ? currentModule : _ref6$module,
-                  _ref6$forceSync = _ref6.forceSync,
-                  forceSync = _ref6$forceSync === void 0 ? false : _ref6$forceSync,
-                  cb = _ref6.cb;
+              var _ref7 = _temp6 === void 0 ? {} : _temp6,
+                  _ref7$module = _ref7.module,
+                  module = _ref7$module === void 0 ? currentModule : _ref7$module,
+                  _ref7$forceSync = _ref7.forceSync,
+                  forceSync = _ref7$forceSync === void 0 ? false : _ref7$forceSync,
+                  cb = _ref7.cb;
 
-              for (var _len13 = arguments.length, args = new Array(_len13 > 2 ? _len13 - 2 : 0), _key13 = 2; _key13 < _len13; _key13++) {
-                args[_key13 - 2] = arguments[_key13];
+              for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
+                args[_key14 - 2] = arguments[_key14];
               }
 
               (_this2$cc10 = _this2.cc).__commitWith.apply(_this2$cc10, [userLogicFn, {
@@ -2429,16 +2479,16 @@
               }].concat(args));
             },
             __commitWith: function __commitWith(userLogicFn, _temp7) {
-              var _ref7 = _temp7 === void 0 ? {} : _temp7,
-                  stateFor = _ref7.stateFor,
-                  _ref7$module = _ref7.module,
-                  module = _ref7$module === void 0 ? currentModule : _ref7$module,
-                  _ref7$forceSync = _ref7.forceSync,
-                  forceSync = _ref7$forceSync === void 0 ? false : _ref7$forceSync,
-                  cb = _ref7.cb;
+              var _ref8 = _temp7 === void 0 ? {} : _temp7,
+                  stateFor = _ref8.stateFor,
+                  _ref8$module = _ref8.module,
+                  module = _ref8$module === void 0 ? currentModule : _ref8$module,
+                  _ref8$forceSync = _ref8.forceSync,
+                  forceSync = _ref8$forceSync === void 0 ? false : _ref8$forceSync,
+                  cb = _ref8.cb;
 
-              for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
-                args[_key14 - 2] = arguments[_key14];
+              for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
+                args[_key15 - 2] = arguments[_key15];
               }
 
               isStateModuleValid(module, currentModule, cb, function (newCb) {
@@ -2453,15 +2503,15 @@
               });
             },
             dispatch: function dispatch(_temp8) {
-              var _ref8 = _temp8 === void 0 ? {} : _temp8,
-                  stateFor = _ref8.stateFor,
-                  inputModule = _ref8.module,
-                  inputReducerModule = _ref8.reducerModule,
-                  _ref8$forceSync = _ref8.forceSync,
-                  forceSync = _ref8$forceSync === void 0 ? false : _ref8$forceSync,
-                  type = _ref8.type,
-                  payload = _ref8.payload,
-                  reactCallback = _ref8.cb;
+              var _ref9 = _temp8 === void 0 ? {} : _temp8,
+                  stateFor = _ref9.stateFor,
+                  inputModule = _ref9.module,
+                  inputReducerModule = _ref9.reducerModule,
+                  _ref9$forceSync = _ref9.forceSync,
+                  forceSync = _ref9$forceSync === void 0 ? false : _ref9$forceSync,
+                  type = _ref9.type,
+                  payload = _ref9.payload,
+                  reactCallback = _ref9.cb;
 
               //if module not defined, targetStateModule will be currentModule
               var targetStateModule = inputModule || currentModule; //if reducerModule not defined, cc will treat targetReducerModule as targetStateModule
@@ -2741,6 +2791,26 @@
                   });
                 }
               });
+            },
+            emit: function emit(event) {
+              for (var _len16 = arguments.length, args = new Array(_len16 > 1 ? _len16 - 1 : 0), _key16 = 1; _key16 < _len16; _key16++) {
+                args[_key16 - 1] = arguments[_key16];
+              }
+
+              findEventHandlersToPerform.apply(void 0, [event, null].concat(args));
+            },
+            emitIdentity: function emitIdentity(event, identity) {
+              for (var _len17 = arguments.length, args = new Array(_len17 > 2 ? _len17 - 2 : 0), _key17 = 2; _key17 < _len17; _key17++) {
+                args[_key17 - 2] = arguments[_key17];
+              }
+
+              findEventHandlersToPerform.apply(void 0, [event, identity].concat(args));
+            },
+            on: function on(event, handler) {
+              bindEventHandlerToCcContext(ccUniqueKey, event, null, handler);
+            },
+            onIdentity: function onIdentity(event, identity, handler) {
+              bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler);
             }
           };
           this.cc.reactSetState = this.cc.reactSetState.bind(this);
@@ -2770,6 +2840,10 @@
           this.$$effect = this.cc.effect.bind(this); // commit state to cc directly, userFn can only be normal function
 
           this.$$xeffect = this.cc.xeffect.bind(this);
+          this.$$emit = this.cc.emit.bind(this);
+          this.$$emitIdentity = this.cc.emitIdentity.bind(this);
+          this.$$on = this.cc.on.bind(this);
+          this.$$onIdentity = this.cc.onIdentity.bind(this);
           this.$$refComputed = {};
           this.$$moduleComputed = _computedValue[currentModule] || {};
           this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};
@@ -2794,14 +2868,14 @@
         _proto.$$changeState = function $$changeState(state, _temp9) {
           var _this3 = this;
 
-          var _ref9 = _temp9 === void 0 ? {} : _temp9,
-              _ref9$stateFor = _ref9.stateFor,
-              stateFor = _ref9$stateFor === void 0 ? STATE_FOR_ONE_CC_INSTANCE_FIRSTLY : _ref9$stateFor,
-              module = _ref9.module,
-              broadcastTriggeredBy = _ref9.broadcastTriggeredBy,
-              changeBy = _ref9.changeBy,
-              forceSync = _ref9.forceSync,
-              reactCallback = _ref9.cb;
+          var _ref10 = _temp9 === void 0 ? {} : _temp9,
+              _ref10$stateFor = _ref10.stateFor,
+              stateFor = _ref10$stateFor === void 0 ? STATE_FOR_ONE_CC_INSTANCE_FIRSTLY : _ref10$stateFor,
+              module = _ref10.module,
+              broadcastTriggeredBy = _ref10.broadcastTriggeredBy,
+              changeBy = _ref10.changeBy,
+              forceSync = _ref10.forceSync,
+              reactCallback = _ref10.cb;
 
           //executionContext
           if (!isPlainJsonObject(state)) {
@@ -2845,14 +2919,14 @@
           var _this5 = this;
 
           return function (_temp10) {
-            var _ref10 = _temp10 === void 0 ? {} : _temp10,
-                module = _ref10.module,
-                reducerModule = _ref10.reducerModule,
-                _ref10$forceSync = _ref10.forceSync,
-                forceSync = _ref10$forceSync === void 0 ? false : _ref10$forceSync,
-                type = _ref10.type,
-                payload = _ref10.payload,
-                reactCallback = _ref10.cb;
+            var _ref11 = _temp10 === void 0 ? {} : _temp10,
+                module = _ref11.module,
+                reducerModule = _ref11.reducerModule,
+                _ref11$forceSync = _ref11.forceSync,
+                forceSync = _ref11$forceSync === void 0 ? false : _ref11$forceSync,
+                type = _ref11.type,
+                payload = _ref11.payload,
+                reactCallback = _ref11.cb;
 
             _this5.cc.dispatch({
               stateFor: stateFor,

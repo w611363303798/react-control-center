@@ -23,7 +23,7 @@ const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError,
 const {
   store: { _state, getState, setState: ccStoreSetState, setStateByModuleAndKey },
   reducer: { _reducer }, refStore, globalMappingKey_sharedKey_,
-  computed: { _computedValue },
+  computed: { _computedValue }, event_handlers_,
   moduleName_sharedStateKeys_, moduleName_globalStateKeys_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_,
   globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_
@@ -381,6 +381,35 @@ function computeValueForRef(computed, refComputed, state) {
         refComputed[key] = computedValue;
       }
     })
+  }
+}
+
+function bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler) {
+  const handlers = util.safeGetArrayFromObject(event_handlers_, event);
+  if (typeof handler !== 'function') {
+    return justWarning(`event ${event}'s handler is not a function!`);
+  }
+  const targetHandler = handlers.find(v => v.ccKey === ccUniqueKey && v.identity === identity);
+  //  that means the component of ccUniqueKey mounted again 
+  //  or user call $$on for a same event in a same instance more than once
+  if (targetHandler) {
+    //  cc will alway use the latest handler
+    targetHandler.handler = handler;
+  } else {
+    handlers.push({ ccKey: ccUniqueKey, identity, handler });
+  }
+}
+
+function findEventHandlersToPerform(event, inputIdentity, ...args) {
+  const handlers = event_handlers_[event];
+  if (handlers) {
+    handlers.forEach(({ ccKey, identity, handler }) => {
+      if (ccKey_ref_[ccKey]) {//  confirm the instance is mounted
+        if (inputIdentity === identity) {
+          handler(...args);
+        }
+      }
+    });
   }
 }
 
@@ -852,7 +881,20 @@ export default function register(ccClassKey, {
                 });
               }
             });
-          }
+          },
+
+          emit: (event, ...args) => {
+            findEventHandlersToPerform(event, null, ...args);
+          },
+          emitIdentity: (event, identity, ...args) => {
+            findEventHandlersToPerform(event, identity, ...args);
+          },
+          on: (event, handler) => {
+            bindEventHandlerToCcContext(ccUniqueKey, event, null, handler)
+          },
+          onIdentity: (event, identity, handler) => {
+            bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler)
+          },
         }
 
         this.cc.reactSetState = this.cc.reactSetState.bind(this);
@@ -879,6 +921,12 @@ export default function register(ccClassKey, {
         this.$$commitWith = this.cc.commitWith.bind(this);
         this.$$effect = this.cc.effect.bind(this);// commit state to cc directly, userFn can only be normal function
         this.$$xeffect = this.cc.xeffect.bind(this);
+
+        this.$$emit = this.cc.emit.bind(this);
+        this.$$emitIdentity = this.cc.emitIdentity.bind(this);
+        this.$$on = this.cc.on.bind(this);
+        this.$$onIdentity = this.cc.onIdentity.bind(this);
+
         this.$$refComputed = {};
         this.$$moduleComputed = _computedValue[currentModule] || {};
         this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};

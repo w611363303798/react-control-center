@@ -1,6 +1,9 @@
 
 # Change Log
 
+#### 2018-01-11 08:00
+* feature add: now cc support $$on, $$onIdentity, $$emit, $$emitIdentity in cc instance, you can call these method in any method of your cc instance except for constructor!(because all the cc method $$[cc method] were injected to your cc instance after your constructor been called), usually you can call $$on,$$onIdentity in computeWillMount and call $$emit,$$emitIdentity in in any other method except for constructor.
+
 #### 2018-01-10 08:00
 * feature add: now cc support computed, you can define computed in startup option, it means this computed working for module, and
 you can also define it in a cc instance by dealer $$computed method, it means this computed working for only this instance, 

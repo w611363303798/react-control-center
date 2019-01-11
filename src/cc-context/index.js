@@ -161,6 +161,10 @@ const ccContext = {
     },
   },
   ccKey_ref_: refs,
+  //  key:eventName,  value: Array<{ccKey, identity,  handler}>
+  event_handlers_:{
+
+  },
   ccKey_option_: {
 
   },
