@@ -2,6 +2,7 @@
 import ccContext from '../../cc-context';
 import extractStateByKeys from './extract-state-by-keys';
 import { MODULE_GLOBAL } from '../../support/constant';
+import { justWarning } from '../../support/util';
 
 const ccStoreSetState = ccContext.store.setState;
 const ccGlobalStateKeys = ccContext.globalStateKeys;
