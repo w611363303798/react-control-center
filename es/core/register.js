@@ -821,6 +821,7 @@ export default function register(ccClassKey, _temp) {
 
             (_this2$cc3 = _this2.cc).__invokeWith.apply(_this2$cc3, [userLogicFn, {
               stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
+              xeffect: _this2.cc.xeffect,
               moduleState: getState(targetModule),
               state: _this2.state,
               context: true,
