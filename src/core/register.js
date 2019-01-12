@@ -616,7 +616,7 @@ export default function register(ccClassKey, {
           },
           // change other module's state, cc will give userLogicFn EffectContext object as first param
           xeffect: (targetModule, userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
+            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect:this.cc.xeffect, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
           },
           // advanced invoke, can change other module state, but user should put module to option
           // and user can decide userLogicFn's first param is ExecutionContext by set context = true

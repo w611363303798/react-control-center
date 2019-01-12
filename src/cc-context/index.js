@@ -174,6 +174,11 @@ const ccContext = {
   }
 }
 
+if(window && !window.sss ){
+  window.sss = ccContext.store._state;
+}
+
+
 export function getCcContext() {
   return ccContext;
 }
