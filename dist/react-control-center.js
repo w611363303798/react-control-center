@@ -1778,13 +1778,15 @@
           stateKey = gKey;
         }
 
-        toModules.forEach(function (m) {
-          if (m != refModule) {
-            // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
-            var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-            modulePartialGlobalState[stateKey] = stateValue;
-          }
-        });
+        if (toModules) {
+          toModules.forEach(function (m) {
+            if (m != refModule) {
+              // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
+              var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+              modulePartialGlobalState[stateKey] = stateValue;
+            }
+          });
+        }
       }
     }); //  see if sourceState includes sharedStateKey which are mapped to globalStateKey
 
@@ -1797,16 +1799,19 @@
         if (descriptor) {
           var globalMappingKey = descriptor.globalMappingKey;
           var toModules = globalMappingKey_toModules_[globalMappingKey];
-          toModules.forEach(function (m) {
-            if (m != refModule) {
-              // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
-              var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-              modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
-              //  can recover it correctly while they are mounted again!
 
-              setStateByModuleAndKey$1(MODULE_GLOBAL, globalMappingKey, stateValue);
-            }
-          });
+          if (toModules) {
+            toModules.forEach(function (m) {
+              if (m != refModule) {
+                // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
+                var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+                modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
+                //  can recover it correctly while they are mounted again!
+
+                setStateByModuleAndKey$1(MODULE_GLOBAL, globalMappingKey, stateValue);
+              }
+            });
+          }
         }
       }
     }); // partialSharedState is prepared for input module 
@@ -1954,7 +1959,7 @@
     }
   }
 
-  function bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler) {
+  function bindEventHandlerToCcContext(module, ccClassKey, ccUniqueKey, event, identity, handler) {
     var handlers = util.safeGetArrayFromObject(event_handlers_, event);
 
     if (typeof handler !== 'function') {
@@ -1971,6 +1976,8 @@
       targetHandler.handler = handler;
     } else {
       handlers.push({
+        module: module,
+        ccClassKey: ccClassKey,
         ccKey: ccUniqueKey,
         identity: identity,
         handler: handler
@@ -1978,27 +1985,60 @@
     }
   }
 
-  function findEventHandlersToPerform(event, inputIdentity) {
+  function _findEventHandlers(event, module, ccClassKey, identity) {
+    var handlers = event_handlers_[event];
+
+    if (handlers) {
+      var filteredHandlers = [];
+      if (module) filteredHandlers = handlers.filter(function (v) {
+        return v.module === module;
+      });
+      if (ccClassKey) filteredHandlers = handlers.filter(function (v) {
+        return v.ccClassKey === ccClassKey;
+      }); // identity is null means user call emit or emitIdentity which set identity as null
+      // identity is not null means user call emitIdentity
+
+      filteredHandlers = handlers.filter(function (v) {
+        return v.identity === identity;
+      });
+      return filteredHandlers;
+    } else {
+      return [];
+    }
+  }
+
+  function findEventHandlersToPerform(event, _ref) {
+    var module = _ref.module,
+        ccClassKey = _ref.ccClassKey,
+        identity = _ref.identity;
+
     for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       args[_key - 2] = arguments[_key];
     }
 
-    var handlers = event_handlers_[event];
+    var handlers = _findEventHandlers(event, module, ccClassKey, identity);
 
-    if (handlers) {
-      handlers.forEach(function (_ref) {
-        var ccKey = _ref.ccKey,
-            identity = _ref.identity,
-            handler = _ref.handler;
+    handlers.forEach(function (_ref2) {
+      var ccKey = _ref2.ccKey,
+          handler = _ref2.handler;
 
-        if (ccKey_ref_[ccKey]) {
-          //  confirm the instance is mounted
-          if (inputIdentity === identity) {
-            handler.apply(void 0, args);
-          }
-        }
-      });
-    }
+      if (ccKey_ref_[ccKey] && handler) {
+        //  confirm the instance is mounted and handler is not been offed
+        handler.apply(void 0, args);
+      }
+    });
+  }
+
+  function findEventHandlersToOff(event, _ref3) {
+    var module = _ref3.module,
+        ccClassKey = _ref3.ccClassKey,
+        identity = _ref3.identity;
+
+    var handlers = _findEventHandlers(event, module, ccClassKey, identity);
+
+    handlers.forEach(function (item) {
+      return item.handler = null;
+    });
   }
   /*
   options.module = 'xxx'
@@ -2007,18 +2047,18 @@
 
 
   function register(ccClassKey, _temp) {
-    var _ref2 = _temp === void 0 ? {} : _temp,
-        _ref2$isSingle = _ref2.isSingle,
-        isSingle = _ref2$isSingle === void 0 ? false : _ref2$isSingle,
-        _ref2$asyncLifecycleH = _ref2.asyncLifecycleHook,
-        asyncLifecycleHook = _ref2$asyncLifecycleH === void 0 ? false : _ref2$asyncLifecycleH,
-        _ref2$module = _ref2.module,
-        module = _ref2$module === void 0 ? MODULE_DEFAULT : _ref2$module,
-        reducerModule = _ref2.reducerModule,
-        _ref2$sharedStateKeys = _ref2.sharedStateKeys,
-        inputSharedStateKeys = _ref2$sharedStateKeys === void 0 ? [] : _ref2$sharedStateKeys,
-        _ref2$globalStateKeys = _ref2.globalStateKeys,
-        inputGlobalStateKeys = _ref2$globalStateKeys === void 0 ? [] : _ref2$globalStateKeys;
+    var _ref4 = _temp === void 0 ? {} : _temp,
+        _ref4$isSingle = _ref4.isSingle,
+        isSingle = _ref4$isSingle === void 0 ? false : _ref4$isSingle,
+        _ref4$asyncLifecycleH = _ref4.asyncLifecycleHook,
+        asyncLifecycleHook = _ref4$asyncLifecycleH === void 0 ? false : _ref4$asyncLifecycleH,
+        _ref4$module = _ref4.module,
+        module = _ref4$module === void 0 ? MODULE_DEFAULT : _ref4$module,
+        reducerModule = _ref4.reducerModule,
+        _ref4$sharedStateKeys = _ref4.sharedStateKeys,
+        inputSharedStateKeys = _ref4$sharedStateKeys === void 0 ? [] : _ref4$sharedStateKeys,
+        _ref4$globalStateKeys = _ref4.globalStateKeys,
+        inputGlobalStateKeys = _ref4$globalStateKeys === void 0 ? [] : _ref4$globalStateKeys;
 
     checkCcStartupOrNot();
     var _curStateModule = module;
@@ -2281,11 +2321,14 @@
 
               (_this2$cc3 = _this2.cc).__invokeWith.apply(_this2$cc3, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
-                state: getState(targetModule),
+                moduleState: getState(targetModule),
+                state: _this2.state,
                 context: true,
                 module: targetModule
               }].concat(args));
             },
+            // advanced invoke, can change other module state, but user should put module to option
+            // and user can decide userLogicFn's first param is ExecutionContext by set context = true
             invokeWith: function invokeWith(userLogicFn, option) {
               var _this2$cc4;
 
@@ -2304,7 +2347,8 @@
               (_this2$cc4 = _this2.cc).__invokeWith.apply(_this2$cc4, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
-                state: getState(module),
+                moduleState: getState(module),
+                state: _this2.state,
                 context: context,
                 forceSync: forceSync,
                 cb: cb
@@ -2350,12 +2394,12 @@
             callWith: function callWith(userLogicFn, _temp2) {
               var _this2$cc6;
 
-              var _ref3 = _temp2 === void 0 ? {} : _temp2,
-                  _ref3$module = _ref3.module,
-                  module = _ref3$module === void 0 ? currentModule : _ref3$module,
-                  _ref3$forceSync = _ref3.forceSync,
-                  forceSync = _ref3$forceSync === void 0 ? false : _ref3$forceSync,
-                  cb = _ref3.cb;
+              var _ref5 = _temp2 === void 0 ? {} : _temp2,
+                  _ref5$module = _ref5.module,
+                  module = _ref5$module === void 0 ? currentModule : _ref5$module,
+                  _ref5$forceSync = _ref5.forceSync,
+                  forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
+                  cb = _ref5.cb;
 
               for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
                 args[_key8 - 2] = arguments[_key8];
@@ -2369,13 +2413,13 @@
               }].concat(args));
             },
             __callWith: function __callWith(userLogicFn, _temp3) {
-              var _ref4 = _temp3 === void 0 ? {} : _temp3,
-                  stateFor = _ref4.stateFor,
-                  _ref4$module = _ref4.module,
-                  module = _ref4$module === void 0 ? currentModule : _ref4$module,
-                  _ref4$forceSync = _ref4.forceSync,
-                  forceSync = _ref4$forceSync === void 0 ? false : _ref4$forceSync,
-                  cb = _ref4.cb;
+              var _ref6 = _temp3 === void 0 ? {} : _temp3,
+                  stateFor = _ref6.stateFor,
+                  _ref6$module = _ref6.module,
+                  module = _ref6$module === void 0 ? currentModule : _ref6$module,
+                  _ref6$forceSync = _ref6.forceSync,
+                  forceSync = _ref6$forceSync === void 0 ? false : _ref6$forceSync,
+                  cb = _ref6.cb;
 
               for (var _len9 = arguments.length, args = new Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
                 args[_key9 - 2] = arguments[_key9];
@@ -2405,12 +2449,12 @@
             callThunkWith: function callThunkWith(userLogicFn, _temp4) {
               var _this2$cc8;
 
-              var _ref5 = _temp4 === void 0 ? {} : _temp4,
-                  _ref5$module = _ref5.module,
-                  module = _ref5$module === void 0 ? currentModule : _ref5$module,
-                  _ref5$forceSync = _ref5.forceSync,
-                  forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
-                  cb = _ref5.cb;
+              var _ref7 = _temp4 === void 0 ? {} : _temp4,
+                  _ref7$module = _ref7.module,
+                  module = _ref7$module === void 0 ? currentModule : _ref7$module,
+                  _ref7$forceSync = _ref7.forceSync,
+                  forceSync = _ref7$forceSync === void 0 ? false : _ref7$forceSync,
+                  cb = _ref7.cb;
 
               for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
                 args[_key11 - 2] = arguments[_key11];
@@ -2424,13 +2468,13 @@
               }].concat(args));
             },
             __callThunkWith: function __callThunkWith(userLogicFn, _temp5) {
-              var _ref6 = _temp5 === void 0 ? {} : _temp5,
-                  stateFor = _ref6.stateFor,
-                  _ref6$module = _ref6.module,
-                  module = _ref6$module === void 0 ? currentModule : _ref6$module,
-                  _ref6$forceSync = _ref6.forceSync,
-                  forceSync = _ref6$forceSync === void 0 ? false : _ref6$forceSync,
-                  cb = _ref6.cb;
+              var _ref8 = _temp5 === void 0 ? {} : _temp5,
+                  stateFor = _ref8.stateFor,
+                  _ref8$module = _ref8.module,
+                  module = _ref8$module === void 0 ? currentModule : _ref8$module,
+                  _ref8$forceSync = _ref8.forceSync,
+                  forceSync = _ref8$forceSync === void 0 ? false : _ref8$forceSync,
+                  cb = _ref8.cb;
 
               for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
                 args[_key12 - 2] = arguments[_key12];
@@ -2460,12 +2504,12 @@
             commitWith: function commitWith(userLogicFn, _temp6) {
               var _this2$cc10;
 
-              var _ref7 = _temp6 === void 0 ? {} : _temp6,
-                  _ref7$module = _ref7.module,
-                  module = _ref7$module === void 0 ? currentModule : _ref7$module,
-                  _ref7$forceSync = _ref7.forceSync,
-                  forceSync = _ref7$forceSync === void 0 ? false : _ref7$forceSync,
-                  cb = _ref7.cb;
+              var _ref9 = _temp6 === void 0 ? {} : _temp6,
+                  _ref9$module = _ref9.module,
+                  module = _ref9$module === void 0 ? currentModule : _ref9$module,
+                  _ref9$forceSync = _ref9.forceSync,
+                  forceSync = _ref9$forceSync === void 0 ? false : _ref9$forceSync,
+                  cb = _ref9.cb;
 
               for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
                 args[_key14 - 2] = arguments[_key14];
@@ -2479,13 +2523,13 @@
               }].concat(args));
             },
             __commitWith: function __commitWith(userLogicFn, _temp7) {
-              var _ref8 = _temp7 === void 0 ? {} : _temp7,
-                  stateFor = _ref8.stateFor,
-                  _ref8$module = _ref8.module,
-                  module = _ref8$module === void 0 ? currentModule : _ref8$module,
-                  _ref8$forceSync = _ref8.forceSync,
-                  forceSync = _ref8$forceSync === void 0 ? false : _ref8$forceSync,
-                  cb = _ref8.cb;
+              var _ref10 = _temp7 === void 0 ? {} : _temp7,
+                  stateFor = _ref10.stateFor,
+                  _ref10$module = _ref10.module,
+                  module = _ref10$module === void 0 ? currentModule : _ref10$module,
+                  _ref10$forceSync = _ref10.forceSync,
+                  forceSync = _ref10$forceSync === void 0 ? false : _ref10$forceSync,
+                  cb = _ref10.cb;
 
               for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
                 args[_key15 - 2] = arguments[_key15];
@@ -2503,15 +2547,15 @@
               });
             },
             dispatch: function dispatch(_temp8) {
-              var _ref9 = _temp8 === void 0 ? {} : _temp8,
-                  stateFor = _ref9.stateFor,
-                  inputModule = _ref9.module,
-                  inputReducerModule = _ref9.reducerModule,
-                  _ref9$forceSync = _ref9.forceSync,
-                  forceSync = _ref9$forceSync === void 0 ? false : _ref9$forceSync,
-                  type = _ref9.type,
-                  payload = _ref9.payload,
-                  reactCallback = _ref9.cb;
+              var _ref11 = _temp8 === void 0 ? {} : _temp8,
+                  stateFor = _ref11.stateFor,
+                  inputModule = _ref11.module,
+                  inputReducerModule = _ref11.reducerModule,
+                  _ref11$forceSync = _ref11.forceSync,
+                  forceSync = _ref11$forceSync === void 0 ? false : _ref11$forceSync,
+                  type = _ref11.type,
+                  payload = _ref11.payload,
+                  reactCallback = _ref11.cb;
 
               //if module not defined, targetStateModule will be currentModule
               var targetStateModule = inputModule || currentModule; //if reducerModule not defined, cc will treat targetReducerModule as targetStateModule
@@ -2797,20 +2841,44 @@
                 args[_key16 - 1] = arguments[_key16];
               }
 
-              findEventHandlersToPerform.apply(void 0, [event, null].concat(args));
+              findEventHandlersToPerform.apply(void 0, [event, {
+                identity: null
+              }].concat(args));
             },
             emitIdentity: function emitIdentity(event, identity) {
               for (var _len17 = arguments.length, args = new Array(_len17 > 2 ? _len17 - 2 : 0), _key17 = 2; _key17 < _len17; _key17++) {
                 args[_key17 - 2] = arguments[_key17];
               }
 
-              findEventHandlersToPerform.apply(void 0, [event, identity].concat(args));
+              findEventHandlersToPerform.apply(void 0, [event, {
+                identity: identity
+              }].concat(args));
+            },
+            emitWith: function emitWith(event, option) {
+              for (var _len18 = arguments.length, args = new Array(_len18 > 2 ? _len18 - 2 : 0), _key18 = 2; _key18 < _len18; _key18++) {
+                args[_key18 - 2] = arguments[_key18];
+              }
+
+              findEventHandlersToPerform.apply(void 0, [event, option].concat(args));
             },
             on: function on(event, handler) {
-              bindEventHandlerToCcContext(ccUniqueKey, event, null, handler);
+              bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, null, handler);
             },
             onIdentity: function onIdentity(event, identity, handler) {
-              bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler);
+              bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, identity, handler);
+            },
+            off: function off(event, _temp9) {
+              var _ref12 = _temp9 === void 0 ? {} : _temp9,
+                  module = _ref12.module,
+                  ccClassKey = _ref12.ccClassKey,
+                  identity = _ref12.identity;
+
+              //  consider if module === currentModule, let off happened?
+              findEventHandlersToOff(event, {
+                module: module,
+                ccClassKey: ccClassKey,
+                identity: identity
+              });
             }
           };
           this.cc.reactSetState = this.cc.reactSetState.bind(this);
@@ -2842,8 +2910,10 @@
           this.$$xeffect = this.cc.xeffect.bind(this);
           this.$$emit = this.cc.emit.bind(this);
           this.$$emitIdentity = this.cc.emitIdentity.bind(this);
+          this.$$emitWith = this.cc.emitWith.bind(this);
           this.$$on = this.cc.on.bind(this);
           this.$$onIdentity = this.cc.onIdentity.bind(this);
+          this.$$off = this.cc.off.bind(this);
           this.$$refComputed = {};
           this.$$moduleComputed = _computedValue[currentModule] || {};
           this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};
@@ -2865,17 +2935,17 @@
         //        if ccIns option.syncSharedState is true, change it's own state and broadcast the state to target module
 
 
-        _proto.$$changeState = function $$changeState(state, _temp9) {
+        _proto.$$changeState = function $$changeState(state, _temp10) {
           var _this3 = this;
 
-          var _ref10 = _temp9 === void 0 ? {} : _temp9,
-              _ref10$stateFor = _ref10.stateFor,
-              stateFor = _ref10$stateFor === void 0 ? STATE_FOR_ONE_CC_INSTANCE_FIRSTLY : _ref10$stateFor,
-              module = _ref10.module,
-              broadcastTriggeredBy = _ref10.broadcastTriggeredBy,
-              changeBy = _ref10.changeBy,
-              forceSync = _ref10.forceSync,
-              reactCallback = _ref10.cb;
+          var _ref13 = _temp10 === void 0 ? {} : _temp10,
+              _ref13$stateFor = _ref13.stateFor,
+              stateFor = _ref13$stateFor === void 0 ? STATE_FOR_ONE_CC_INSTANCE_FIRSTLY : _ref13$stateFor,
+              module = _ref13.module,
+              broadcastTriggeredBy = _ref13.broadcastTriggeredBy,
+              changeBy = _ref13.changeBy,
+              forceSync = _ref13.forceSync,
+              reactCallback = _ref13.cb;
 
           //executionContext
           if (!isPlainJsonObject(state)) {
@@ -2918,15 +2988,15 @@
         _proto.__$$getDispatchHandler = function __$$getDispatchHandler(stateFor) {
           var _this5 = this;
 
-          return function (_temp10) {
-            var _ref11 = _temp10 === void 0 ? {} : _temp10,
-                module = _ref11.module,
-                reducerModule = _ref11.reducerModule,
-                _ref11$forceSync = _ref11.forceSync,
-                forceSync = _ref11$forceSync === void 0 ? false : _ref11$forceSync,
-                type = _ref11.type,
-                payload = _ref11.payload,
-                reactCallback = _ref11.cb;
+          return function (_temp11) {
+            var _ref14 = _temp11 === void 0 ? {} : _temp11,
+                module = _ref14.module,
+                reducerModule = _ref14.reducerModule,
+                _ref14$forceSync = _ref14.forceSync,
+                forceSync = _ref14$forceSync === void 0 ? false : _ref14$forceSync,
+                type = _ref14.type,
+                payload = _ref14.payload,
+                reactCallback = _ref14.cb;
 
             _this5.cc.dispatch({
               stateFor: stateFor,
@@ -2968,6 +3038,36 @@
       CcClass.displayName = ccClassDisplayName$1(ccClassKey);
       return CcClass;
     };
+  }
+
+  /****
+   * short for register
+   * the option's definition is also been changed
+   * option.module is called m for short 
+   * option.sharedStateKeys is called s for short 
+   * option.globalStateKeys is called g for short 
+   * option.isSingle is called is for short 
+   * option.asyncLifecycleHook is called as for short 
+   * option.reducerModule is called re for short 
+   */
+
+  function r (ccClassKey, _temp) {
+    var _ref = _temp === void 0 ? {} : _temp,
+        module = _ref.m,
+        sharedStateKeys = _ref.s,
+        globalStateKeys = _ref.g,
+        isSingle = _ref.is,
+        asyncLifecycleHook = _ref.as,
+        reducerModule = _ref.re;
+
+    return register(ccClassKey, {
+      module: module,
+      sharedStateKeys: sharedStateKeys,
+      globalStateKeys: globalStateKeys,
+      isSingle: isSingle,
+      asyncLifecycleHook: asyncLifecycleHook,
+      reducerModule: reducerModule
+    });
   }
 
   function registerToDefault (ccClassKey, option) {
@@ -3181,9 +3281,50 @@
     invoke.apply(void 0, [ccClassKey, ccClassKey, method].concat(args));
   }
 
+  function emit (event) {
+    try {
+      var ref = pickOneRef();
+
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      ref.$$emit.apply(ref, [event].concat(args));
+    } catch (err) {
+      if (throwError) throw err;else util.justWarning(err.message);
+    }
+  }
+
+  function emitWith (event, option) {
+    try {
+      var ref = pickOneRef();
+
+      for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+        args[_key - 2] = arguments[_key];
+      }
+
+      ref.$$emitWith.apply(ref, [event, option].concat(args));
+    } catch (err) {
+      if (throwError) throw err;else util.justWarning(err.message);
+    }
+  }
+
+  function off (event, option) {
+    try {
+      var ref = pickOneRef();
+      ref.$$off(event, option);
+    } catch (err) {
+      if (throwError) throw err;else util.justWarning(err.message);
+    }
+  }
+
   var defaultExport = {
+    emit: emit,
+    emitWith: emitWith,
+    off: off,
     startup: startup,
     register: register,
+    r: r,
     registerToDefault: registerToDefault,
     registerSingleClassToDefault: registerSingleClassToDefault,
     configure: configure,

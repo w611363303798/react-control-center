@@ -1,6 +1,14 @@
 
 # Change Log
 
+#### 2018-01-12 15:00
+* feature add: now cc instance support $$emitWith, $$off, cc top api support emit,emitWith,off,r, r is short for register, the param option is also been shorted
+  ```
+  // two way to register a ReactClass as a CcClass 
+  cc.r('Introduction', { m: 'introduction', s: 'all', g: ['$$borderColor'] })(Introduction);
+  cc.register('Introduction', { module: 'introduction', sharedStateKeys: 'all', globalStateKeys: ['$$borderColor'] })(Introduction);
+  ```
+
 #### 2018-01-11 08:00
 * feature add: now cc support $$on, $$onIdentity, $$emit, $$emitIdentity in cc instance, you can call these method in any method of your cc instance except for constructor!(because all the cc method $$[cc method] were injected to your cc instance after your constructor been called), usually you can call $$on,$$onIdentity in computeWillMount and call $$emit,$$emitIdentity in in any other method except for constructor.
 
