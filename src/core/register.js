@@ -388,7 +388,7 @@ function computeValueForRef(computed, refComputed, state) {
   }
 }
 
-function bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler) {
+function bindEventHandlerToCcContext(module, ccClassKey, ccUniqueKey, event, identity, handler) {
   const handlers = util.safeGetArrayFromObject(event_handlers_, event);
   if (typeof handler !== 'function') {
     return justWarning(`event ${event}'s handler is not a function!`);
@@ -400,21 +400,38 @@ function bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler) {
     //  cc will alway use the latest handler
     targetHandler.handler = handler;
   } else {
-    handlers.push({ ccKey: ccUniqueKey, identity, handler });
+    handlers.push({ module, ccClassKey, ccKey: ccUniqueKey, identity, handler });
   }
 }
 
-function findEventHandlersToPerform(event, inputIdentity, ...args) {
+function _findEventHandlers(event, module, ccClassKey, identity) {
   const handlers = event_handlers_[event];
   if (handlers) {
-    handlers.forEach(({ ccKey, identity, handler }) => {
-      if (ccKey_ref_[ccKey]) {//  confirm the instance is mounted
-        if (inputIdentity === identity) {
-          handler(...args);
-        }
-      }
-    });
+    let filteredHandlers = [];
+    if (module) filteredHandlers = handlers.filter(v => v.module === module);
+    if (ccClassKey) filteredHandlers = handlers.filter(v => v.ccClassKey === ccClassKey);
+
+    // identity is null means user call emit or emitIdentity which set identity as null
+    // identity is not null means user call emitIdentity
+    filteredHandlers = handlers.filter(v => v.identity === identity);
+    return filteredHandlers;
+  } else {
+    return [];
   }
+}
+
+function findEventHandlersToPerform(event, { module, ccClassKey, identity }, ...args) {
+  const handlers = _findEventHandlers(event, module, ccClassKey, identity);
+  handlers.forEach(({ ccKey, handler }) => {
+    if (ccKey_ref_[ccKey] && handler) {//  confirm the instance is mounted and handler is not been offed
+      handler(...args);
+    }
+  });
+}
+
+function findEventHandlersToOff(event, { module, ccClassKey, identity }) {
+  const handlers = _findEventHandlers(event, module, ccClassKey, identity);
+  handlers.forEach(item => item.handler = null);
 }
 
 /*
@@ -599,11 +616,13 @@ export default function register(ccClassKey, {
           },
           // change other module's state, cc will give userLogicFn EffectContext object as first param
           xeffect: (targetModule, userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, moduleState: getState(targetModule), state:this.state, context: true, module: targetModule }, ...args);
+            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
           },
+          // advanced invoke, can change other module state, but user should put module to option
+          // and user can decide userLogicFn's first param is ExecutionContext by set context = true
           invokeWith: (userLogicFn, option, ...args) => {
             const { module = currentModule, context = false, forceSync = false, cb } = option;
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, moduleState: getState(module), state:this.state, context, forceSync, cb }, ...args);
+            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, moduleState: getState(module), state: this.state, context, forceSync, cb }, ...args);
           },
           __invokeWith: (userLogicFn, executionContext, ...args) => {
             const { stateFor, module: targetModule = currentModule, context = false, forceSync = false, cb } = executionContext;
@@ -888,16 +907,23 @@ export default function register(ccClassKey, {
           },
 
           emit: (event, ...args) => {
-            findEventHandlersToPerform(event, null, ...args);
+            findEventHandlersToPerform(event, { identity: null }, ...args);
           },
           emitIdentity: (event, identity, ...args) => {
-            findEventHandlersToPerform(event, identity, ...args);
+            findEventHandlersToPerform(event, { identity }, ...args);
+          },
+          emitWith: (event, option, ...args) => {
+            findEventHandlersToPerform(event, option, ...args);
           },
           on: (event, handler) => {
-            bindEventHandlerToCcContext(ccUniqueKey, event, null, handler)
+            bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, null, handler)
           },
           onIdentity: (event, identity, handler) => {
-            bindEventHandlerToCcContext(ccUniqueKey, event, identity, handler)
+            bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, identity, handler)
+          },
+          off: (event, { module, ccClassKey, identity } = {}) => {
+            //  consider if module === currentModule, let off happened?
+            findEventHandlersToOff(event, { module, ccClassKey, identity })
           },
         }
 
@@ -928,8 +954,10 @@ export default function register(ccClassKey, {
 
         this.$$emit = this.cc.emit.bind(this);
         this.$$emitIdentity = this.cc.emitIdentity.bind(this);
+        this.$$emitWith = this.cc.emitWith.bind(this);
         this.$$on = this.cc.on.bind(this);
         this.$$onIdentity = this.cc.onIdentity.bind(this);
+        this.$$off = this.cc.off.bind(this);
 
         this.$$refComputed = {};
         this.$$moduleComputed = _computedValue[currentModule] || {};
