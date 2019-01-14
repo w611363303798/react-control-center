@@ -74,7 +74,7 @@ const ccContext = {
       propState:{},
       propKey_stateKeyDescriptor_: {},
       stateKey_propKey_: {},
-      hasStateToPropMapping:false,
+      stateToPropMapping:null,
       ccKeys: [],
     }
   */

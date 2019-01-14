@@ -71,7 +71,7 @@ export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
     propState:{},
     propKey_stateKeyDescriptor_: {},
     stateKey_propKey_: {},
-    hasStateToPropMapping: false,
+    stateToPropMapping: null,
   }
 }
 

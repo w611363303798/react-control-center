@@ -330,6 +330,7 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
         propKey_stateKeyDescriptor_[ccPropKey] = { module: targetModule, key: targetKey };
         stateKey_propKey_[targetKey] = ccPropKey;
 
+        ccClassContext.stateToPropMapping = stateToPropMapping;
         propState[ccPropKey] = _state[targetModule][targetKey];// assign state value to propState
       });
     }
@@ -453,6 +454,48 @@ function findEventHandlersToPerform(event, { module, ccClassKey, identity }, ...
 function findEventHandlersToOff(event, { module, ccClassKey, identity }) {
   const handlers = _findEventHandlers(event, module, ccClassKey, identity);
   handlers.forEach(item => item.handler = null);
+}
+
+function updateModulePropState(module_isPropStateChanged, changedPropStateList, targetClassContext, state) {
+  const { module: targetModule, stateToPropMapping, stateKey_propKey_, propState } = targetClassContext;
+  if (stateToPropMapping) {
+    Object.keys(state).forEach(sKey => {
+      const propKey = stateKey_propKey_[sKey];
+      if (propKey) {
+        if (module_isPropStateChanged[targetModule] !== true) {//mark propState changed
+          module_isPropStateChanged[targetModule] = true;
+          changedPropStateList.push(propState);// push this ref to changedPropStateList
+        }
+        propState[propKey] = state[sKey];
+      }
+    });
+  }
+}
+
+function broadcastPropState(commitState) {
+  const changedPropStateList = [];
+  const module_isPropStateChanged = {};// record which module's propState has been changed
+
+  Object.keys(moduleName_ccClassKeys_).forEach(moduleName => {
+    const ccClassKeys = moduleName_ccClassKeys_[moduleName];
+    ccClassKeys.forEach(ccClassKey => {
+      const ccClassContext = ccClassKey_ccClassContext_[ccClassKey];
+      updateModulePropState(module_isPropStateChanged, changedPropStateList, ccClassContext, commitState);
+    });
+  });
+  Object.keys(module_isPropStateChanged).forEach(module => {
+    const ccClassKeys = moduleName_ccClassKeys_[module];
+    ccClassKeys.forEach(ccClassKey => {
+      const classContext = ccClassKey_ccClassContext_[ccClassKey];
+      const { ccKeys } = classContext;
+      ccKeys.forEach(ccKey => {
+        const ref = ccKey_ref_[ccKey];
+        if (ref) {
+          ref.cc.reactForceUpdate();
+        }
+      });
+    });
+  });
 }
 
 /*
@@ -721,10 +764,6 @@ export default function register(ccClassKey, {
               this.cc.__invokeWith(reducerFn, executionContext);
             });
           },
-          reactSetStateFinished: (stateFor, broadcastTriggeredBy, module, state, needClone) => {
-            this.cc.prepareBroadcastState(stateFor, broadcastTriggeredBy, module, state, needClone);
-            this.cc.prepareBroadcastStateInPropDimension(module, state, needClone);
-          },
           prepareReactSetState: (changeBy, state, next, reactCallback) => {
             if (storedStateKeys.length > 0) {
               const { partialState, isStateEmpty } = extractStateByKeys(state, storedStateKeys);
@@ -789,51 +828,32 @@ export default function register(ccClassKey, {
             const { isPartialSharedStateEmpty, isPartialGlobalStateEmpty, partialSharedState, partialGlobalState, module_globalState_ }
               = extractStateToBeBroadcasted(moduleName, originalState, targetSharedStateKeys, targetGlobalStateKeys);
 
-            if (!isPartialSharedStateEmpty || !isPartialGlobalStateEmpty) {
+            if (!isPartialSharedStateEmpty) ccStoreSetState(moduleName, partialSharedState);
+            if (!isPartialGlobalStateEmpty) ccStoreSetState(MODULE_GLOBAL, partialGlobalState);
+            Object.keys(module_globalState_).forEach(moduleName => {
+              ccStoreSetState(moduleName, module_globalState_[moduleName]);
+            });
 
-              if (!isPartialSharedStateEmpty) ccStoreSetState(moduleName, partialSharedState);
-              if (!isPartialGlobalStateEmpty) ccStoreSetState(MODULE_GLOBAL, partialGlobalState);
-              Object.keys(module_globalState_).forEach(moduleName => {
-                ccStoreSetState(moduleName, module_globalState_[moduleName]);
-              });
-
-              if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
-                if (asyncLifecycleHook) {
-                  this.$$beforeBroadcastState({ broadcastTriggeredBy }, () => {
-                    this.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
-                  });
-                } else {
-                  this.$$beforeBroadcastState({ broadcastTriggeredBy });
-                  this.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
-                }
+            if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
+              if (asyncLifecycleHook) {
+                this.$$beforeBroadcastState({ broadcastTriggeredBy }, () => {
+                  this.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                });
               } else {
-                this.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                this.$$beforeBroadcastState({ broadcastTriggeredBy });
+                this.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
               }
+            } else {
+              this.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
             }
           },
-          updateModulePropState: (module_isPropStateChanged, changedPropStateList, targetClassContext, state) => {
-            const { hasStateToPropMapping, propKey_stateKeyDescriptor_, stateKey_propKey_, propState } = targetClassContext;
-            if (hasStateToPropMapping) {
-              Object.keys(stateKey_propKey_).forEach(sKey => {
-                const propKey = stateKey_propKey_[sKey];
-                const { module } = propKey_stateKeyDescriptor_[propKey];
-                if (module_isPropStateChanged[module] !== true) {
-                  module_isPropStateChanged[module] = true;
-                  changedPropStateList.push(propState);// push this ref to changedPropStateList
-                }
-                propState[propKey] = state[sKey];
-              });
-            }
-          },
-          broadcastState: (stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) => {
+          broadcastState: (originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) => {
 
             let _partialSharedState = partialSharedState;
             if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone operation may cause performance issue, if partialSharedState is too big!!
 
             const { ccUniqueKey: currentCcKey } = this.cc.ccState;
             const ccClassKey_isHandled_ = {};//record which ccClassKey has been handled
-            const changedPropStateList = [];
-            const module_isPropStateChanged = {};// record which module's propState has been changed
 
             // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
             // so flag ignoreCurrentCcKey as true;
@@ -866,7 +886,6 @@ export default function register(ccClassKey, {
                 if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
                 let mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };
-                this.cc.updateModulePropState(module_isPropStateChanged, changedPropStateList, classContext, mergedStateForCurrentCcClass);
 
                 ccKeys.forEach(ccKey => {
                   if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
@@ -915,8 +934,6 @@ export default function register(ccClassKey, {
 
                   if (isPartialGlobalStateEmpty) return;
 
-                  this.cc.updateModulePropState(module_isPropStateChanged, changedPropStateList, classContext, globalStateForCurrentCcClass);
-
                   ccKeys.forEach(ccKey => {
                     const ref = ccKey_ref_[ccKey];
                     if (ref) {
@@ -934,24 +951,13 @@ export default function register(ccClassKey, {
               });
             }
 
-            Object.keys(module_isPropStateChanged).forEach(module => {
-              const ccClassKeys = moduleName_ccClassKeys_[module];
-              ccClassKeys.forEach(ccClassKey => {
-                const classContext = ccClassKey_ccClassContext_[ccClassKey];
-                const { ccKeys } = classContext;
-                ccKeys.forEach(ccKey => {
-                  const ref = ccKey_ref_[ccKey];
-                  if (ref) {
-                    ref.cc.reactForceUpdate();
-                  }
-                });
-              });
-            });
-
+            broadcastPropState(originalState);
           },
           broadcastGlobalState: (globalSate) => {
+            const changedPropStateList = [], module_isPropStateChanged = {};
             globalCcClassKeys.forEach(ccClassKey => {
-              const { globalStateKeys, ccKeys } = ccClassKey_ccClassContext_[ccClassKey];
+              const classContext = ccClassKey_ccClassContext_[ccClassKey];
+              const { globalStateKeys, ccKeys } = classContext;
               const { partialState, isStateEmpty } = extractStateByKeys(globalSate, globalStateKeys);
               if (!isStateEmpty) {
                 ccKeys.forEach(ccKey => {
@@ -965,9 +971,7 @@ export default function register(ccClassKey, {
                 });
               }
             });
-          },
-          prepareBroadcastStateInPropDimension: () => {
-
+            broadcastPropState(globalSate);
           },
 
           emit: (event, ...args) => {
@@ -995,7 +999,6 @@ export default function register(ccClassKey, {
         this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
         this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
         this.cc.prepareBroadcastState = this.cc.prepareBroadcastState.bind(this);
-        this.cc.reactSetStateFinished = this.cc.reactSetStateFinished.bind(this);
         this.cc.dispatch = this.cc.dispatch.bind(this);
         this.cc.__callWith = this.cc.__callWith.bind(this);
         this.cc.__callThunkWith = this.cc.__callThunkWith.bind(this);

@@ -6,7 +6,7 @@ import ccContext from '../../cc-context';
 export default function (module) {
   const { ccKey_ref_, moduleName_ccClassKeys_, ccClassKey_ccClassContext_ } = ccContext;
 
-  let ccKeys;
+  let ccKeys = [];
   if (module) {
     const ccClassKeys = moduleName_ccClassKeys_[module];
     if (!ccClassKeys || ccClassKeys.length === 0) {
