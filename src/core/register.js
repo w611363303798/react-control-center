@@ -26,7 +26,7 @@ const {
   computed: { _computedValue }, event_handlers_,
   moduleName_sharedStateKeys_, moduleName_globalStateKeys_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_,
-  globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_
+  globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_,
 } = ccContext;
 const cl = color;
 const ss = styleStr;
@@ -307,12 +307,33 @@ function mapModuleAndGlobalStateKeys(moduleName, partialGlobalStateKeys) {
 }
 
 //tell cc this ccClass is watching some sharedStateKeys of a module state, some globalStateKeys of global state
-function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys, globalStateKeys) {
+function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys, globalStateKeys, stateToPropMapping) {
   const contextMap = ccContext.ccClassKey_ccClassContext_;
   if (contextMap[ccClassKey] !== undefined) {
     throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
   } else {
-    contextMap[ccClassKey] = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
+    const ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
+    if (stateToPropMapping != undefined) {
+      const propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
+      const stateKey_propKey_ = ccClassContext.stateKey_propKey_;
+      const propState = ccClassContext.propState;
+
+      if (typeof stateToPropMapping !== 'object') {
+        throw me(ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID, `ccClassKey:${ccClassKey}`);
+      }
+      Object.keys(stateToPropMapping).forEach(prefixedKey => {
+        if (!util.isPrefixedKeyValid(prefixedKey)) {
+          throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, `ccClassKey:${ccClassKey}, key:${prefixedKey}`);
+        }
+        const [targetModule, targetKey] = prefixedKey.split('/');
+        const ccPropKey = stateToPropMapping[prefixedKey];
+        propKey_stateKeyDescriptor_[ccPropKey] = { module: targetModule, key: targetKey };
+        stateKey_propKey_[targetKey] = ccPropKey;
+
+        propState[ccPropKey] = _state[targetModule][targetKey];// assign state value to propState
+      });
+    }
+    contextMap[ccClassKey] = ccClassContext;
   }
 }
 
@@ -355,11 +376,11 @@ function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, ccCl
   return { globalStateKeys, sharedStateKeys };
 }
 
-function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys) {
+function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping) {
   const { sharedStateKeys: targetSharedStateKeys, globalStateKeys: targetGlobalStateKeys } =
     getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys);
 
-  mapCcClassKeyAndCcClassContext(ccClassKey, stateModule, targetSharedStateKeys, targetGlobalStateKeys)
+  mapCcClassKeyAndCcClassContext(ccClassKey, stateModule, targetSharedStateKeys, targetGlobalStateKeys, stateToPropMapping)
   mapModuleAndSharedStateKeys(stateModule, targetSharedStateKeys);
 
   mapModuleAndGlobalStateKeys(stateModule, targetGlobalStateKeys);
@@ -445,6 +466,7 @@ export default function register(ccClassKey, {
   reducerModule,
   sharedStateKeys: inputSharedStateKeys = [],
   globalStateKeys: inputGlobalStateKeys = [],
+  stateToPropMapping,
 } = {}) {
   checkCcStartupOrNot();
   const _curStateModule = module;
@@ -454,7 +476,8 @@ export default function register(ccClassKey, {
   checkStoreModule(_curStateModule);
   checkReducerModule(_reducerModule);
 
-  const { sharedStateKeys: sKeys, globalStateKeys: gKeys } = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys);
+  const { sharedStateKeys: sKeys, globalStateKeys: gKeys } =
+    mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping);
   const sharedStateKeys = sKeys, globalStateKeys = gKeys;
 
   return function (ReactClass) {
@@ -469,7 +492,8 @@ export default function register(ccClassKey, {
         if (!this.state) this.state = {};
         const { ccKey, ccOption = {} } = props;
         util.bindThis(this, [
-          '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler'
+          '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState',
+          '__$$recoverState', '__$$getDispatchHandler'
         ]);
         if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
         // if you flag syncSharedState false, that means this ccInstance's state changing will not effect other ccInstance and not effected by other ccInstance's state changing
@@ -486,8 +510,9 @@ export default function register(ccClassKey, {
           isSingle, asyncLifecycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys,
           ccOption, ccClassContext, _curStateModule, _reducerModule, sharedStateKeys, globalStateKeys
         );
-
-        this.__$$recoverState();
+        // bind propState to $$propState
+        this.$$propState = ccClassKey_ccClassContext_[ccClassKey].propState || {};
+        this.__$$recoverState(ccClassKey);
       }
 
       // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -696,6 +721,10 @@ export default function register(ccClassKey, {
               this.cc.__invokeWith(reducerFn, executionContext);
             });
           },
+          reactSetStateFinished: (stateFor, broadcastTriggeredBy, module, state, needClone) => {
+            this.cc.prepareBroadcastState(stateFor, broadcastTriggeredBy, module, state, needClone);
+            this.cc.prepareBroadcastStateInPropDimension(module, state, needClone);
+          },
           prepareReactSetState: (changeBy, state, next, reactCallback) => {
             if (storedStateKeys.length > 0) {
               const { partialState, isStateEmpty } = extractStateByKeys(state, storedStateKeys);
@@ -782,6 +811,20 @@ export default function register(ccClassKey, {
               }
             }
           },
+          updateModulePropState: (module_isPropStateChanged, changedPropStateList, targetClassContext, state) => {
+            const { hasStateToPropMapping, propKey_stateKeyDescriptor_, stateKey_propKey_, propState } = targetClassContext;
+            if (hasStateToPropMapping) {
+              Object.keys(stateKey_propKey_).forEach(sKey => {
+                const propKey = stateKey_propKey_[sKey];
+                const { module } = propKey_stateKeyDescriptor_[propKey];
+                if (module_isPropStateChanged[module] !== true) {
+                  module_isPropStateChanged[module] = true;
+                  changedPropStateList.push(propState);// push this ref to changedPropStateList
+                }
+                propState[propKey] = state[sKey];
+              });
+            }
+          },
           broadcastState: (stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) => {
 
             let _partialSharedState = partialSharedState;
@@ -789,6 +832,8 @@ export default function register(ccClassKey, {
 
             const { ccUniqueKey: currentCcKey } = this.cc.ccState;
             const ccClassKey_isHandled_ = {};//record which ccClassKey has been handled
+            const changedPropStateList = [];
+            const module_isPropStateChanged = {};// record which module's propState has been changed
 
             // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
             // so flag ignoreCurrentCcKey as true;
@@ -804,7 +849,6 @@ export default function register(ccClassKey, {
                 const classContext = ccClassKey_ccClassContext_[ccClassKey];
                 const { ccKeys, sharedStateKeys, globalStateKeys } = classContext;
                 if (ccKeys.length === 0) return;
-
                 if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return;
 
                 //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
@@ -822,6 +866,7 @@ export default function register(ccClassKey, {
                 if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
                 let mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };
+                this.cc.updateModulePropState(module_isPropStateChanged, changedPropStateList, classContext, mergedStateForCurrentCcClass);
 
                 ccKeys.forEach(ccKey => {
                   if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
@@ -870,6 +915,8 @@ export default function register(ccClassKey, {
 
                   if (isPartialGlobalStateEmpty) return;
 
+                  this.cc.updateModulePropState(module_isPropStateChanged, changedPropStateList, classContext, globalStateForCurrentCcClass);
+
                   ccKeys.forEach(ccKey => {
                     const ref = ccKey_ref_[ccKey];
                     if (ref) {
@@ -886,6 +933,20 @@ export default function register(ccClassKey, {
                 });
               });
             }
+
+            Object.keys(module_isPropStateChanged).forEach(module => {
+              const ccClassKeys = moduleName_ccClassKeys_[module];
+              ccClassKeys.forEach(ccClassKey => {
+                const classContext = ccClassKey_ccClassContext_[ccClassKey];
+                const { ccKeys } = classContext;
+                ccKeys.forEach(ccKey => {
+                  const ref = ccKey_ref_[ccKey];
+                  if (ref) {
+                    ref.cc.reactForceUpdate();
+                  }
+                });
+              });
+            });
 
           },
           broadcastGlobalState: (globalSate) => {
@@ -904,6 +965,9 @@ export default function register(ccClassKey, {
                 });
               }
             });
+          },
+          prepareBroadcastStateInPropDimension: () => {
+
           },
 
           emit: (event, ...args) => {
@@ -931,6 +995,7 @@ export default function register(ccClassKey, {
         this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
         this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
         this.cc.prepareBroadcastState = this.cc.prepareBroadcastState.bind(this);
+        this.cc.reactSetStateFinished = this.cc.reactSetStateFinished.bind(this);
         this.cc.dispatch = this.cc.dispatch.bind(this);
         this.cc.__callWith = this.cc.__callWith.bind(this);
         this.cc.__callThunkWith = this.cc.__callThunkWith.bind(this);

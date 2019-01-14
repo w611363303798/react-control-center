@@ -11,12 +11,14 @@ import setState from './core/set-state';
 import emit from './core/emit';
 import emitWith from './core/emit-with';
 import off from './core/off';
+import connect from './core/connect';
 import ccContext from './cc-context';
 
 const defaultExport = {
   emit,
   emitWith,
   off,
+  connect,
   startup,
   register,
   r,

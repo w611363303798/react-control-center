@@ -19,7 +19,9 @@ export default function (module) {
       throw new Error(`no ccClassContext found for ccClassKey ${oneCcClassKey}!`);
     }
     ccKeys = ccClassContext.ccKeys;
-  } else {
+  }
+
+  if (ccKeys.length === 0) {
     ccKeys = Object.keys(ccKey_ref_);
   }
 

@@ -71,6 +71,10 @@ const ccContext = {
       module,
       sharedStateKeys,
       globalStateKeys,
+      propState:{},
+      propKey_stateKeyDescriptor_: {},
+      stateKey_propKey_: {},
+      hasStateToPropMapping:false,
       ccKeys: [],
     }
   */
@@ -162,7 +166,7 @@ const ccContext = {
   },
   ccKey_ref_: refs,
   //  key:eventName,  value: Array<{ccKey, identity,  handler}>
-  event_handlers_:{
+  event_handlers_: {
 
   },
   ccKey_option_: {
@@ -174,7 +178,7 @@ const ccContext = {
   }
 }
 
-if(window && !window.sss ){
+if (window && !window.sss) {
   window.sss = ccContext.store._state;
 }
 

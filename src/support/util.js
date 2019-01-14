@@ -35,6 +35,15 @@ export function isPlainJsonObject(obj, canBeArray = false) {
   }
 }
 
+export function isPrefixedKeyValid(key) {
+  const slashCount = key.split('').filter(v => v === '/').length;
+  if (slashCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 export function isActionTypeValid(type) {
   if (typeof type !== 'string') {
     return false
@@ -59,6 +68,10 @@ export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
     sharedStateKeys,
     globalStateKeys,
     ccKeys: [],
+    propState:{},
+    propKey_stateKeyDescriptor_: {},
+    stateKey_propKey_: {},
+    hasStateToPropMapping: false,
   }
 }
 
@@ -247,6 +260,7 @@ export default {
   isModuleStateValid,
   isCcOptionValid,
   isCcActionValid,
+  isPrefixedKeyValid,
   isPlainJsonObject,
   isObjectNotNull,
   isValueNotNull,
