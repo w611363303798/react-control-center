@@ -11,11 +11,13 @@ import setState from './core/set-state';
 import emit from './core/emit';
 import emitWith from './core/emit-with';
 import off from './core/off';
+import connect from './core/connect';
 import ccContext from './cc-context';
 var defaultExport = {
   emit: emit,
   emitWith: emitWith,
   off: off,
+  connect: connect,
   startup: startup,
   register: register,
   r: r,

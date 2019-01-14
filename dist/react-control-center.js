@@ -48,6 +48,8 @@
     CC_CLASS_REDUCER_MODULE_INVALID: 1104,
     CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE: 1105,
     CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE: 1106,
+    CC_CLASS_STATE_TO_PROP_MAPPING_INVALID: 1107,
+    CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID: 1108,
     CC_CLASS_INSTANCE_KEY_DUPLICATE: 1200,
     CC_CLASS_INSTANCE_OPTION_INVALID: 1201,
     CC_CLASS_INSTANCE_NOT_FOUND: 1202,
@@ -71,7 +73,7 @@
     CC_REDUCER_MODULE_NAME_DUPLICATE: 1511 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also), maybe you can use moduleReducer to config the reducer for this module!", _ERR_MESSAGE[ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION] = "one of the computed keys is not a valid module name in store!", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE] = 'you are trying register a react class to a single class module, but cc found the target module has been registered!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = "globalStateKeys or sharedStateKeys is not an Array! if you want to watch all state keys of a module state or all state keys of global state, you can set sharedStateKeys='all' and globalStateKeys='all'", _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY] = 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it ', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE] = 'found key in globalStateKeys is not included in global state, check your globalStateKeys', _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE] = "reducer action type duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_NOT_A_FUNCTION] = "reducer must be a function!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user! ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also), maybe you can use moduleReducer to config the reducer for this module!", _ERR_MESSAGE[ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION] = "one of the computed keys is not a valid module name in store!", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE] = 'you are trying register a react class to a single class module, but cc found the target module has been registered!', _ERR_MESSAGE[ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID] = 'stateToPropMapping is invalid, must be a plain json object, check it in your register method or connect method!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID] = 'key of stateToPropMapping is invalid, correct one may like $g/m, must and only include one slash, check it in your register method or connect method!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = "globalStateKeys or sharedStateKeys is not an Array! if you want to watch all state keys of a module state or all state keys of global state, you can set sharedStateKeys='all' and globalStateKeys='all'", _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY] = 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it ', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE] = 'found key in globalStateKeys is not included in global state, check your globalStateKeys', _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE] = "reducer action type duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_NOT_A_FUNCTION] = "reducer must be a function!", _ERR_MESSAGE);
 
   function isHotReloadMode() {
     return window && window.webpackHotUpdate;
@@ -108,6 +110,17 @@
       return false;
     }
   }
+  function isPrefixedKeyValid(key) {
+    var slashCount = key.split('').filter(function (v) {
+      return v === '/';
+    }).length;
+
+    if (slashCount === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
   function isActionTypeValid(type) {
     if (typeof type !== 'string') {
       return false;
@@ -128,7 +141,11 @@
       module: module,
       sharedStateKeys: sharedStateKeys,
       globalStateKeys: globalStateKeys,
-      ccKeys: []
+      ccKeys: [],
+      propState: {},
+      propKey_stateKeyDescriptor_: {},
+      stateKey_propKey_: {},
+      stateToPropMapping: null
     };
   }
   function makeStateMail(ccUniqueKey, ccOption, module, type, cb) {
@@ -341,6 +358,7 @@
     isModuleStateValid: isModuleStateValid,
     isCcOptionValid: isCcOptionValid,
     isCcActionValid: isCcActionValid,
+    isPrefixedKeyValid: isPrefixedKeyValid,
     isPlainJsonObject: isPlainJsonObject,
     isObjectNotNull: isObjectNotNull,
     isValueNotNull: isValueNotNull,
@@ -423,6 +441,10 @@
         module,
         sharedStateKeys,
         globalStateKeys,
+        propState:{},
+        propKey_stateKeyDescriptor_: {},
+        stateKey_propKey_: {},
+        stateToPropMapping:null,
         ccKeys: [],
       }
     */
@@ -501,7 +523,7 @@
     var ccKey_ref_ = ccContext.ccKey_ref_,
         moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
         ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
-    var ccKeys;
+    var ccKeys = [];
 
     if (module) {
       var ccClassKeys = moduleName_ccClassKeys_[module];
@@ -518,7 +540,9 @@
       }
 
       ccKeys = ccClassContext.ccKeys;
-    } else {
+    }
+
+    if (ccKeys.length === 0) {
       ccKeys = Object.keys(ccKey_ref_);
     }
 
@@ -1870,13 +1894,44 @@
   } //tell cc this ccClass is watching some sharedStateKeys of a module state, some globalStateKeys of global state
 
 
-  function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys, globalStateKeys) {
+  function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys, globalStateKeys, stateToPropMapping) {
     var contextMap = ccContext.ccClassKey_ccClassContext_;
 
     if (contextMap[ccClassKey] !== undefined) {
       throw me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
     } else {
-      contextMap[ccClassKey] = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
+      var ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
+
+      if (stateToPropMapping != undefined) {
+        var propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
+        var stateKey_propKey_ = ccClassContext.stateKey_propKey_;
+        var propState = ccClassContext.propState;
+
+        if (typeof stateToPropMapping !== 'object') {
+          throw me(ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey);
+        }
+
+        Object.keys(stateToPropMapping).forEach(function (prefixedKey) {
+          if (!util.isPrefixedKeyValid(prefixedKey)) {
+            throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey + ", key:" + prefixedKey);
+          }
+
+          var _prefixedKey$split = prefixedKey.split('/'),
+              targetModule = _prefixedKey$split[0],
+              targetKey = _prefixedKey$split[1];
+
+          var ccPropKey = stateToPropMapping[prefixedKey];
+          propKey_stateKeyDescriptor_[ccPropKey] = {
+            module: targetModule,
+            key: targetKey
+          };
+          stateKey_propKey_[targetKey] = ccPropKey;
+          ccClassContext.stateToPropMapping = stateToPropMapping;
+          propState[ccPropKey] = _state[targetModule][targetKey]; // assign state value to propState
+        });
+      }
+
+      contextMap[ccClassKey] = ccClassContext;
     }
   }
 
@@ -1928,12 +1983,12 @@
     };
   }
 
-  function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys) {
+  function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping) {
     var _getSharedKeysAndGlob = getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys),
         targetSharedStateKeys = _getSharedKeysAndGlob.sharedStateKeys,
         targetGlobalStateKeys = _getSharedKeysAndGlob.globalStateKeys;
 
-    mapCcClassKeyAndCcClassContext(ccClassKey, stateModule, targetSharedStateKeys, targetGlobalStateKeys);
+    mapCcClassKeyAndCcClassContext(ccClassKey, stateModule, targetSharedStateKeys, targetGlobalStateKeys, stateToPropMapping);
     mapModuleAndSharedStateKeys(stateModule, targetSharedStateKeys);
     mapModuleAndGlobalStateKeys(stateModule, targetGlobalStateKeys);
     mapGlobalKeyAndToModules(stateModule, targetGlobalStateKeys);
@@ -2044,6 +2099,57 @@
       return item.handler = null;
     });
   }
+
+  function updateModulePropState(module_isPropStateChanged, changedPropStateList, targetClassContext, state) {
+    var targetModule = targetClassContext.module,
+        stateToPropMapping = targetClassContext.stateToPropMapping,
+        stateKey_propKey_ = targetClassContext.stateKey_propKey_,
+        propState = targetClassContext.propState;
+
+    if (stateToPropMapping) {
+      Object.keys(state).forEach(function (sKey) {
+        var propKey = stateKey_propKey_[sKey];
+
+        if (propKey) {
+          if (module_isPropStateChanged[targetModule] !== true) {
+            //mark propState changed
+            module_isPropStateChanged[targetModule] = true;
+            changedPropStateList.push(propState); // push this ref to changedPropStateList
+          }
+
+          propState[propKey] = state[sKey];
+        }
+      });
+    }
+  }
+
+  function broadcastPropState(commitState) {
+    var changedPropStateList = [];
+    var module_isPropStateChanged = {}; // record which module's propState has been changed
+
+    Object.keys(moduleName_ccClassKeys_).forEach(function (moduleName) {
+      var ccClassKeys = moduleName_ccClassKeys_[moduleName];
+      ccClassKeys.forEach(function (ccClassKey) {
+        var ccClassContext = ccClassKey_ccClassContext_[ccClassKey];
+        updateModulePropState(module_isPropStateChanged, changedPropStateList, ccClassContext, commitState);
+      });
+    });
+    Object.keys(module_isPropStateChanged).forEach(function (module) {
+      //  this module has stateToPropMapping and propState has been changed!!!
+      var ccClassKeys = moduleName_ccClassKeys_[module];
+      ccClassKeys.forEach(function (ccClassKey) {
+        var classContext = ccClassKey_ccClassContext_[ccClassKey];
+        var ccKeys = classContext.ccKeys;
+        ccKeys.forEach(function (ccKey) {
+          var ref = ccKey_ref_[ccKey];
+
+          if (ref) {
+            ref.cc.reactForceUpdate();
+          }
+        });
+      });
+    });
+  }
   /*
   options.module = 'xxx'
   options.sharedStateKeys = ['aa', 'bbb']
@@ -2055,14 +2161,15 @@
         _ref4$isSingle = _ref4.isSingle,
         isSingle = _ref4$isSingle === void 0 ? false : _ref4$isSingle,
         _ref4$asyncLifecycleH = _ref4.asyncLifecycleHook,
-        asyncLifecycleHook = _ref4$asyncLifecycleH === void 0 ? false : _ref4$asyncLifecycleH,
+        asyncLifecycleHook = _ref4$asyncLifecycleH === void 0 ? true : _ref4$asyncLifecycleH,
         _ref4$module = _ref4.module,
         module = _ref4$module === void 0 ? MODULE_DEFAULT : _ref4$module,
         reducerModule = _ref4.reducerModule,
         _ref4$sharedStateKeys = _ref4.sharedStateKeys,
         inputSharedStateKeys = _ref4$sharedStateKeys === void 0 ? [] : _ref4$sharedStateKeys,
         _ref4$globalStateKeys = _ref4.globalStateKeys,
-        inputGlobalStateKeys = _ref4$globalStateKeys === void 0 ? [] : _ref4$globalStateKeys;
+        inputGlobalStateKeys = _ref4$globalStateKeys === void 0 ? [] : _ref4$globalStateKeys,
+        stateToPropMapping = _ref4.stateToPropMapping;
 
     checkCcStartupOrNot();
     var _curStateModule = module;
@@ -2074,7 +2181,7 @@
     checkStoreModule(_curStateModule);
     checkReducerModule(_reducerModule);
 
-    var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys),
+    var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping),
         sKeys = _mapModuleAssociateDa.sharedStateKeys,
         gKeys = _mapModuleAssociateDa.globalStateKeys;
 
@@ -2114,9 +2221,12 @@
 
           var ccClassContext = _this.__$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption);
 
-          _this.__$$mapCcToInstance(isSingle, asyncLifecycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, _curStateModule, _reducerModule, sharedStateKeys, globalStateKeys);
+          _this.__$$mapCcToInstance(isSingle, asyncLifecycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, _curStateModule, _reducerModule, sharedStateKeys, globalStateKeys); // bind propState to $$propState
 
-          _this.__$$recoverState();
+
+          _this.$$propState = ccClassKey_ccClassContext_[ccClassKey].propState || {};
+
+          _this.__$$recoverState(ccClassKey);
 
           return _this;
         } // never care nextProps, in cc mode, reduce unnecessary render which cause by receiving new props;
@@ -2616,6 +2726,14 @@
 
               if (_this2.$$beforeSetState) {
                 if (asyncLifecycleHook) {
+                  _this2.$$beforeSetState({
+                    changeBy: changeBy
+                  });
+
+                  _this2.cc.reactSetState(state, reactCallback);
+
+                  if (next) next();
+                } else {
                   // if user don't call next in ccIns's $$beforeSetState,reactSetState will never been invoked
                   // $$beforeSetState(context, next){}
                   _this2.$$beforeSetState({
@@ -2625,14 +2743,6 @@
 
                     if (next) next();
                   });
-                } else {
-                  _this2.$$beforeSetState({
-                    changeBy: changeBy
-                  });
-
-                  _this2.cc.reactSetState(state, reactCallback);
-
-                  if (next) next();
                 }
               } else {
                 _this2.cc.reactSetState(state, reactCallback);
@@ -2651,15 +2761,15 @@
                   if (asyncLifecycleHook) {
                     _this2.$$beforeBroadcastState({
                       broadcastTriggeredBy: broadcastTriggeredBy
-                    }, function () {
-                      _this2.cc.broadcastGlobalState(validGlobalState);
-                    });
-                  } else {
-                    _this2.$$beforeBroadcastState({
-                      broadcastTriggeredBy: broadcastTriggeredBy
                     });
 
                     _this2.cc.broadcastGlobalState(validGlobalState);
+                  } else {
+                    _this2.$$beforeBroadcastState({
+                      broadcastTriggeredBy: broadcastTriggeredBy
+                    }, function () {
+                      _this2.cc.broadcastGlobalState(validGlobalState);
+                    });
                   }
                 } else {
                   _this2.cc.broadcastGlobalState(validGlobalState);
@@ -2684,34 +2794,32 @@
                   partialGlobalState = _extractStateToBeBroa.partialGlobalState,
                   module_globalState_ = _extractStateToBeBroa.module_globalState_;
 
-              if (!isPartialSharedStateEmpty || !isPartialGlobalStateEmpty) {
-                if (!isPartialSharedStateEmpty) ccStoreSetState$1(moduleName, partialSharedState);
-                if (!isPartialGlobalStateEmpty) ccStoreSetState$1(MODULE_GLOBAL, partialGlobalState);
-                Object.keys(module_globalState_).forEach(function (moduleName) {
-                  ccStoreSetState$1(moduleName, module_globalState_[moduleName]);
-                });
+              if (!isPartialSharedStateEmpty) ccStoreSetState$1(moduleName, partialSharedState);
+              if (!isPartialGlobalStateEmpty) ccStoreSetState$1(MODULE_GLOBAL, partialGlobalState);
+              Object.keys(module_globalState_).forEach(function (moduleName) {
+                ccStoreSetState$1(moduleName, module_globalState_[moduleName]);
+              });
 
-                if (_this2.$$beforeBroadcastState) {
-                  //check if user define a life cycle hook $$beforeBroadcastState
-                  if (asyncLifecycleHook) {
-                    _this2.$$beforeBroadcastState({
-                      broadcastTriggeredBy: broadcastTriggeredBy
-                    }, function () {
-                      _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
-                    });
-                  } else {
-                    _this2.$$beforeBroadcastState({
-                      broadcastTriggeredBy: broadcastTriggeredBy
-                    });
-
-                    _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
-                  }
+              if (_this2.$$beforeBroadcastState) {
+                //check if user define a life cycle hook $$beforeBroadcastState
+                if (asyncLifecycleHook) {
+                  _this2.$$beforeBroadcastState({
+                    broadcastTriggeredBy: broadcastTriggeredBy
+                  }, function () {
+                    _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                  });
                 } else {
-                  _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                  _this2.$$beforeBroadcastState({
+                    broadcastTriggeredBy: broadcastTriggeredBy
+                  });
+
+                  _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                 }
+              } else {
+                _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
               }
             },
-            broadcastState: function broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
+            broadcastState: function broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
               var _partialSharedState = partialSharedState;
               if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
 
@@ -2815,12 +2923,14 @@
                   });
                 });
               }
+
+              broadcastPropState(originalState);
             },
             broadcastGlobalState: function broadcastGlobalState(globalSate) {
               globalCcClassKeys.forEach(function (ccClassKey) {
-                var _ccClassKey_ccClassCo = ccClassKey_ccClassContext_[ccClassKey],
-                    globalStateKeys = _ccClassKey_ccClassCo.globalStateKeys,
-                    ccKeys = _ccClassKey_ccClassCo.ccKeys;
+                var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                var globalStateKeys = classContext.globalStateKeys,
+                    ccKeys = classContext.ccKeys;
 
                 var _extractStateByKeys9 = extractStateByKeys$1(globalSate, globalStateKeys),
                     partialState = _extractStateByKeys9.partialState,
@@ -2840,6 +2950,7 @@
                   });
                 }
               });
+              broadcastPropState(globalSate);
             },
             emit: function emit(event) {
               for (var _len16 = arguments.length, args = new Array(_len16 > 1 ? _len16 - 1 : 0), _key16 = 1; _key16 < _len16; _key16++) {
@@ -3082,7 +3193,7 @@
 
     if (!option.sharedStateKeys) option.sharedStateKeys = 'all';
     option.module = MODULE_DEFAULT;
-    register(ccClassKey, option);
+    return register(ccClassKey, option);
   }
 
   function registerSingleClassToDefault (ccClassKey, option) {
@@ -3093,7 +3204,7 @@
     if (!option.sharedStateKeys) option.sharedStateKeys = 'all';
     option.module = MODULE_DEFAULT;
     option.isSingle = true;
-    register(ccClassKey, option);
+    return register(ccClassKey, option);
   }
 
   /**
@@ -3323,10 +3434,22 @@
     }
   }
 
+  function connect (ccClassKey, stateToPropMapping, module) {
+    if (module === void 0) {
+      module = MODULE_DEFAULT;
+    }
+
+    return register(ccClassKey, {
+      module: module,
+      stateToPropMapping: stateToPropMapping
+    });
+  }
+
   var defaultExport = {
     emit: emit,
     emitWith: emitWith,
     off: off,
+    connect: connect,
     startup: startup,
     register: register,
     r: r,

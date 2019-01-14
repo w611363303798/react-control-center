@@ -65,6 +65,10 @@ var ccContext = {
       module,
       sharedStateKeys,
       globalStateKeys,
+      propState:{},
+      propKey_stateKeyDescriptor_: {},
+      stateKey_propKey_: {},
+      stateToPropMapping:null,
       ccKeys: [],
     }
   */

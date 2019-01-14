@@ -7,5 +7,5 @@ export default function (ccClassKey, option) {
 
   if (!option.sharedStateKeys) option.sharedStateKeys = 'all';
   option.module = MODULE_DEFAULT;
-  register(ccClassKey, option);
+  return register(ccClassKey, option);
 }

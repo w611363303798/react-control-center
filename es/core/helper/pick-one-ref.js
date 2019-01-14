@@ -7,7 +7,7 @@ export default function (module) {
   var ccKey_ref_ = ccContext.ccKey_ref_,
       moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
       ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
-  var ccKeys;
+  var ccKeys = [];
 
   if (module) {
     var ccClassKeys = moduleName_ccClassKeys_[module];
@@ -24,7 +24,9 @@ export default function (module) {
     }
 
     ccKeys = ccClassContext.ccKeys;
-  } else {
+  }
+
+  if (ccKeys.length === 0) {
     ccKeys = Object.keys(ccKey_ref_);
   }
 

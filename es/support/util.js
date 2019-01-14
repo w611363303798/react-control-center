@@ -34,6 +34,17 @@ export function isPlainJsonObject(obj, canBeArray) {
     return false;
   }
 }
+export function isPrefixedKeyValid(key) {
+  var slashCount = key.split('').filter(function (v) {
+    return v === '/';
+  }).length;
+
+  if (slashCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
 export function isActionTypeValid(type) {
   if (typeof type !== 'string') {
     return false;
@@ -54,7 +65,11 @@ export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
     module: module,
     sharedStateKeys: sharedStateKeys,
     globalStateKeys: globalStateKeys,
-    ccKeys: []
+    ccKeys: [],
+    propState: {},
+    propKey_stateKeyDescriptor_: {},
+    stateKey_propKey_: {},
+    stateToPropMapping: null
   };
 }
 export function makeStateMail(ccUniqueKey, ccOption, module, type, cb) {
@@ -297,6 +312,7 @@ export default {
   isModuleStateValid: isModuleStateValid,
   isCcOptionValid: isCcOptionValid,
   isCcActionValid: isCcActionValid,
+  isPrefixedKeyValid: isPrefixedKeyValid,
   isPlainJsonObject: isPlainJsonObject,
   isObjectNotNull: isObjectNotNull,
   isValueNotNull: isValueNotNull,
