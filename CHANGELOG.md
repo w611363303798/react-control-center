@@ -98,3 +98,8 @@ you can get refComputed with this.$$refComputed, get moduleComputed with this.$$
 
 #### 2018-12-03
 * optimize CCKey duplicate judgement while cc is run in hot reload mode;
+
+react-control-center，再一次颠覆你对状态管理的认识
+cnode简介：https://cnodejs.org/topic/5c0620c4d3b8ab334e8da79e#5c39cf8fa4d44449266b024e
+github地址：https://github.com/fantasticsoul/react-control-center
+quick-start demo: https://github.com/fantasticsoul/rcc-simple-demo

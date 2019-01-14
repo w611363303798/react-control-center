@@ -440,7 +440,7 @@ options.sharedStateKeys = ['aa', 'bbb']
 */
 export default function register(ccClassKey, {
   isSingle = false,
-  asyncLifecycleHook = false,// is asyncLifecycleHook = true, it may block cc broadcast state to other when it takes a long time to finish
+  asyncLifecycleHook = true,// is asyncLifecycleHook = false, it may block cc broadcast state to other when it takes a long time to finish
   module = MODULE_DEFAULT,
   reducerModule,
   sharedStateKeys: inputSharedStateKeys = [],
@@ -616,7 +616,7 @@ export default function register(ccClassKey, {
           },
           // change other module's state, cc will give userLogicFn EffectContext object as first param
           xeffect: (targetModule, userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect:this.cc.xeffect, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
+            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect: this.cc.xeffect, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
           },
           // advanced invoke, can change other module state, but user should put module to option
           // and user can decide userLogicFn's first param is ExecutionContext by set context = true
@@ -713,16 +713,16 @@ export default function register(ccClassKey, {
 
             if (this.$$beforeSetState) {
               if (asyncLifecycleHook) {
+                this.$$beforeSetState({ changeBy });
+                this.cc.reactSetState(state, reactCallback);
+                if (next) next();
+              } else {
                 // if user don't call next in ccIns's $$beforeSetState,reactSetState will never been invoked
                 // $$beforeSetState(context, next){}
                 this.$$beforeSetState({ changeBy }, () => {
                   this.cc.reactSetState(state, reactCallback);
                   if (next) next();
                 });
-              } else {
-                this.$$beforeSetState({ changeBy });
-                this.cc.reactSetState(state, reactCallback);
-                if (next) next();
               }
             } else {
               this.cc.reactSetState(state, reactCallback);
@@ -735,12 +735,12 @@ export default function register(ccClassKey, {
             if (!isStateEmpty) {
               if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
                 if (asyncLifecycleHook) {
+                  this.$$beforeBroadcastState({ broadcastTriggeredBy });
+                  this.cc.broadcastGlobalState(validGlobalState);
+                } else {
                   this.$$beforeBroadcastState({ broadcastTriggeredBy }, () => {
                     this.cc.broadcastGlobalState(validGlobalState);
                   });
-                } else {
-                  this.$$beforeBroadcastState({ broadcastTriggeredBy });
-                  this.cc.broadcastGlobalState(validGlobalState);
                 }
               } else {
                 this.cc.broadcastGlobalState(validGlobalState);
