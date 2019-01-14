@@ -484,6 +484,7 @@ function broadcastPropState(commitState) {
     });
   });
   Object.keys(module_isPropStateChanged).forEach(module => {
+    //  this module has stateToPropMapping and propState has been changed!!!
     const ccClassKeys = moduleName_ccClassKeys_[module];
     ccClassKeys.forEach(ccClassKey => {
       const classContext = ccClassKey_ccClassContext_[ccClassKey];
@@ -954,7 +955,6 @@ export default function register(ccClassKey, {
             broadcastPropState(originalState);
           },
           broadcastGlobalState: (globalSate) => {
-            const changedPropStateList = [], module_isPropStateChanged = {};
             globalCcClassKeys.forEach(ccClassKey => {
               const classContext = ccClassKey_ccClassContext_[ccClassKey];
               const { globalStateKeys, ccKeys } = classContext;

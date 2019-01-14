@@ -1,6 +1,51 @@
 
 # Change Log
 
+#### 2018-01-14 18:00
+* feature add: now cc instance support watch multi module state changing by cc.connect!!!, this usually used for some react class can not belong to
+a specify module, but have to watch multi module state changing, we know watch multi module can be implemented by sharedToGlobalMapping
+in startup option, but if you hate set sharedToGlobalMapping for every module, you can use cc.connect or cc.register by set stateToPropMapping mapping,
+the difference between sharedToGlobalMapping and stateToPropMapping is that:  for sharedToGlobalMapping, value get from this.state, for stateToPropMapping
+, value can get from this.$$propState
+```
+// these code written in https://github.com/fantasticsoul/rcc-simple-demo/tree/master/src/cc-use-case/WatchMultiModule
+// you can update the rcc-simple-demo lastest version, and run it, then switch tab watch-multi-module, you will see what happen
+import React from 'react';
+import cc from 'react-control-center';
+
+class WatchMultiModule extends React.Component {
+  render() {
+    console.log('%c@@@ WatchMultiModule', 'color:green; border:1px solid green;');
+    console.log(`type cc.setState('todo',{todoList:[{id:Date.now()+'_1',type:'todo',content:'nono'},{id:Date.now()+'_2',type:'todo',content:'nono'}]}) in console`);
+
+    const { gbc, alias_content, counter_result, todoList } = this.$$propState;
+    return (
+      <div style={{width:'100%',height:'600px', border:'1px solid darkred'}}>
+        <div>open your console</div>
+        <div>type and then enter to see what happen <span style={{paddingLeft:'28px',color:'red'}}>cc.setState&#40;'counter',&#123;result &#58;  888&#125; &#41;</span></div>
+        <div>type and then enter to see what happen <span style={{paddingLeft:'28px',color:'red'}}>cc.setGlobalState&#40; &#123;content:'wowowo'&#125; &#41;;</span></div>
+        <div>{gbc}</div>
+        <div>{alias_content}</div>
+        <div>{counter_result}</div>
+        <div>{todoList.length}</div>
+      </div>
+    );
+  }
+}
+
+const stateToPropMapping = {
+  '$$global/borderColor': 'gbc',
+  '$$global/content': 'alias_content',
+  'counter/result': 'counter_result',
+  'todo/todoList': 'todoList',
+};
+
+//two way to declare watching multi module cc class
+export default cc.connect('WatchMultiModule', stateToPropMapping)(WatchMultiModule);
+//export default cc.register('WatchMultiModule', {stateToPropMapping})(WatchMultiModule);
+```
+
+
 #### 2018-01-12 15:00
 * feature add: now cc instance support $$emitWith, $$off, cc top api support emit,emitWith,off,r, r is short for register, the param option is also been shorted
   ```
