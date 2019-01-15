@@ -72,6 +72,7 @@ const ccContext = {
       module,
       sharedStateKeys,
       globalStateKeys,
+      isPropModuleMode:false,// when false, data were collected into propState directly, else collected into propState[module]
       propState:{},
       propKey_stateKeyDescriptor_: {},
       stateKey_propKey_: {},
@@ -161,8 +162,7 @@ const ccContext = {
     setState: function (ccUniqueKey, partialStoredState) {
       const _state = ccContext.refStore._state;
       const fullStoredState = _state[ccUniqueKey];
-      // const mergedState = { ...fullStoredState, ...partialStoredState };
-      const mergedState = util.mergeTwoObject(fullStoredState, partialStoredState);
+      const mergedState = { ...fullStoredState, ...partialStoredState };
       _state[ccUniqueKey] = mergedState;
     },
   },

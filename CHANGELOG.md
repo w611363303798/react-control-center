@@ -1,5 +1,43 @@
 
 # Change Log
+#### 2018-01-15 21:00
+* feature add: now cc instance support stateToPropMapping in two way, and support match all state keys by '*'
+  ```
+  // assumed we have two module below
+  const module1 = {a:1,b:true,c:[]};
+  const module2 = {foo:1,bar:'',b:'',c:''};
+
+  //we have two ways to register a react class to cc
+
+  // way 1 is like below, we have to give alias to avoid key duplicated
+  @cc.connect('way1',{
+    'module1/a': 'm1a',
+    'module1/b': 'm1b',
+    'module2/b': 'm2b',
+    'module2/c': 'm2c',
+    });
+  class A extends Component{
+    render(){
+      // here $$propState may like:
+      const {m1a, m1b, m2b, m2c} = this.$$propState;
+    }
+  }
+  //if we write  @cc.connect('way1',{'module1/*': '', 'module2/*': ''});
+  //cc will throw error, because both module1 and module2 has a key named b !!
+  //this writing is safe only if you know the module's keys is totally different
+
+
+  // way 2 we can give '*' and set param 3 true, or set isPropStateModuleMode = true in register method
+  // @cc.register('way2',{stateToPropMapping:{'module1/*': '','module2/*': ''}, isPropStateModuleMode:true}); this writing is also ok!
+  @cc.connect('way2',{'module1/*': '','module2/*': ''}, true);
+  class A extends Component{
+    render(){
+      // here $$propState may like, $$propState'key mean module name^_^
+      const {module1:{a,b,c}, module2:{foo,bar,b,c}} = this.$$propState;
+    }
+  }
+  ```
+  
 #### 2018-01-15 8:00
 * feature add: now cc top api support dispatch, i like it so much more than cc.setState
 

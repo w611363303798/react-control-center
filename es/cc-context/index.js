@@ -1,3 +1,5 @@
+import _extends from "@babel/runtime/helpers/esm/extends";
+
 var _state2, _reducer;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
@@ -64,6 +66,7 @@ var ccContext = {
       module,
       sharedStateKeys,
       globalStateKeys,
+      isPropModuleMode:false,// when false, data were collected into propState directly, else collected into propState[module]
       propState:{},
       propKey_stateKeyDescriptor_: {},
       stateKey_propKey_: {},
@@ -117,9 +120,10 @@ var ccContext = {
     _state: {},
     setState: function setState(ccUniqueKey, partialStoredState) {
       var _state = ccContext.refStore._state;
-      var fullStoredState = _state[ccUniqueKey]; // const mergedState = { ...fullStoredState, ...partialStoredState };
+      var fullStoredState = _state[ccUniqueKey];
 
-      var mergedState = util.mergeTwoObject(fullStoredState, partialStoredState);
+      var mergedState = _extends({}, fullStoredState, partialStoredState);
+
       _state[ccUniqueKey] = mergedState;
     }
   },
