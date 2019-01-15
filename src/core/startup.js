@@ -219,6 +219,7 @@ function bindComputedToCcContext(computed, isModuleMode) {
 
 function executeInitializer(isModuleMode, store, init) {
   const stateHandler = helper.getStateHandlerForInit;
+  if (init === undefined) return;
 
   if (!isModuleMode) {
     if (isPlainJsonObject(init)) {
@@ -227,19 +228,23 @@ function executeInitializer(isModuleMode, store, init) {
       if (includeDefaultModule || includeGlobalModule) {
         if (includeDefaultModule) {
           const defaultInit = init[MODULE_DEFAULT];
-          if (typeof defaultInit !== 'function') {
-            throw new Error('init.$$default value must be a function when cc startup in nonModuleMode!');
-          } else {
-            defaultInit(stateHandler(MODULE_DEFAULT));
+          if (defaultInit) {
+            if (typeof defaultInit !== 'function') {
+              throw new Error('init.$$default value must be a function when cc startup in nonModuleMode!');
+            } else {
+              defaultInit(stateHandler(MODULE_DEFAULT));
+            }
           }
         }
 
         if (includeGlobalModule) {
           const globalInit = init[MODULE_GLOBAL];
-          if (typeof globalInit !== 'function') {
-            throw new Error('init.$$global value must be a function when cc startup in nonModuleMode!');
-          } else {
-            globalInit(stateHandler(MODULE_GLOBAL));
+          if (globalInit) {
+            if (typeof globalInit !== 'function') {
+              throw new Error('init.$$global value must be a function when cc startup in nonModuleMode!');
+            } else {
+              globalInit(stateHandler(MODULE_GLOBAL));
+            }
           }
         }
 
@@ -263,7 +268,9 @@ function executeInitializer(isModuleMode, store, init) {
         throw new Error(`module ${moduleName} not found, check your ccStartupOption.init object keys`);
       }
       const initFn = init[moduleName];
-      initFn(stateHandler(moduleName));
+      if (initFn) {
+        initFn(stateHandler(moduleName));
+      }
     });
   }
 }

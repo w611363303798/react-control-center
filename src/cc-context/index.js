@@ -1,4 +1,5 @@
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
+import { mergeTwoObject } from '../support/util';
 
 const refs = {};
 const setStateByModule = (module, partialState) => {
@@ -160,7 +161,8 @@ const ccContext = {
     setState: function (ccUniqueKey, partialStoredState) {
       const _state = ccContext.refStore._state;
       const fullStoredState = _state[ccUniqueKey];
-      const mergedState = { ...fullStoredState, ...partialStoredState };
+      // const mergedState = { ...fullStoredState, ...partialStoredState };
+      const mergedState = util.mergeTwoObject(fullStoredState, partialStoredState);
       _state[ccUniqueKey] = mergedState;
     },
   },

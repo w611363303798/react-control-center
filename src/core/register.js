@@ -203,7 +203,9 @@ function getSharedKeysAndGlobalKeys(module, ccClassKey, inputSharedStateKeys, in
 }
 
 function checkCcStartupOrNot() {
-  if (!window.cc) throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
+  if (!window.cc || window.cc.isCcAlreadyStartup !== true) {
+    throw new Error('you must startup cc by call startup method before register ReactClass to cc!');
+  }
 }
 
 function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, globalStateKeys) {

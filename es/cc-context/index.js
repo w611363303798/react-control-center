@@ -1,8 +1,7 @@
-import _extends from "@babel/runtime/helpers/esm/extends";
-
 var _state2, _reducer;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
+import { mergeTwoObject } from '../support/util';
 var refs = {};
 
 var setStateByModule = function setStateByModule(module, partialState) {
@@ -118,10 +117,9 @@ var ccContext = {
     _state: {},
     setState: function setState(ccUniqueKey, partialStoredState) {
       var _state = ccContext.refStore._state;
-      var fullStoredState = _state[ccUniqueKey];
+      var fullStoredState = _state[ccUniqueKey]; // const mergedState = { ...fullStoredState, ...partialStoredState };
 
-      var mergedState = _extends({}, fullStoredState, partialStoredState);
-
+      var mergedState = util.mergeTwoObject(fullStoredState, partialStoredState);
       _state[ccUniqueKey] = mergedState;
     }
   },
