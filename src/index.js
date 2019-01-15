@@ -12,6 +12,7 @@ import emit from './core/emit';
 import emitWith from './core/emit-with';
 import off from './core/off';
 import connect from './core/connect';
+import dispatch from './core/dispatch';
 import ccContext from './cc-context';
 
 const defaultExport = {
@@ -19,6 +20,7 @@ const defaultExport = {
   emitWith,
   off,
   connect,
+  dispatch,
   startup,
   register,
   r,

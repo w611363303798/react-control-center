@@ -526,20 +526,22 @@
     var ccKeys = [];
 
     if (module) {
-      var ccClassKeys = moduleName_ccClassKeys_[module];
+      if (ccContext.store._state[module]) {
+        var ccClassKeys = moduleName_ccClassKeys_[module];
 
-      if (!ccClassKeys || ccClassKeys.length === 0) {
-        throw new Error("no ccClass found for module " + module + "!");
+        if (ccClassKeys && ccClassKeys.length !== 0) {
+          var oneCcClassKey = ccClassKeys[0];
+          var ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
+
+          if (!ccClassContext) {
+            throw new Error("no ccClassContext found for ccClassKey " + oneCcClassKey + "!");
+          }
+
+          ccKeys = ccClassContext.ccKeys;
+        }
+      } else {
+        throw new Error("sorry, module: " + module + " is invalid, cc don't know this module!");
       }
-
-      var oneCcClassKey = ccClassKeys[0];
-      var ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
-
-      if (!ccClassContext) {
-        throw new Error("no ccClassContext found for ccClassKey " + oneCcClassKey + "!");
-      }
-
-      ccKeys = ccClassContext.ccKeys;
     }
 
     if (ccKeys.length === 0) {
@@ -2806,20 +2808,20 @@
                   _this2.$$beforeBroadcastState({
                     broadcastTriggeredBy: broadcastTriggeredBy
                   }, function () {
-                    _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                    _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                   });
                 } else {
                   _this2.$$beforeBroadcastState({
                     broadcastTriggeredBy: broadcastTriggeredBy
                   });
 
-                  _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                  _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                 }
               } else {
-                _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
               }
             },
-            broadcastState: function broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
+            broadcastState: function broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
               var _partialSharedState = partialSharedState;
               if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
 
@@ -2924,7 +2926,9 @@
                 });
               }
 
-              broadcastPropState(originalState);
+              var combinedState = _extends({}, _partialSharedState, partialGlobalState);
+
+              broadcastPropState(combinedState);
             },
             broadcastGlobalState: function broadcastGlobalState(globalSate) {
               globalCcClassKeys.forEach(function (ccClassKey) {
@@ -3009,6 +3013,7 @@
           // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
 
           this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
+          this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
           this.$$invoke = this.cc.invoke.bind(this); // commit state to cc directly, but userFn can be promise or generator both!
 
           this.$$invokeWith = this.cc.invokeWith.bind(this);
@@ -3445,11 +3450,32 @@
     });
   }
 
+  function dispatch (action, ccClassKey, ccKey, throwError) {
+    try {
+      if (ccClassKey && ccKey) {
+        var uKey = util.makeUniqueCcKey(ccClassKey, ccKey);
+        var targetRef = ccContext.refs[uKey];
+
+        if (!targetRef) {
+          throw new Error("no ref found for uniqueCcKey:" + uKey + "!");
+        } else {
+          targetRef.$$dispatch(action);
+        }
+      } else {
+        var ref = pickOneRef();
+        ref.$$dispatchForModule(action);
+      }
+    } catch (err) {
+      if (throwError) throw err;else util.justWarning(err.message);
+    }
+  }
+
   var defaultExport = {
     emit: emit,
     emitWith: emitWith,
     off: off,
     connect: connect,
+    dispatch: dispatch,
     startup: startup,
     register: register,
     r: r,

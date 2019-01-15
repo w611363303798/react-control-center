@@ -10,20 +10,23 @@ export default function (module) {
   var ccKeys = [];
 
   if (module) {
-    var ccClassKeys = moduleName_ccClassKeys_[module];
+    if (ccContext.store._state[module]) {
+      var ccClassKeys = moduleName_ccClassKeys_[module];
 
-    if (!ccClassKeys || ccClassKeys.length === 0) {
-      throw new Error("no ccClass found for module " + module + "!");
+      if (ccClassKeys && ccClassKeys.length !== 0) {
+        var oneCcClassKey = ccClassKeys[0];
+        var ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
+
+        if (!ccClassContext) {
+          throw new Error("no ccClassContext found for ccClassKey " + oneCcClassKey + "!");
+        }
+
+        ccKeys = ccClassContext.ccKeys;
+      } else {// find one cc ref later
+      }
+    } else {
+      throw new Error("sorry, module: " + module + " is invalid, cc don't know this module!");
     }
-
-    var oneCcClassKey = ccClassKeys[0];
-    var ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
-
-    if (!ccClassContext) {
-      throw new Error("no ccClassContext found for ccClassKey " + oneCcClassKey + "!");
-    }
-
-    ccKeys = ccClassContext.ccKeys;
   }
 
   if (ccKeys.length === 0) {

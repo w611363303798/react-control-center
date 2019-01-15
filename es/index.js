@@ -12,12 +12,14 @@ import emit from './core/emit';
 import emitWith from './core/emit-with';
 import off from './core/off';
 import connect from './core/connect';
+import dispatch from './core/dispatch';
 import ccContext from './cc-context';
 var defaultExport = {
   emit: emit,
   emitWith: emitWith,
   off: off,
   connect: connect,
+  dispatch: dispatch,
   startup: startup,
   register: register,
   r: r,

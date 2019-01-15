@@ -1278,20 +1278,20 @@ export default function register(ccClassKey, _temp) {
                 _this2.$$beforeBroadcastState({
                   broadcastTriggeredBy: broadcastTriggeredBy
                 }, function () {
-                  _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                  _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                 });
               } else {
                 _this2.$$beforeBroadcastState({
                   broadcastTriggeredBy: broadcastTriggeredBy
                 });
 
-                _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
               }
             } else {
-              _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+              _this2.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
             }
           },
-          broadcastState: function broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
+          broadcastState: function broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
             var _partialSharedState = partialSharedState;
             if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
 
@@ -1401,7 +1401,9 @@ export default function register(ccClassKey, _temp) {
               });
             }
 
-            broadcastPropState(originalState);
+            var combinedState = _extends({}, _partialSharedState, partialGlobalState);
+
+            broadcastPropState(combinedState);
           },
           broadcastGlobalState: function broadcastGlobalState(globalSate) {
             globalCcClassKeys.forEach(function (ccClassKey) {
@@ -1486,6 +1488,7 @@ export default function register(ccClassKey, _temp) {
         // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
 
         this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
+        this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
         this.$$invoke = this.cc.invoke.bind(this); // commit state to cc directly, but userFn can be promise or generator both!
 
         this.$$invokeWith = this.cc.invokeWith.bind(this);

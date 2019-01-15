@@ -1,5 +1,7 @@
 
 # Change Log
+#### 2018-01-15 8:00
+* feature add: now cc top api support dispatch, i like it so much more than cc.setState
 
 #### 2018-01-14 18:00
 * feature add: now cc instance support watch multi module state changing by cc.connect!!!, this usually used for some react class can not belong to
