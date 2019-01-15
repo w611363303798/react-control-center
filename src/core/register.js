@@ -838,17 +838,17 @@ export default function register(ccClassKey, {
             if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
               if (asyncLifecycleHook) {
                 this.$$beforeBroadcastState({ broadcastTriggeredBy }, () => {
-                  this.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                  this.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                 });
               } else {
                 this.$$beforeBroadcastState({ broadcastTriggeredBy });
-                this.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                this.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
               }
             } else {
-              this.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+              this.cc.broadcastState(stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
             }
           },
-          broadcastState: (originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) => {
+          broadcastState: (stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) => {
 
             let _partialSharedState = partialSharedState;
             if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone operation may cause performance issue, if partialSharedState is too big!!
@@ -952,7 +952,8 @@ export default function register(ccClassKey, {
               });
             }
 
-            broadcastPropState(originalState);
+            const combinedState = { ..._partialSharedState, ...partialGlobalState };
+            broadcastPropState(combinedState);
           },
           broadcastGlobalState: (globalSate) => {
             globalCcClassKeys.forEach(ccClassKey => {

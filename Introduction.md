@@ -1,5 +1,7 @@
 # C_C welcom to cc world
 >### quick-start demo: https://github.com/fantasticsoul/rcc-simple-demo
+>### [github地址](https://github.com/fantasticsoul/react-control-center)
+>### 欢迎大家star，给我更大的动力。
 
 ## 简介
 * 硝烟四起
@@ -255,7 +257,44 @@ class Foo extends Component{
     }
 }
 ```
+>>10 cc定位的容器型组件的状态管理，通常情况一些组件和model非常的有业务关系或者从属关系，我们会把这些react类注册为某个moudle的cc类，观察这个模块中的状态变化，但是有些组件例如一个Workpace类的确需要观察很多模块的状态变化，不算是某个模块对应的视图组件，此时除了用上面说的sharedToGlobalMapping功能，将需要观察各个模块的部分状态映射到global里，然后注册Workpace时为其设定globalStateKeys,就能达到观察多个模块的状态变化的目的之外，cc还提供另一种思路，注册Workpace时设定stateToPropMapping,就可以观察恩义模块的任意key的值变化,和sharedToGlobalMapping不同之处在于，stateToPropMapping要从this.$$propState里取值，sharedToGlobalMapping是从this.state取值，当然stateToPropMapping不需要模块主动的将某些key映射到global里，就能达到跨模块观察状态变化的目录，cc鼓励用户精确对状态归类，并探索最佳组合和最佳实践
+```
+// these code written in https://github.com/fantasticsoul/rcc-simple-demo/tree/master/src/cc-use-case/WatchMultiModule
+// you can update the rcc-simple-demo lastest version, and run it, then switch tab watch-multi-module, you will see what happen
+import React from 'react';
+import cc from 'react-control-center';
 
+class WatchMultiModule extends React.Component {
+  render() {
+    console.log('%c@@@ WatchMultiModule', 'color:green; border:1px solid green;');
+    console.log(`type cc.setState('todo',{todoList:[{id:Date.now()+'_1',type:'todo',content:'nono'},{id:Date.now()+'_2',type:'todo',content:'nono'}]}) in console`);
+
+    const { gbc, alias_content, counter_result, todoList } = this.$$propState;
+    return (
+      <div style={{width:'100%',height:'600px', border:'1px solid darkred'}}>
+        <div>open your console</div>
+        <div>type and then enter to see what happen <span style={{paddingLeft:'28px',color:'red'}}>cc.setState&#40;'counter',&#123;result &#58;  888&#125; &#41;</span></div>
+        <div>type and then enter to see what happen <span style={{paddingLeft:'28px',color:'red'}}>cc.setGlobalState&#40; &#123;content:'wowowo'&#125; &#41;;</span></div>
+        <div>{gbc}</div>
+        <div>{alias_content}</div>
+        <div>{counter_result}</div>
+        <div>{todoList.length}</div>
+      </div>
+    );
+  }
+}
+
+const stateToPropMapping = {
+  '$$global/borderColor': 'gbc',
+  '$$global/content': 'alias_content',
+  'counter/result': 'counter_result',
+  'todo/todoList': 'todoList',
+};
+
+//two way to declare watching multi module cc class
+export default cc.connect('WatchMultiModule', stateToPropMapping)(WatchMultiModule);
+//export default cc.register('WatchMultiModule', {stateToPropMapping})(WatchMultiModule);
+```
 
 >### github地址：https://github.com/fantasticsoul/react-control-center
 ---
