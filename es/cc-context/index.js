@@ -3,7 +3,6 @@ import _extends from "@babel/runtime/helpers/esm/extends";
 var _state2, _reducer;
 
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
-import { mergeTwoObject } from '../support/util';
 var refs = {};
 
 var setStateByModule = function setStateByModule(module, partialState) {
@@ -53,6 +52,8 @@ var ccContext = {
   //  to only allow register one react class, flag the module name as true in this option object
   //  example:  {fooModule: true, barModule:true}
   moduleSingleClass: {},
+  propModuleName_ccClassKeys_: {//module is watched by these ccClass's propState
+  },
   moduleName_ccClassKeys_: {},
   // map from moduleName to sharedStateKeys
   moduleName_sharedStateKeys_: {},
@@ -69,7 +70,7 @@ var ccContext = {
       isPropModuleMode:false,// when false, data were collected into propState directly, else collected into propState[module]
       propState:{},
       propKey_stateKeyDescriptor_: {},
-      stateKey_propKey_: {},
+      stateKey_propKeyDescriptor_: {},
       stateToPropMapping:null,
       ccKeys: [],
     }

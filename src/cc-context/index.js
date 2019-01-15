@@ -1,5 +1,4 @@
 import { MODULE_GLOBAL, MODULE_CC } from '../support/constant';
-import { mergeTwoObject } from '../support/util';
 
 const refs = {};
 const setStateByModule = (module, partialState) => {
@@ -54,6 +53,9 @@ const ccContext = {
   moduleSingleClass: {
 
   },
+  propModuleName_ccClassKeys_: {//module is watched by these ccClass's propState
+
+  },
   moduleName_ccClassKeys_: {
 
   },
@@ -75,7 +77,7 @@ const ccContext = {
       isPropModuleMode:false,// when false, data were collected into propState directly, else collected into propState[module]
       propState:{},
       propKey_stateKeyDescriptor_: {},
-      stateKey_propKey_: {},
+      stateKey_propKeyDescriptor_: {},
       stateToPropMapping:null,
       ccKeys: [],
     }

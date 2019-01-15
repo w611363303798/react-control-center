@@ -68,10 +68,10 @@ export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
     sharedStateKeys,
     globalStateKeys,
     ccKeys: [],
-    propState: {},
+    propState:{},
     propKey_stateKeyDescriptor_: {},
-    stateKey_propKey_: {},
-    stateToPropMapping: null,
+    stateKey_propKeyDescriptor_: {},
+    stateToPropMapping:null,
   }
 }
 
@@ -248,13 +248,6 @@ export function isStateValid(state) {
   }
 }
 
-export function mergeTwoObject(obj1, obj2) {
-  const newObj = {};
-  Object.keys(obj1).forEach(key => newObj[key] = obj1[key]);
-  Object.keys(obj2).forEach(key => newObj[key] = obj2[key]);
-  return newObj;
-}
-
 export default {
   makeError,
   isHotReloadMode,
@@ -285,5 +278,4 @@ export default {
   safeGetObjectFromObject,
   safeGetArrayFromObject,
   safeAssignObjectValue,
-  mergeTwoObject,
 }

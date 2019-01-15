@@ -68,7 +68,7 @@ export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
     ccKeys: [],
     propState: {},
     propKey_stateKeyDescriptor_: {},
-    stateKey_propKey_: {},
+    stateKey_propKeyDescriptor_: {},
     stateToPropMapping: null
   };
 }
@@ -300,16 +300,6 @@ export function isStateValid(state) {
     return true;
   }
 }
-export function mergeTwoObject(obj1, obj2) {
-  var newObj = {};
-  Object.keys(obj1).forEach(function (key) {
-    return newObj[key] = obj1[key];
-  });
-  Object.keys(obj2).forEach(function (key) {
-    return newObj[key] = obj2[key];
-  });
-  return newObj;
-}
 export default {
   makeError: makeError,
   isHotReloadMode: isHotReloadMode,
@@ -339,6 +329,5 @@ export default {
   justTip: justTip,
   safeGetObjectFromObject: safeGetObjectFromObject,
   safeGetArrayFromObject: safeGetArrayFromObject,
-  safeAssignObjectValue: safeAssignObjectValue,
-  mergeTwoObject: mergeTwoObject
+  safeAssignObjectValue: safeAssignObjectValue
 };

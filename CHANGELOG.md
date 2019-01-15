@@ -1,5 +1,8 @@
 
 # Change Log
+#### 2018-01-16 01:00
+* now stateToPropMapping now can running perfectly!
+
 #### 2018-01-15 21:00
 * feature add: now cc instance support stateToPropMapping in two way, and support match all state keys by '*'
   ```

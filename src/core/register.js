@@ -23,7 +23,7 @@ const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError,
 const {
   store: { _state, getState, setState: ccStoreSetState, setStateByModuleAndKey },
   reducer: { _reducer }, refStore, globalMappingKey_sharedKey_,
-  computed: { _computedValue }, event_handlers_,
+  computed: { _computedValue }, event_handlers_, propModuleName_ccClassKeys_,
   moduleName_sharedStateKeys_, moduleName_globalStateKeys_,
   ccKey_ref_, ccKey_option_, globalCcClassKeys, moduleName_ccClassKeys_, ccClassKey_ccClassContext_,
   globalMappingKey_toModules_, globalMappingKey_fromModule_, globalKey_toModules_, sharedKey_globalMappingKeyDescriptor_,
@@ -312,11 +312,18 @@ function _throwPropDuplicateError(prefixedKey, module) {
   throw me(`cc found different module has same key, you need give the key a alias explicitly!`,
     vbi(`the prefixedKey is ${prefixedKey}, module is:${module}`));
 }
-function _getPropKey(isPropStateModuleMode, module, propKey) {
+function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
   if (isPropStateModuleMode === true) {
-    return `${module}/${propKey}`;
+    return { moduledPropKey: `${module}/${propKey}`, originalPropKey: propKey };
   } else {
-    return propKey;
+    return { moduledPropKey: propKey, originalPropKey: propKey };
+  }
+}
+function _getStateKeyPair(isPropStateModuleMode, module, stateKey) {
+  if (isPropStateModuleMode === true) {
+    return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
+  } else {
+    return { moduledStateKey: stateKey, originalStateKey: stateKey };
   }
 }
 function _setPropState(propState, propKey, propValue, isPropStateModuleMode, module) {
@@ -336,7 +343,7 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
     const ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
     if (stateToPropMapping != undefined) {
       const propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
-      const stateKey_propKey_ = ccClassContext.stateKey_propKey_;
+      const stateKey_propKeyDescriptor_ = ccClassContext.stateKey_propKeyDescriptor_;
       const propState = ccClassContext.propState;
 
       if (typeof stateToPropMapping !== 'object') {
@@ -372,22 +379,25 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
       const propKey_appeared_ = {};//help cc to judge propKey is duplicated or not
       targetModules.forEach(module => {
         const moduleState = _state[module];
+        let isPropStateSet = false;
 
         if (module_mapAllStateToProp_[module] === true) {
           const moduleStateKeys = Object.keys(moduleState);
           moduleStateKeys.forEach(msKey => {
             // now prop key equal state key if user declare key like m1/* in stateToPropMapping;
-            const _propKeyForJudge = _getPropKey(isPropStateModuleMode, module, msKey);
-            const appeared = propKey_appeared_[_propKeyForJudge];
+            const { moduledPropKey, originalPropKey } = _getPropKeyPair(isPropStateModuleMode, module, msKey);
+            const appeared = propKey_appeared_[moduledPropKey];
 
             if (appeared === true) {
               _throwPropDuplicateError(module_staredKey_[module], module);
             } else {
-              propKey_appeared_[_propKeyForJudge] = true;
-              propKey_stateKeyDescriptor_[msKey] = { module, key: msKey };
-              stateKey_propKey_[msKey] = msKey;
+              propKey_appeared_[moduledPropKey] = true;
+              // moduledPropKey and moduledStateKey is equal
+              propKey_stateKeyDescriptor_[moduledPropKey] = { module, originalStateKey: msKey, moduledStateKey: moduledPropKey };
+              stateKey_propKeyDescriptor_[moduledPropKey] = { module, moduledPropKey, originalPropKey };
 
               _setPropState(propState, msKey, moduleState[msKey], isPropStateModuleMode, module);
+              isPropStateSet = true;
             }
           });
         } else {
@@ -395,19 +405,26 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
           prefixedKeys.forEach(prefixedKey => {
             const [stateModule, stateKey] = prefixedKey.split('/');
             const propKey = stateToPropMapping[prefixedKey];
-            const _propKeyForJudge = _getPropKey(isPropStateModuleMode, module, propKey);
+            const { moduledPropKey, originalPropKey } = _getPropKeyPair(isPropStateModuleMode, module, propKey);
 
-            const appeared = propKey_appeared_[_propKeyForJudge];
+            const appeared = propKey_appeared_[moduledPropKey];
             if (appeared === true) {
               _throwPropDuplicateError(prefixedKey, module);
             } else {
-              propKey_appeared_[_propKeyForJudge] = true;
-              propKey_stateKeyDescriptor_[propKey] = { module: stateModule, key: stateKey };
-              stateKey_propKey_[stateKey] = propKey;
+              propKey_appeared_[moduledPropKey] = true;
+              const { moduledStateKey } = _getStateKeyPair(isPropStateModuleMode, module, stateKey);
+              propKey_stateKeyDescriptor_[moduledPropKey] = { module: stateModule, originalStateKey: stateKey, moduledStateKey };
+              stateKey_propKeyDescriptor_[moduledStateKey] = { module: stateModule, moduledPropKey, originalPropKey };
 
               _setPropState(propState, propKey, moduleState[stateKey], isPropStateModuleMode, module);
+              isPropStateSet = true;
             }
           });
+        }
+
+        if (isPropStateSet = true) {
+          const pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
+          if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
         }
       });
 
@@ -541,21 +558,24 @@ function findEventHandlersToOff(event, { module, ccClassKey, identity }) {
 }
 
 function updateModulePropState(module_isPropStateChanged, changedPropStateList, targetClassContext, state, stateModuleName) {
-  const { module: targetModule, stateToPropMapping, stateKey_propKey_, propKey_stateKeyDescriptor_, propState, isPropStateModuleMode } = targetClassContext;
+  const { stateToPropMapping, stateKey_propKeyDescriptor_, propState, isPropStateModuleMode } = targetClassContext;
   if (stateToPropMapping) {
     Object.keys(state).forEach(sKey => {
-      const propKey = stateKey_propKey_[sKey];
-      if (propKey) {
-        const propModule = propKey_stateKeyDescriptor_[propKey].module;
+      // use input stateModuleName to compute moduledStateKey for current stateKey
+      // to see if the propState should be updated
+      const { moduledStateKey } = _getStateKeyPair(isPropStateModuleMode, stateModuleName, sKey);
+      const moduledPropKeyDescriptor = stateKey_propKeyDescriptor_[moduledStateKey];
+      if (moduledPropKeyDescriptor) {
+        const { originalPropKey } = moduledPropKeyDescriptor;
 
-        // it is very important to judge belongModule eq stateModuleName, stateKey is same but module is different, propState shouldn't be updated
-        if (propModule === stateModuleName) {
-          if (module_isPropStateChanged[targetModule] !== true) {//mark propState changed
-            module_isPropStateChanged[targetModule] = true;
-            changedPropStateList.push(propState);// push this ref to changedPropStateList
-          }
-          _setPropState(propState, propKey, state[sKey], isPropStateModuleMode, propModule);
+        if (module_isPropStateChanged[stateModuleName] !== true) {//mark propState changed
+          module_isPropStateChanged[stateModuleName] = true;
+          changedPropStateList.push(propState);// push this ref to changedPropStateList
         }
+
+        const stateValue = state[sKey];
+        _setPropState(propState, originalPropKey, stateValue, isPropStateModuleMode, stateModuleName);
+        setStateByModuleAndKey(stateModuleName, sKey, stateValue);
       }
     });
   }
@@ -576,7 +596,7 @@ function broadcastPropState(module, commitState) {
 
   Object.keys(module_isPropStateChanged).forEach(module => {
     //  this module has stateToPropMapping and propState has been changed!!!
-    const ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, module);
+    const ccClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
     ccClassKeys.forEach(ccClassKey => {
       const classContext = ccClassKey_ccClassContext_[ccClassKey];
       const { ccKeys } = classContext;
@@ -791,6 +811,8 @@ export default function register(ccClassKey, {
               if (context) args.unshift(executionContext);
               co.wrap(userLogicFn)(...args).then(partialState => {
                 this.$$changeState(partialState, { stateFor, module: targetModule, forceSync, cb: newCb });
+              }).then(() => {
+                if (executionContext.afterStateChanged) { executionContext.afterStateChanged() }
               }).catch(justWarning);
             });
           },
@@ -832,7 +854,7 @@ export default function register(ccClassKey, {
             });
           },
 
-          dispatch: ({ stateFor, module: inputModule, reducerModule: inputReducerModule, forceSync = false, type, payload, cb: reactCallback } = {}) => {
+          dispatch: ({ stateFor, module: inputModule, reducerModule: inputReducerModule, forceSync = false, type, payload, cb: reactCallback, afterStateChanged } = {}) => {
             //if module not defined, targetStateModule will be currentModule
             const targetStateModule = inputModule || currentModule;
 
@@ -851,7 +873,8 @@ export default function register(ccClassKey, {
             isStateModuleValid(targetStateModule, currentModule, reactCallback, (newCb) => {
               const executionContext = {
                 stateFor, ccUniqueKey, ccOption, module: targetStateModule, reducerModule: targetReducerModule, type, dispatch: contextDispatch,
-                payload, state: this.state, moduleState: getState(targetStateModule), effect: this.$$effect, xeffect: this.$$xeffect, forceSync, cb: newCb, context: true
+                payload, state: this.state, moduleState: getState(targetStateModule), effect: this.$$effect, xeffect: this.$$xeffect,
+                forceSync, cb: newCb, context: true, afterStateChanged
               };
 
               this.cc.__invokeWith(reducerFn, executionContext);
@@ -1178,8 +1201,8 @@ export default function register(ccClassKey, {
       }
 
       __$$getDispatchHandler(stateFor) {
-        return ({ module, reducerModule, forceSync = false, type, payload, cb: reactCallback } = {}) => {
-          this.cc.dispatch({ stateFor, module, reducerModule, forceSync, type, payload, cb: reactCallback });
+        return ({ module, reducerModule, forceSync = false, type, payload, cb: reactCallback, afterStateChanged } = {}) => {
+          this.cc.dispatch({ stateFor, module, reducerModule, forceSync, type, payload, cb: reactCallback, afterStateChanged });
         }
       }
 
