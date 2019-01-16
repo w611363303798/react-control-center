@@ -3,7 +3,7 @@ import * as helper from './helper';
 import { ERR, MODULE_GLOBAL } from '../support/constant';
 import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
 
-const ccGlobalStateKeys = cc.globalStateKeys;
+const ccGlobalStateKeys = ccContext.globalStateKeys;
 
 /**
  * @description configure module、state、option to cc
