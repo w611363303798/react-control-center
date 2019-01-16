@@ -1,5 +1,8 @@
 
 # Change Log
+#### 2018-01-16 06:30
+* change RegisterOption.sharedStateKeys writing way, you need write 'all' if you want to watch whole module state, now you need write '*' instead of 'all'
+
 #### 2018-01-16 01:00
 * now stateToPropMapping now can running perfectly!
 

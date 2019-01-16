@@ -181,11 +181,11 @@ function getSharedKeysAndGlobalKeys(module, ccClassKey, inputSharedStateKeys, in
   var sharedStateKeys = inputSharedStateKeys,
       globalStateKeys = inputGlobalStateKeys;
 
-  if (inputSharedStateKeys === 'all') {
+  if (inputSharedStateKeys === '*') {
     sharedStateKeys = Object.keys(getState(module));
   }
 
-  if (inputGlobalStateKeys === 'all') {
+  if (inputGlobalStateKeys === '*') {
     globalStateKeys = Object.keys(getState(MODULE_GLOBAL));
   }
 

@@ -2,6 +2,7 @@ import ccContext from '../cc-context';
 import * as helper from './helper';
 import { ERR, MODULE_GLOBAL } from '../support/constant';
 import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
+var ccGlobalStateKeys = ccContext.globalStateKeys;
 /**
  * @description configure module、state、option to cc
  * @author zzk
@@ -101,6 +102,7 @@ export default function (module, state, _temp) {
 
       var stateValue = globalState[gKey];
       storedGlobalState[gKey] = stateValue;
+      ccGlobalStateKeys.push(gKey);
     });
   }
 
