@@ -324,16 +324,16 @@ init = {
   }
 */
 export default function ({
+  isModuleMode = false,
   store = {},
   reducer = {},
+  init = null,
   computed = {},
-  isModuleMode = false,
+  sharedToGlobalMapping = {},
   moduleSingleClass = {},
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
-  sharedToGlobalMapping = {},
-  init = null,
 } = {}) {
   if (window) {
     window.CC_CONTEXT = ccContext;

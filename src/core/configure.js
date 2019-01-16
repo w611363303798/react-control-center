@@ -3,6 +3,8 @@ import * as helper from './helper';
 import { ERR, MODULE_GLOBAL } from '../support/constant';
 import { makeError, verboseInfo, isPlainJsonObject } from '../support/util';
 
+const ccGlobalStateKeys = cc.globalStateKeys;
+
 /**
  * @description configure module、state、option to cc
  * @author zzk
@@ -82,6 +84,7 @@ export default function (module, state, { singleClass, moduleReducer, reducer, i
       }
       const stateValue = globalState[gKey];
       storedGlobalState[gKey] = stateValue;
+      ccGlobalStateKeys.push(gKey);
     });
   }
 
