@@ -1,6 +1,7 @@
 import _extends from "@babel/runtime/helpers/esm/extends";
 import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
 import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import React from 'react';
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
 import ccContext, { getCcContext } from '../cc-context';
 import util, { isPlainJsonObject } from '../support/util';
@@ -788,6 +789,8 @@ options.sharedStateKeys = ['aa', 'bbb']
 
 export default function register(ccClassKey, _temp) {
   var _ref4 = _temp === void 0 ? {} : _temp,
+      _ref4$extendReactComp = _ref4.extendReactComponent,
+      extendReactComponent = _ref4$extendReactComp === void 0 ? false : _ref4$extendReactComp,
       _ref4$isSingle = _ref4.isSingle,
       isSingle = _ref4$isSingle === void 0 ? false : _ref4$isSingle,
       _ref4$asyncLifecycleH = _ref4.asyncLifecycleHook,
@@ -824,15 +827,17 @@ export default function register(ccClassKey, _temp) {
       throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CcClass!"));
     }
 
+    var TargetClass = extendReactComponent ? React.Component : ReactClass;
+
     var CcClass =
     /*#__PURE__*/
-    function (_ReactClass) {
-      _inheritsLoose(CcClass, _ReactClass);
+    function (_TargetClass) {
+      _inheritsLoose(CcClass, _TargetClass);
 
       function CcClass(props, context) {
         var _this;
 
-        _this = _ReactClass.call(this, props, context) || this;
+        _this = _TargetClass.call(this, props, context) || this;
         if (!_this.state) _this.state = {};
         var ccKey = props.ccKey,
             _props$ccOption = props.ccOption,
@@ -1774,7 +1779,7 @@ export default function register(ccClassKey, _temp) {
       };
 
       _proto.componentDidUpdate = function componentDidUpdate() {
-        if (_ReactClass.prototype.componentDidUpdate) _ReactClass.prototype.componentDidUpdate.call(this);
+        if (_TargetClass.prototype.componentDidUpdate) _TargetClass.prototype.componentDidUpdate.call(this);
         if (this.$$afterSetState) this.$$afterSetState();
       };
 
@@ -1784,7 +1789,7 @@ export default function register(ccClassKey, _temp) {
             ccKeys = _this$cc$ccState2.ccClassContext.ccKeys;
         unsetCcInstanceRef(ccKeys, ccUniqueKey); //if father component implement componentWillUnmount，call it again
 
-        if (_ReactClass.prototype.componentWillUnmount) _ReactClass.prototype.componentWillUnmount.call(this);
+        if (_TargetClass.prototype.componentWillUnmount) _TargetClass.prototype.componentWillUnmount.call(this);
       };
 
       _proto.render = function render() {
@@ -1792,11 +1797,17 @@ export default function register(ccClassKey, _temp) {
           console.log(ss("@@@ render " + ccClassDisplayName(ccClassKey)), cl());
         }
 
-        return _ReactClass.prototype.render.call(this);
+        if (extendReactComponent) {
+          // cc class extends ReactBasicClass, render user inputted ReactClass
+          return React.createElement(ReactClass, _extends({}, this, this.props));
+        } else {
+          // cc class extends ReactClass, call super.render()
+          return _TargetClass.prototype.render.call(this);
+        }
       };
 
       return CcClass;
-    }(ReactClass);
+    }(TargetClass);
 
     CcClass.displayName = ccClassDisplayName(ccClassKey);
     return CcClass;

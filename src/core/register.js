@@ -1,4 +1,5 @@
 
+import React, { Component } from 'react';
 import {
   MODULE_DEFAULT, MODULE_GLOBAL, ERR,
   CHANGE_BY_SELF,
@@ -309,7 +310,7 @@ function mapModuleAndGlobalStateKeys(moduleName, partialGlobalStateKeys) {
 }
 
 function _throwPropDuplicateError(prefixedKey, module) {
-  throw me(`cc found different module has same key, you need give the key a alias explicitly!`,
+  throw me(`cc found different module has same key, you need give the key a alias explicitly! or you can set isPropStateModuleMode=true to avoid this error`,
     vbi(`the prefixedKey is ${prefixedKey}, module is:${module}`));
 }
 function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
@@ -478,7 +479,20 @@ function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, ccCl
   return { globalStateKeys, sharedStateKeys };
 }
 
-function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+// function _throwForExtendReactComponentAsTrueCheck() {
+//   throw me(`cc found set sharedStateKeys、globalStateKeys or storedStateKeys, but you set extendReactComponent as true at the same time
+//     while you register a ccClass:${ccClassKey}, this is not allowed, extendReactComponent=true means cc will give you
+//     a real HOC component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys
+//     is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!
+//   `);
+// }
+function mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+  // if (extendReactComponent === true) {
+  //   if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
+  //     _throwForExtendReactComponentAsTrueCheck();
+  //   }
+  // }
+
   const { sharedStateKeys: targetSharedStateKeys, globalStateKeys: targetGlobalStateKeys } =
     getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys);
 
@@ -615,6 +629,7 @@ options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
 */
 export default function register(ccClassKey, {
+  extendReactComponent = false,
   isSingle = false,
   asyncLifecycleHook = true,// is asyncLifecycleHook = false, it may block cc broadcast state to other when it takes a long time to finish
   module = MODULE_DEFAULT,
@@ -633,7 +648,7 @@ export default function register(ccClassKey, {
   checkReducerModule(_reducerModule);
 
   const { sharedStateKeys: sKeys, globalStateKeys: gKeys } =
-    mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode);
+    mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode);
   const sharedStateKeys = sKeys, globalStateKeys = gKeys;
 
   return function (ReactClass) {
@@ -641,7 +656,8 @@ export default function register(ccClassKey, {
       throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi(`if you want to register ${ccClassKey} to cc successfully, the ReactClass can not be a CcClass!`));
     }
 
-    const CcClass = class extends ReactClass {
+    const TargetClass = extendReactComponent ? Component : ReactClass;
+    const CcClass = class extends TargetClass {
 
       constructor(props, context) {
         super(props, context);
@@ -652,6 +668,7 @@ export default function register(ccClassKey, {
           '__$$recoverState', '__$$getDispatchHandler'
         ]);
         if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
+
         // if you flag syncSharedState false, that means this ccInstance's state changing will not effect other ccInstance and not effected by other ccInstance's state changing
         if (ccOption.syncSharedState === undefined) ccOption.syncSharedState = true;
         // if you flag syncGlobalState false, that means this ccInstance's globalState changing will not effect cc's globalState and not effected by cc's globalState changing
@@ -668,6 +685,7 @@ export default function register(ccClassKey, {
         );
         // bind propState to $$propState
         this.$$propState = ccClassKey_ccClassContext_[ccClassKey].propState || {};
+
         this.__$$recoverState(ccClassKey);
       }
 
@@ -1223,7 +1241,13 @@ export default function register(ccClassKey, {
         if (ccContext.isDebug) {
           console.log(ss(`@@@ render ${ccClassDisplayName(ccClassKey)}`), cl());
         }
-        return super.render();
+        if (extendReactComponent) {
+          // cc class extends ReactBasicClass, render user inputted ReactClass
+
+          return <ReactClass {...this} {...this.props} />
+        } else {// cc class extends ReactClass, call super.render()
+          return super.render();
+        }
       }
     }
 

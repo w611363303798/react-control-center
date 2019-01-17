@@ -1,5 +1,42 @@
 
 # Change Log
+
+#### 2018-01-17 09:00
+* now cc.register support set extendReactComponent as true, if you want to a real HOC ccComponent, extendReactComponent is false by default
+  ```
+  the difference between extendReactComponent is true and false is below;
+
+  when extendReactComponent is true;
+  - every cc method you can not call directly, they are attached to props, so you can call them like
+  this.props.$$dispatch、 this.props.$emit、 this.props.$$effect etc.
+  - your component's state is not been controlled by cc yet!
+
+  when extendReactComponent is false;
+  every cc method you can call directly, like this.$$dispatch、 this.$emit、 this.$$effect etc.
+
+
+  when set extendReactComponent as true?
+  if you change your project to cc, found your exist component has multi class decorator like below, 
+  you have to set extendReactComponent as true if you want it works well
+
+  // this is dva.connect, I change it to cc.connect
+  // @connect(state => ({
+  //   submitting: state.form.regularFormSubmitting,
+  // }))
+  @cc.connect(
+    'BasicForms', 
+    {
+      'form/regularFormSubmitting': 'submitting',
+    },
+    { extendReactComponent: true }
+  )
+  @Form.create()
+  export default class BasicForms extends PureComponent {
+
+  }
+  ```
+
+
 #### 2018-01-16 06:30
 * change RegisterOption.sharedStateKeys writing way, you need write 'all' if you want to watch whole module state, now you need write '*' instead of 'all'
 
