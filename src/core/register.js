@@ -1,5 +1,5 @@
 
-import React, { Component } from 'react';
+import React from 'react';
 import {
   MODULE_DEFAULT, MODULE_GLOBAL, ERR,
   CHANGE_BY_SELF,
@@ -656,7 +656,7 @@ export default function register(ccClassKey, {
       throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi(`if you want to register ${ccClassKey} to cc successfully, the ReactClass can not be a CcClass!`));
     }
 
-    const TargetClass = extendReactComponent ? Component : ReactClass;
+    const TargetClass = extendReactComponent ? React.Component : ReactClass;
     const CcClass = class extends TargetClass {
 
       constructor(props, context) {

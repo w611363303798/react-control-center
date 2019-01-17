@@ -3814,7 +3814,7 @@
   }
 
   function _throwPropDuplicateError(prefixedKey, module) {
-    throw me("cc found different module has same key, you need give the key a alias explicitly!", vbi$1("the prefixedKey is " + prefixedKey + ", module is:" + module));
+    throw me("cc found different module has same key, you need give the key a alias explicitly! or you can set isPropStateModuleMode=true to avoid this error", vbi$1("the prefixedKey is " + prefixedKey + ", module is:" + module));
   }
 
   function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
@@ -4043,9 +4043,21 @@
       globalStateKeys: globalStateKeys,
       sharedStateKeys: sharedStateKeys
     };
-  }
+  } // function _throwForExtendReactComponentAsTrueCheck() {
+  //   throw me(`cc found set sharedStateKeys、globalStateKeys or storedStateKeys, but you set extendReactComponent as true at the same time
+  //     while you register a ccClass:${ccClassKey}, this is not allowed, extendReactComponent=true means cc will give you
+  //     a real HOC component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys
+  //     is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!
+  //   `);
+  // }
 
-  function mapModuleAssociateDataToCcContext(ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+
+  function mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+    // if (extendReactComponent === true) {
+    //   if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
+    //     _throwForExtendReactComponentAsTrueCheck();
+    //   }
+    // }
     var _getSharedKeysAndGlob = getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys),
         targetSharedStateKeys = _getSharedKeysAndGlob.sharedStateKeys,
         targetGlobalStateKeys = _getSharedKeysAndGlob.globalStateKeys;
@@ -4259,7 +4271,7 @@
     checkStoreModule(_curStateModule);
     checkReducerModule(_reducerModule);
 
-    var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode),
+    var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode),
         sKeys = _mapModuleAssociateDa.sharedStateKeys,
         gKeys = _mapModuleAssociateDa.globalStateKeys;
 
