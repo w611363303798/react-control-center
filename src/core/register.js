@@ -56,7 +56,7 @@ function paramCallBackShouldNotSupply(module, currentModule) {
 function handleError(err, throwError = true) {
   if (throwError) throw err;
   else {
-    justWarning(err);
+    handleCcFnError(err);
   }
 }
 
@@ -641,8 +641,10 @@ function _promisifyCcFn(ccFn, userLogicFn, executionContext, ...args) {
 function handleCcFnError(err, __innerCb) {
   if (err) {
     if (__innerCb) __innerCb(err);
-    else if (ccContext.errorHandler) ccContext.errorHandler(err);
-    else justWarning(err);
+    else {
+      justWarning(err);
+      if (ccContext.errorHandler) ccContext.errorHandler(err);
+    }
   }
 }
 
