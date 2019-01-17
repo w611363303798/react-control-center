@@ -368,7 +368,9 @@ export default function (_temp) {
       _ref$isStrict = _ref.isStrict,
       isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict,
       _ref$isDebug = _ref.isDebug,
-      isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug;
+      isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
+      _ref$errorHandler = _ref.errorHandler,
+      errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler;
 
   if (window) {
     window.CC_CONTEXT = ccContext;
@@ -394,4 +396,5 @@ export default function (_temp) {
   }
 
   ccContext.isCcAlreadyStartup = true;
+  ccContext.errorHandler = errorHandler;
 }

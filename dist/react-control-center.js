@@ -1,8 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@babel/runtime/helpers/esm/extends'), require('crypto'), require('@babel/runtime/helpers/esm/inheritsLoose'), require('@babel/runtime/helpers/esm/assertThisInitialized')) :
-  typeof define === 'function' && define.amd ? define(['@babel/runtime/helpers/esm/extends', 'crypto', '@babel/runtime/helpers/esm/inheritsLoose', '@babel/runtime/helpers/esm/assertThisInitialized'], factory) :
-  (global.ReactControlCenter = factory(global._extends,global.crypto,global._inheritsLoose,global._assertThisInitialized));
-}(this, (function (_extends,crypto,_inheritsLoose,_assertThisInitialized) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@babel/runtime/helpers/esm/extends'), require('crypto'), require('@babel/runtime/helpers/esm/inheritsLoose'), require('@babel/runtime/helpers/esm/assertThisInitialized'), require('util')) :
+  typeof define === 'function' && define.amd ? define(['@babel/runtime/helpers/esm/extends', 'crypto', '@babel/runtime/helpers/esm/inheritsLoose', '@babel/runtime/helpers/esm/assertThisInitialized', 'util'], factory) :
+  (global.ReactControlCenter = factory(global._extends,global.crypto,global._inheritsLoose,global._assertThisInitialized,global.util));
+}(this, (function (_extends,crypto,_inheritsLoose,_assertThisInitialized,util) { 'use strict';
 
   _extends = _extends && _extends.hasOwnProperty('default') ? _extends['default'] : _extends;
   crypto = crypto && crypto.hasOwnProperty('default') ? crypto['default'] : crypto;
@@ -346,7 +346,7 @@
       return true;
     }
   }
-  var util = {
+  var util$1 = {
     makeError: makeError,
     isHotReloadMode: isHotReloadMode,
     makeCcClassContext: makeCcClassContext,
@@ -511,7 +511,8 @@
     refs: refs,
     info: {
       startupTime: Date.now()
-    }
+    },
+    errorHandler: null
   };
 
   if (window && !window.sss) {
@@ -594,8 +595,8 @@
   }
 
   function checkModuleState (moduleState) {
-    if (!util.isModuleStateValid(moduleState)) {
-      throw util.makeError(ERR.CC_STORE_STATE_INVALID, util.verboseInfo("moduleName:" + moduleName + "'s state is invalid!"));
+    if (!util$1.isModuleStateValid(moduleState)) {
+      throw util$1.makeError(ERR.CC_STORE_STATE_INVALID, util$1.verboseInfo("moduleName:" + moduleName + "'s state is invalid!"));
     }
   }
 
@@ -650,7 +651,7 @@
         broadcastTriggeredBy: BROADCAST_TRIGGERED_BY_CC_API_SET_STATE
       });
     } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+      if (throwError) throw err;else util$1.justWarning(err.message);
     }
   }
 
@@ -672,7 +673,7 @@
         broadcastTriggeredBy: BROADCAST_TRIGGERED_BY_CC_API_SET_GLOBAL_STATE
       });
     } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+      if (throwError) throw err;else util$1.justWarning(err.message);
     }
   }
 
@@ -730,7 +731,7 @@
           var moduleState = ccContext.store.getState(module);
 
           if (!moduleState) {
-            return util.justWarning("invalid module " + module);
+            return util$1.justWarning("invalid module " + module);
           }
 
           var keys = Object.keys(moduleState);
@@ -742,7 +743,7 @@
           if (!isStateEmpty) ccContext.store.setState(module, validModuleState); //store this state;
         }
 
-        util.justTip("no ccInstance found for module " + module + " currently, cc will just store it, lately ccInstance will pick this state to render");
+        util$1.justTip("no ccInstance found for module " + module + " currently, cc will just store it, lately ccInstance will pick this state to render");
       }
     };
   }
@@ -771,8 +772,8 @@
       var moduleNames = Object.keys(store);
 
       if (globalState) {
-        if (!util.isModuleStateValid(globalState)) {
-          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
+        if (!util$1.isModuleStateValid(globalState)) {
+          throw util$1.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
         } else {
           console.log(ss('$$global module state found while startup cc!'), cl());
           Object.keys(globalState).forEach(function (key) {
@@ -817,7 +818,7 @@
     } else {
       // non module mode
       if (sharedToGlobalMapping) {
-        throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
+        throw util$1.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
       }
 
       var includeDefaultModule = store.hasOwnProperty(MODULE_DEFAULT);
@@ -826,8 +827,8 @@
 
       if (includeDefaultModule || includeGlobalModule) {
         if (includeDefaultModule && !includeGlobalModule) {
-          if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
-            throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+          if (!util$1.isModuleStateValid(store[MODULE_DEFAULT])) {
+            throw util$1.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
           } else {
             _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
             invalidKeyCount += 1;
@@ -838,8 +839,8 @@
         }
 
         if (includeGlobalModule && !includeDefaultModule) {
-          if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
-            throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+          if (!util$1.isModuleStateValid(store[MODULE_GLOBAL])) {
+            throw util$1.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
           } else {
             globalState = store[MODULE_GLOBAL];
             Object.keys(globalState).forEach(function (key) {
@@ -859,8 +860,8 @@
         }
       } else {
         // treat store as $$default module store
-        if (!util.isModuleStateValid(store)) {
-          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
+        if (!util$1.isModuleStateValid(store)) {
+          throw util$1.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
         }
 
         _state[MODULE_DEFAULT] = store;
@@ -889,8 +890,8 @@
     for (var i = 0; i < len; i++) {
       var actionType = namespacedActionTypes[i];
 
-      if (!util.verifyActionType(actionType)) {
-        throw util.makeError(ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
+      if (!util$1.verifyActionType(actionType)) {
+        throw util$1.makeError(ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
       } // const { moduleName } = util.disassembleActionType(actionType);
 
 
@@ -940,7 +941,7 @@
       var moduleState = _state[m];
 
       if (!moduleState) {
-        throw util.makeError(ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION, vbi(" moduleName in computed: " + m));
+        throw util$1.makeError(ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION, vbi(" moduleName in computed: " + m));
       }
 
       if (!isPlainJsonObject(moduleComputed)) {
@@ -952,11 +953,11 @@
         var originalValue = moduleState[key];
 
         if (originalValue !== undefined) {
-          var moduleComputedFn = util.safeGetObjectFromObject(_computedFn, m);
+          var moduleComputedFn = util$1.safeGetObjectFromObject(_computedFn, m);
           var fn = moduleComputed[key];
           moduleComputedFn[key] = fn;
           var computedValue = fn(originalValue, moduleState);
-          var moduleComputedValue = util.safeGetObjectFromObject(_computedValue, m);
+          var moduleComputedValue = util$1.safeGetObjectFromObject(_computedValue, m);
           moduleComputedValue[key] = computedValue;
         } else {
           justWarning("key:" + key + " of module:" + m + " of computed object is not declared in module:" + m + " of store!");
@@ -1113,7 +1114,9 @@
         _ref$isStrict = _ref.isStrict,
         isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict,
         _ref$isDebug = _ref.isDebug,
-        isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug;
+        isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
+        _ref$errorHandler = _ref.errorHandler,
+        errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler;
 
     if (window) {
       window.CC_CONTEXT = ccContext;
@@ -1121,14 +1124,14 @@
     }
 
     if (ccContext.isCcAlreadyStartup) {
-      throw util.makeError(ERR.CC_ALREADY_STARTUP);
+      throw util$1.makeError(ERR.CC_ALREADY_STARTUP);
     }
 
     ccContext.isModuleMode = isModuleMode;
     ccContext.isStrict = isStrict;
     ccContext.isDebug = isDebug;
-    util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
-    util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
+    util$1.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
+    util$1.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
     bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
     if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
     bindComputedToCcContext(computed, isModuleMode);
@@ -1139,6 +1142,7 @@
     }
 
     ccContext.isCcAlreadyStartup = true;
+    ccContext.errorHandler = errorHandler;
   }
 
   function createCommonjsModule(fn, module) {
@@ -3458,13 +3462,13 @@
 
   var extractStateByKeys$1 = extractStateByKeys,
       getAndStoreValidGlobalState$1 = getAndStoreValidGlobalState;
-  var verifyKeys$1 = util.verifyKeys,
-      ccClassDisplayName$1 = util.ccClassDisplayName,
-      styleStr$1 = util.styleStr,
-      color$1 = util.color,
-      verboseInfo$1 = util.verboseInfo,
-      makeError$1 = util.makeError,
-      justWarning$1 = util.justWarning;
+  var verifyKeys$1 = util$1.verifyKeys,
+      ccClassDisplayName$1 = util$1.ccClassDisplayName,
+      styleStr$1 = util$1.styleStr,
+      color$1 = util$1.color,
+      verboseInfo$1 = util$1.verboseInfo,
+      makeError$1 = util$1.makeError,
+      justWarning$1 = util$1.justWarning;
   var _ccContext$store = ccContext.store,
       _state = _ccContext$store._state,
       getState = _ccContext$store.getState,
@@ -3595,7 +3599,9 @@
         }
       }
 
-      cb(targetCb);
+      cb(null, targetCb);
+    } else {
+      cb(new Error("inputModule:" + inputModule + " invalid"), null);
     }
   }
 
@@ -3608,10 +3614,10 @@
       ccUniqueKey = ccClassKey;
     } else {
       if (ccKey) {
-        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
+        ccUniqueKey = util$1.makeUniqueCcKey(ccClassKey, ccKey);
       } else {
         var uuidStr = uuid_1().replace(/-/g, '_');
-        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, uuidStr);
+        ccUniqueKey = util$1.makeUniqueCcKey(ccClassKey, uuidStr);
         isCcUniqueKeyAutoGenerated = true;
       }
     }
@@ -3730,7 +3736,7 @@
           toModules.forEach(function (m) {
             if (m != refModule) {
               // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
-              var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+              var modulePartialGlobalState = util$1.safeGetObjectFromObject(module_globalState_, m);
               modulePartialGlobalState[stateKey] = stateValue;
             }
           });
@@ -3752,7 +3758,7 @@
             toModules.forEach(function (m) {
               if (m != refModule) {
                 // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
-                var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
+                var modulePartialGlobalState = util$1.safeGetObjectFromObject(module_globalState_, m);
                 modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
                 //  can recover it correctly while they are mounted again!
 
@@ -3786,7 +3792,7 @@
 
   function mapGlobalKeyAndToModules(_curStateModule, globalStateKeys) {
     globalStateKeys.forEach(function (gKey) {
-      var toModules = util.safeGetArrayFromObject(globalKey_toModules_, gKey); // because cc allow multi class register to a same module, so here judge if toModules includes module or not
+      var toModules = util$1.safeGetArrayFromObject(globalKey_toModules_, gKey); // because cc allow multi class register to a same module, so here judge if toModules includes module or not
 
       if (!toModules.includes(_curStateModule)) {
         toModules.push(_curStateModule);
@@ -3796,7 +3802,7 @@
 
   function mapGlobalMappingKeyAndToModules(_curStateModule, globalStateKeys) {
     globalStateKeys.forEach(function (gKey) {
-      var toModules = util.safeGetArrayFromObject(globalMappingKey_toModules_, gKey);
+      var toModules = util$1.safeGetArrayFromObject(globalMappingKey_toModules_, gKey);
 
       if (globalMappingKey_sharedKey_[gKey]) {
         //  if this gKey is globalMappingKey
@@ -3807,7 +3813,7 @@
 
 
   function mapModuleAndGlobalStateKeys(moduleName, partialGlobalStateKeys) {
-    var globalStateKeysOfModule = util.safeGetArrayFromObject(moduleName_globalStateKeys_, moduleName);
+    var globalStateKeysOfModule = util$1.safeGetArrayFromObject(moduleName_globalStateKeys_, moduleName);
     partialGlobalStateKeys.forEach(function (gKey) {
       if (!globalStateKeysOfModule.includes(gKey)) globalStateKeysOfModule.push(gKey);
     });
@@ -3847,7 +3853,7 @@
 
   function _setPropState(propState, propKey, propValue, isPropStateModuleMode, module) {
     if (isPropStateModuleMode) {
-      var modulePropState = util.safeGetObjectFromObject(propState, module);
+      var modulePropState = util$1.safeGetObjectFromObject(propState, module);
       modulePropState[propKey] = propValue;
     } else {
       propState[propKey] = propValue;
@@ -3861,7 +3867,7 @@
     if (contextMap[ccClassKey] !== undefined) {
       throw me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
     } else {
-      var ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
+      var ccClassContext = util$1.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys);
 
       if (stateToPropMapping != undefined) {
         var propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
@@ -3881,7 +3887,7 @@
         for (var i = 0; i < len; i++) {
           var prefixedKey = prefixedKeys[i];
 
-          if (!util.isPrefixedKeyValid(prefixedKey)) {
+          if (!util$1.isPrefixedKeyValid(prefixedKey)) {
             throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey + ", key:" + prefixedKey);
           }
 
@@ -3894,7 +3900,7 @@
               module_mapAllStateToProp_[targetModule] = true;
               module_staredKey_[targetModule] = prefixedKey;
             } else {
-              var modulePrefixedKeys = util.safeGetArrayFromObject(module_prefixedKeys_, targetModule);
+              var modulePrefixedKeys = util$1.safeGetArrayFromObject(module_prefixedKeys_, targetModule);
               modulePrefixedKeys.push(prefixedKey);
               module_mapAllStateToProp_[targetModule] = false;
             }
@@ -3982,7 +3988,7 @@
           }
 
           if (isPropStateSet = true) {
-            var pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
+            var pCcClassKeys = util$1.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
             if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
           }
         });
@@ -3995,7 +4001,7 @@
   }
 
   function mapModuleAndCcClassKeys(moduleName, ccClassKey) {
-    var ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
+    var ccClassKeys = util$1.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
 
     if (ccClassKeys.includes(ccClassKey)) {
       throw me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
@@ -4093,7 +4099,7 @@
   }
 
   function bindEventHandlerToCcContext(module, ccClassKey, ccUniqueKey, event, identity, handler) {
-    var handlers = util.safeGetArrayFromObject(event_handlers_, event);
+    var handlers = util$1.safeGetArrayFromObject(event_handlers_, event);
 
     if (typeof handler !== 'function') {
       return justWarning$1("event " + event + "'s handler is not a function!");
@@ -4214,7 +4220,7 @@
     // if no any react class registered to module, here will get undefined, so use safeGetArrayFromObject
 
     Object.keys(moduleName_ccClassKeys_).forEach(function (moduleName) {
-      var ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
+      var ccClassKeys = util$1.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
       ccClassKeys.forEach(function (ccClassKey) {
         var ccClassContext = ccClassKey_ccClassContext_[ccClassKey];
         updateModulePropState(module_isPropStateChanged, changedPropStateList, ccClassContext, commitState, module);
@@ -4222,7 +4228,7 @@
     });
     Object.keys(module_isPropStateChanged).forEach(function (module) {
       //  this module has stateToPropMapping and propState has been changed!!!
-      var ccClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
+      var ccClassKeys = util$1.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
       ccClassKeys.forEach(function (ccClassKey) {
         var classContext = ccClassKey_ccClassContext_[ccClassKey];
         var ccKeys = classContext.ccKeys;
@@ -4235,6 +4241,32 @@
         });
       });
     });
+  }
+
+  function _promiseErrorHandler(resolve, reject) {
+    return function (err) {
+      return err ? reject(err) : resolve();
+    };
+  }
+
+  function _promisifyCcFn(ccFn, userLogicFn, executionContext) {
+    for (var _len2 = arguments.length, args = new Array(_len2 > 3 ? _len2 - 3 : 0), _key2 = 3; _key2 < _len2; _key2++) {
+      args[_key2 - 3] = arguments[_key2];
+    }
+
+    return new Promise(function (resolve, reject) {
+      var _executionContext = _extends({}, executionContext, {
+        __innerCb: _promiseErrorHandler(resolve, reject)
+      });
+
+      ccFn.apply(void 0, [userLogicFn, _executionContext].concat(args));
+    });
+  }
+
+  function handleCcFnError(err, __innerCb) {
+    if (err) {
+      if (__innerCb) __innerCb(err);else if (ccContext.errorHandler) ccContext.errorHandler(err);else justWarning$1(err);
+    }
   }
   /*
   options.module = 'xxx'
@@ -4297,7 +4329,7 @@
           var ccKey = props.ccKey,
               _props$ccOption = props.ccOption,
               ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
-          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler']);
+          util$1.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler']);
           if (!ccOption.storedStateKeys) ccOption.storedStateKeys = []; // if you flag syncSharedState false, that means this ccInstance's state changing will not effect other ccInstance and not effected by other ccInstance's state changing
 
           if (ccOption.syncSharedState === undefined) ccOption.syncSharedState = true; // if you flag syncGlobalState false, that means this ccInstance's globalState changing will not effect cc's globalState and not effected by cc's globalState changing
@@ -4375,12 +4407,12 @@
             console.log(ss$1("register ccKey " + ccUniqueKey + " to CC_CONTEXT"), cl$1());
           }
 
-          if (!util.isCcOptionValid(ccOption)) {
+          if (!util$1.isCcOptionValid(ccOption)) {
             throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi$1("a standard default ccOption may like: {\"syncSharedState\": true, \"asyncLifecycleHook\":false, \"storedStateKeys\": []}"));
           }
 
           if (ccKeys.includes(ccUniqueKey)) {
-            if (util.isHotReloadMode()) {
+            if (util$1.isHotReloadMode()) {
               var insCount = getCcKeyInsCount(ccUniqueKey);
               if (isSingle && insCount > 1) throw me(ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE, vbi$1("ccClass:" + ccClassKey));
 
@@ -4408,7 +4440,8 @@
         };
 
         _proto.__$$mapCcToInstance = function __$$mapCcToInstance(isSingle, asyncLifecycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, currentModule, currentReducerModule, sharedStateKeys, globalStateKeys) {
-          var _this2 = this;
+          var _this2 = this,
+              _this$cc;
 
           var reactSetStateRef = this.setState.bind(this);
           var reactForceUpdateRef = this.forceUpdate.bind(this);
@@ -4450,7 +4483,7 @@
             throw me(ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS, vbi$1("ccClassKey:" + ccClassKey));
           }
 
-          this.cc = {
+          this.cc = (_this$cc = {
             ccState: ccState,
             ccUniqueKey: ccUniqueKey,
             ccKey: ccKey,
@@ -4493,11 +4526,11 @@
             invoke: function invoke(userLogicFn) {
               var _this2$cc;
 
-              for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-                args[_key2 - 1] = arguments[_key2];
+              for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+                args[_key3 - 1] = arguments[_key3];
               }
 
-              (_this2$cc = _this2.cc).__invokeWith.apply(_this2$cc, [userLogicFn, {
+              return (_this2$cc = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc, [userLogicFn, {
                 stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
                 module: currentModule
               }].concat(args));
@@ -4507,11 +4540,11 @@
             effect: function effect(targetModule, userLogicFn) {
               var _this2$cc2;
 
-              for (var _len3 = arguments.length, args = new Array(_len3 > 2 ? _len3 - 2 : 0), _key3 = 2; _key3 < _len3; _key3++) {
-                args[_key3 - 2] = arguments[_key3];
+              for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
+                args[_key4 - 2] = arguments[_key4];
               }
 
-              (_this2$cc2 = _this2.cc).__invokeWith.apply(_this2$cc2, [userLogicFn, {
+              return (_this2$cc2 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc2, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 context: false,
                 module: targetModule
@@ -4521,11 +4554,11 @@
             xeffect: function xeffect(targetModule, userLogicFn) {
               var _this2$cc3;
 
-              for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
-                args[_key4 - 2] = arguments[_key4];
+              for (var _len5 = arguments.length, args = new Array(_len5 > 2 ? _len5 - 2 : 0), _key5 = 2; _key5 < _len5; _key5++) {
+                args[_key5 - 2] = arguments[_key5];
               }
 
-              (_this2$cc3 = _this2.cc).__invokeWith.apply(_this2$cc3, [userLogicFn, {
+              return (_this2$cc3 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc3, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 xeffect: _this2.cc.xeffect,
                 moduleState: getState(targetModule),
@@ -4533,6 +4566,13 @@
                 context: true,
                 module: targetModule
               }].concat(args));
+            },
+            __promisifiedInvokeWith: function __promisifiedInvokeWith(userLogicFn, executionContext) {
+              for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
+                args[_key6 - 2] = arguments[_key6];
+              }
+
+              return _promisifyCcFn.apply(void 0, [_this2.cc.__invokeWith, userLogicFn, executionContext].concat(args));
             },
             // advanced invoke, can change other module state, but user should put module to option
             // and user can decide userLogicFn's first param is ExecutionContext by set context = true
@@ -4547,11 +4587,11 @@
                   forceSync = _option$forceSync === void 0 ? false : _option$forceSync,
                   cb = option.cb;
 
-              for (var _len5 = arguments.length, args = new Array(_len5 > 2 ? _len5 - 2 : 0), _key5 = 2; _key5 < _len5; _key5++) {
-                args[_key5 - 2] = arguments[_key5];
+              for (var _len7 = arguments.length, args = new Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
+                args[_key7 - 2] = arguments[_key7];
               }
 
-              (_this2$cc4 = _this2.cc).__invokeWith.apply(_this2$cc4, [userLogicFn, {
+              return (_this2$cc4 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc4, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
                 moduleState: getState(module),
@@ -4562,8 +4602,8 @@
               }].concat(args));
             },
             __invokeWith: function __invokeWith(userLogicFn, executionContext) {
-              for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
-                args[_key6 - 2] = arguments[_key6];
+              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+                args[_key8 - 2] = arguments[_key8];
               }
 
               var stateFor = executionContext.stateFor,
@@ -4573,8 +4613,10 @@
                   context = _executionContext$con === void 0 ? false : _executionContext$con,
                   _executionContext$for = executionContext.forceSync,
                   forceSync = _executionContext$for === void 0 ? false : _executionContext$for,
-                  cb = executionContext.cb;
-              isStateModuleValid(targetModule, currentModule, cb, function (newCb) {
+                  cb = executionContext.cb,
+                  __innerCb = executionContext.__innerCb;
+              isStateModuleValid(targetModule, currentModule, cb, function (err, newCb) {
+                if (err) return handleCcFnError(err, __innerCb);
                 if (context) args.unshift(executionContext);
                 co_1.wrap(userLogicFn).apply(void 0, args).then(function (partialState) {
                   _this2.$$changeState(partialState, {
@@ -4584,20 +4626,20 @@
                     cb: newCb
                   });
                 }).then(function () {
-                  if (executionContext.afterStateChanged) {
-                    executionContext.afterStateChanged();
-                  }
-                }).catch(justWarning$1);
+                  if (__innerCb) __innerCb();
+                }).catch(function (err) {
+                  handleCcFnError(err, __innerCb);
+                });
               });
             },
             call: function call(userLogicFn) {
               var _this2$cc5;
 
-              for (var _len7 = arguments.length, args = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
-                args[_key7 - 1] = arguments[_key7];
+              for (var _len9 = arguments.length, args = new Array(_len9 > 1 ? _len9 - 1 : 0), _key9 = 1; _key9 < _len9; _key9++) {
+                args[_key9 - 1] = arguments[_key9];
               }
 
-              (_this2$cc5 = _this2.cc).__callWith.apply(_this2$cc5, [userLogicFn, {
+              return (_this2$cc5 = _this2.cc).__promisifiedCallWith.apply(_this2$cc5, [userLogicFn, {
                 stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
                 module: currentModule
               }].concat(args));
@@ -4612,16 +4654,23 @@
                   forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
                   cb = _ref5.cb;
 
-              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
-                args[_key8 - 2] = arguments[_key8];
+              for (var _len10 = arguments.length, args = new Array(_len10 > 2 ? _len10 - 2 : 0), _key10 = 2; _key10 < _len10; _key10++) {
+                args[_key10 - 2] = arguments[_key10];
               }
 
-              (_this2$cc6 = _this2.cc).__callWith.apply(_this2$cc6, [userLogicFn, {
+              return (_this2$cc6 = _this2.cc).__promisifiedCallWith.apply(_this2$cc6, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
                 forceSync: forceSync,
                 cb: cb
               }].concat(args));
+            },
+            __promisifiedCallWith: function __promisifiedCallWith(userLogicFn, executionContext) {
+              for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
+                args[_key11 - 2] = arguments[_key11];
+              }
+
+              return _promisifyCcFn.apply(void 0, [_this2.cc.__callWith, userLogicFn, executionContext].concat(args));
             },
             __callWith: function __callWith(userLogicFn, _temp3) {
               var _ref6 = _temp3 === void 0 ? {} : _temp3,
@@ -4630,29 +4679,36 @@
                   module = _ref6$module === void 0 ? currentModule : _ref6$module,
                   _ref6$forceSync = _ref6.forceSync,
                   forceSync = _ref6$forceSync === void 0 ? false : _ref6$forceSync,
-                  cb = _ref6.cb;
+                  cb = _ref6.cb,
+                  __innerCb = _ref6.__innerCb;
 
-              for (var _len9 = arguments.length, args = new Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
-                args[_key9 - 2] = arguments[_key9];
+              for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
+                args[_key12 - 2] = arguments[_key12];
               }
 
-              isStateModuleValid(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2, _this2.__$$getChangeStateHandler({
-                  stateFor: stateFor,
-                  module: module,
-                  forceSync: forceSync,
-                  cb: newCb
-                })].concat(args));
+              isStateModuleValid(module, currentModule, cb, function (err, newCb) {
+                if (err) return handleCcFnError(err, __innerCb);
+
+                try {
+                  userLogicFn.call.apply(userLogicFn, [_this2, _this2.__$$getChangeStateHandler({
+                    stateFor: stateFor,
+                    module: module,
+                    forceSync: forceSync,
+                    cb: newCb
+                  })].concat(args));
+                } catch (err) {
+                  handleCcFnError(err, __innerCb);
+                }
               });
             },
             callThunk: function callThunk(userLogicFn) {
               var _this2$cc7;
 
-              for (var _len10 = arguments.length, args = new Array(_len10 > 1 ? _len10 - 1 : 0), _key10 = 1; _key10 < _len10; _key10++) {
-                args[_key10 - 1] = arguments[_key10];
+              for (var _len13 = arguments.length, args = new Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
+                args[_key13 - 1] = arguments[_key13];
               }
 
-              (_this2$cc7 = _this2.cc).__callThunkWith.apply(_this2$cc7, [userLogicFn, {
+              (_this2$cc7 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc7, [userLogicFn, {
                 stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
                 module: currentModule
               }].concat(args));
@@ -4667,16 +4723,23 @@
                   forceSync = _ref7$forceSync === void 0 ? false : _ref7$forceSync,
                   cb = _ref7.cb;
 
-              for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
-                args[_key11 - 2] = arguments[_key11];
+              for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
+                args[_key14 - 2] = arguments[_key14];
               }
 
-              (_this2$cc8 = _this2.cc).__callThunkWith.apply(_this2$cc8, [userLogicFn, {
+              (_this2$cc8 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc8, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
                 forceSync: forceSync,
                 cb: cb
               }].concat(args));
+            },
+            __promisifiedCallThunkWith: function __promisifiedCallThunkWith(userLogicFn, executionContext) {
+              for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
+                args[_key15 - 2] = arguments[_key15];
+              }
+
+              return _promisifyCcFn.apply(void 0, [_this2.cc.__callThunkWith, userLogicFn, executionContext].concat(args));
             },
             __callThunkWith: function __callThunkWith(userLogicFn, _temp5) {
               var _ref8 = _temp5 === void 0 ? {} : _temp5,
@@ -4685,26 +4748,33 @@
                   module = _ref8$module === void 0 ? currentModule : _ref8$module,
                   _ref8$forceSync = _ref8.forceSync,
                   forceSync = _ref8$forceSync === void 0 ? false : _ref8$forceSync,
-                  cb = _ref8.cb;
+                  cb = _ref8.cb,
+                  __innerCb = _ref8.__innerCb;
 
-              for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
-                args[_key12 - 2] = arguments[_key12];
+              for (var _len16 = arguments.length, args = new Array(_len16 > 2 ? _len16 - 2 : 0), _key16 = 2; _key16 < _len16; _key16++) {
+                args[_key16 - 2] = arguments[_key16];
               }
 
-              isStateModuleValid(module, currentModule, cb, function (newCb) {
-                userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.__$$getChangeStateHandler({
-                  stateFor: stateFor,
-                  module: module,
-                  forceSync: forceSync,
-                  cb: newCb
-                }));
+              isStateModuleValid(module, currentModule, cb, function (err, newCb) {
+                if (err) return handleCcFnError(err, __innerCb);
+
+                try {
+                  userLogicFn.call.apply(userLogicFn, [_this2].concat(args))(_this2.__$$getChangeStateHandler({
+                    stateFor: stateFor,
+                    module: module,
+                    forceSync: forceSync,
+                    cb: newCb
+                  }));
+                } catch (err) {
+                  handleCcFnError(err, __innerCb);
+                }
               });
             },
             commit: function commit(userLogicFn) {
               var _this2$cc9;
 
-              for (var _len13 = arguments.length, args = new Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
-                args[_key13 - 1] = arguments[_key13];
+              for (var _len17 = arguments.length, args = new Array(_len17 > 1 ? _len17 - 1 : 0), _key17 = 1; _key17 < _len17; _key17++) {
+                args[_key17 - 1] = arguments[_key17];
               }
 
               (_this2$cc9 = _this2.cc).__commitWith.apply(_this2$cc9, [userLogicFn, {
@@ -4722,8 +4792,8 @@
                   forceSync = _ref9$forceSync === void 0 ? false : _ref9$forceSync,
                   cb = _ref9.cb;
 
-              for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
-                args[_key14 - 2] = arguments[_key14];
+              for (var _len18 = arguments.length, args = new Array(_len18 > 2 ? _len18 - 2 : 0), _key18 = 2; _key18 < _len18; _key18++) {
+                args[_key18 - 2] = arguments[_key18];
               }
 
               (_this2$cc10 = _this2.cc).__commitWith.apply(_this2$cc10, [userLogicFn, {
@@ -4732,21 +4802,31 @@
                 forceSync: forceSync,
                 cb: cb
               }].concat(args));
-            },
-            __commitWith: function __commitWith(userLogicFn, _temp7) {
-              var _ref10 = _temp7 === void 0 ? {} : _temp7,
-                  stateFor = _ref10.stateFor,
-                  _ref10$module = _ref10.module,
-                  module = _ref10$module === void 0 ? currentModule : _ref10$module,
-                  _ref10$forceSync = _ref10.forceSync,
-                  forceSync = _ref10$forceSync === void 0 ? false : _ref10$forceSync,
-                  cb = _ref10.cb;
+            }
+          }, _this$cc["__promisifiedCallWith"] = function __promisifiedCallWith(userLogicFn, executionContext) {
+            for (var _len19 = arguments.length, args = new Array(_len19 > 2 ? _len19 - 2 : 0), _key19 = 2; _key19 < _len19; _key19++) {
+              args[_key19 - 2] = arguments[_key19];
+            }
 
-              for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
-                args[_key15 - 2] = arguments[_key15];
-              }
+            return _promisifyCcFn.apply(void 0, [_this2.cc.__commitWith, userLogicFn, executionContext].concat(args));
+          }, _this$cc.__commitWith = function __commitWith(userLogicFn, _temp7) {
+            var _ref10 = _temp7 === void 0 ? {} : _temp7,
+                stateFor = _ref10.stateFor,
+                _ref10$module = _ref10.module,
+                module = _ref10$module === void 0 ? currentModule : _ref10$module,
+                _ref10$forceSync = _ref10.forceSync,
+                forceSync = _ref10$forceSync === void 0 ? false : _ref10$forceSync,
+                cb = _ref10.cb,
+                __innerCb = _ref10.__innerCb;
 
-              isStateModuleValid(module, currentModule, cb, function (newCb) {
+            for (var _len20 = arguments.length, args = new Array(_len20 > 2 ? _len20 - 2 : 0), _key20 = 2; _key20 < _len20; _key20++) {
+              args[_key20 - 2] = arguments[_key20];
+            }
+
+            isStateModuleValid(module, currentModule, cb, function (err, newCb) {
+              if (err) return handleCcFnError(err, __innerCb);
+
+              try {
                 var state = userLogicFn.call.apply(userLogicFn, [_this2].concat(args));
 
                 _this2.$$changeState(state, {
@@ -4755,346 +4835,345 @@
                   forceSync: forceSync,
                   cb: newCb
                 });
-              });
-            },
-            dispatch: function dispatch(_temp8) {
-              var _ref11 = _temp8 === void 0 ? {} : _temp8,
-                  stateFor = _ref11.stateFor,
-                  inputModule = _ref11.module,
-                  inputReducerModule = _ref11.reducerModule,
-                  _ref11$forceSync = _ref11.forceSync,
-                  forceSync = _ref11$forceSync === void 0 ? false : _ref11$forceSync,
-                  type = _ref11.type,
-                  payload = _ref11.payload,
-                  reactCallback = _ref11.cb,
-                  afterStateChanged = _ref11.afterStateChanged;
-
-              //if module not defined, targetStateModule will be currentModule
-              var targetStateModule = inputModule || currentModule; //if reducerModule not defined, cc will treat targetReducerModule as targetStateModule
-
-              var targetReducerModule = inputReducerModule || targetStateModule;
-              var targetReducerMap = _reducer$1[targetReducerModule];
-              if (!targetReducerMap) return justWarning$1("no reducerMap found for module:" + targetReducerModule);
-              var reducerFn = targetReducerMap[type];
-              if (!reducerFn) return justWarning$1("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type); // const errMsg = util.isCcActionValid({ type, payload });
-              // if (errMsg) return justWarning(errMsg);
-
-              var contextDispatch = _this2.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
-
-              isStateModuleValid(targetStateModule, currentModule, reactCallback, function (newCb) {
-                var executionContext = {
-                  stateFor: stateFor,
-                  ccUniqueKey: ccUniqueKey,
-                  ccOption: ccOption,
-                  module: targetStateModule,
-                  reducerModule: targetReducerModule,
-                  type: type,
-                  dispatch: contextDispatch,
-                  payload: payload,
-                  state: _this2.state,
-                  moduleState: getState(targetStateModule),
-                  effect: _this2.$$effect,
-                  xeffect: _this2.$$xeffect,
-                  forceSync: forceSync,
-                  cb: newCb,
-                  context: true,
-                  afterStateChanged: afterStateChanged
-                };
-
-                _this2.cc.__invokeWith(reducerFn, executionContext);
-              });
-            },
-            prepareReactSetState: function prepareReactSetState(changeBy, state, next, reactCallback) {
-              if (storedStateKeys.length > 0) {
-                var _extractStateByKeys5 = extractStateByKeys$1(state, storedStateKeys),
-                    partialState = _extractStateByKeys5.partialState,
-                    isStateEmpty = _extractStateByKeys5.isStateEmpty;
-
-                if (!isStateEmpty) {
-                  refStore.setState(ccUniqueKey, partialState);
-                }
+              } catch (err) {
+                handleCcFnError(err, __innerCb);
               }
+            });
+          }, _this$cc.dispatch = function dispatch(_temp8) {
+            var _ref11 = _temp8 === void 0 ? {} : _temp8,
+                stateFor = _ref11.stateFor,
+                inputModule = _ref11.module,
+                inputReducerModule = _ref11.reducerModule,
+                _ref11$forceSync = _ref11.forceSync,
+                forceSync = _ref11$forceSync === void 0 ? false : _ref11$forceSync,
+                type = _ref11.type,
+                payload = _ref11.payload,
+                reactCallback = _ref11.cb,
+                __innerCb = _ref11.__innerCb;
 
-              if (!state) {
-                if (next) next();
-                return;
-              } else {
-                computeValueForRef(_this2.$$computed, _this2.$$refComputed, state);
+            //if module not defined, targetStateModule will be currentModule
+            var targetStateModule = inputModule || currentModule; //if reducerModule not defined, cc will treat targetReducerModule as targetStateModule
+
+            var targetReducerModule = inputReducerModule || targetStateModule;
+            var targetReducerMap = _reducer$1[targetReducerModule];
+
+            if (!targetReducerMap) {
+              return __innerCb(new Error("no reducerMap found for module:" + targetReducerModule));
+            }
+
+            var reducerFn = targetReducerMap[type];
+
+            if (!reducerFn) {
+              return __innerCb(new Error("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type));
+            } // const errMsg = util.isCcActionValid({ type, payload });
+            // if (errMsg) return justWarning(errMsg);
+
+
+            var contextDispatch = _this2.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
+
+            isStateModuleValid(targetStateModule, currentModule, reactCallback, function (err, newCb) {
+              if (err) return __innerCb(err);
+              var executionContext = {
+                stateFor: stateFor,
+                ccUniqueKey: ccUniqueKey,
+                ccOption: ccOption,
+                module: targetStateModule,
+                reducerModule: targetReducerModule,
+                type: type,
+                dispatch: contextDispatch,
+                payload: payload,
+                state: _this2.state,
+                moduleState: getState(targetStateModule),
+                effect: _this2.$$effect,
+                xeffect: _this2.$$xeffect,
+                forceSync: forceSync,
+                cb: newCb,
+                context: true,
+                __innerCb: __innerCb
+              };
+
+              _this2.cc.__invokeWith(reducerFn, executionContext);
+            });
+          }, _this$cc.prepareReactSetState = function prepareReactSetState(changeBy, state, next, reactCallback) {
+            if (storedStateKeys.length > 0) {
+              var _extractStateByKeys5 = extractStateByKeys$1(state, storedStateKeys),
+                  partialState = _extractStateByKeys5.partialState,
+                  isStateEmpty = _extractStateByKeys5.isStateEmpty;
+
+              if (!isStateEmpty) {
+                refStore.setState(ccUniqueKey, partialState);
               }
+            }
 
-              if (_this2.$$beforeSetState) {
-                if (asyncLifecycleHook) {
-                  _this2.$$beforeSetState({
-                    changeBy: changeBy
-                  });
+            if (!state) {
+              if (next) next();
+              return;
+            } else {
+              computeValueForRef(_this2.$$computed, _this2.$$refComputed, state);
+            }
 
-                  _this2.cc.reactSetState(state, reactCallback);
+            if (_this2.$$beforeSetState) {
+              if (asyncLifecycleHook) {
+                _this2.$$beforeSetState({
+                  changeBy: changeBy
+                });
 
-                  if (next) next();
-                } else {
-                  // if user don't call next in ccIns's $$beforeSetState,reactSetState will never been invoked
-                  // $$beforeSetState(context, next){}
-                  _this2.$$beforeSetState({
-                    changeBy: changeBy
-                  }, function () {
-                    _this2.cc.reactSetState(state, reactCallback);
-
-                    if (next) next();
-                  });
-                }
-              } else {
                 _this2.cc.reactSetState(state, reactCallback);
 
                 if (next) next();
+              } else {
+                // if user don't call next in ccIns's $$beforeSetState,reactSetState will never been invoked
+                // $$beforeSetState(context, next){}
+                _this2.$$beforeSetState({
+                  changeBy: changeBy
+                }, function () {
+                  _this2.cc.reactSetState(state, reactCallback);
+
+                  if (next) next();
+                });
               }
-            },
-            prepareBroadcastGlobalState: function prepareBroadcastGlobalState(broadcastTriggeredBy, globalState) {
-              var _getAndStoreValidGlob = getAndStoreValidGlobalState$1(globalState),
-                  validGlobalState = _getAndStoreValidGlob.partialState,
-                  isStateEmpty = _getAndStoreValidGlob.isStateEmpty;
+            } else {
+              _this2.cc.reactSetState(state, reactCallback);
 
-              if (!isStateEmpty) {
-                if (_this2.$$beforeBroadcastState) {
-                  //check if user define a life cycle hook $$beforeBroadcastState
-                  if (asyncLifecycleHook) {
-                    _this2.$$beforeBroadcastState({
-                      broadcastTriggeredBy: broadcastTriggeredBy
-                    });
+              if (next) next();
+            }
+          }, _this$cc.prepareBroadcastGlobalState = function prepareBroadcastGlobalState(broadcastTriggeredBy, globalState) {
+            var _getAndStoreValidGlob = getAndStoreValidGlobalState$1(globalState),
+                validGlobalState = _getAndStoreValidGlob.partialState,
+                isStateEmpty = _getAndStoreValidGlob.isStateEmpty;
 
-                    _this2.cc.broadcastGlobalState(validGlobalState);
-                  } else {
-                    _this2.$$beforeBroadcastState({
-                      broadcastTriggeredBy: broadcastTriggeredBy
-                    }, function () {
-                      _this2.cc.broadcastGlobalState(validGlobalState);
-                    });
-                  }
-                } else {
-                  _this2.cc.broadcastGlobalState(validGlobalState);
-                }
-              }
-            },
-            prepareBroadcastState: function prepareBroadcastState(stateFor, broadcastTriggeredBy, moduleName, originalState, needClone) {
-              var targetSharedStateKeys, targetGlobalStateKeys;
-
-              try {
-                var result = getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, globalStateKeys, sharedStateKeys);
-                targetSharedStateKeys = result.sharedStateKeys;
-                targetGlobalStateKeys = result.globalStateKeys;
-              } catch (err) {
-                return justWarning$1(err.message + " prepareBroadcastState failed!");
-              }
-
-              var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, targetSharedStateKeys, targetGlobalStateKeys),
-                  isPartialSharedStateEmpty = _extractStateToBeBroa.isPartialSharedStateEmpty,
-                  isPartialGlobalStateEmpty = _extractStateToBeBroa.isPartialGlobalStateEmpty,
-                  partialSharedState = _extractStateToBeBroa.partialSharedState,
-                  partialGlobalState = _extractStateToBeBroa.partialGlobalState,
-                  module_globalState_ = _extractStateToBeBroa.module_globalState_;
-
-              if (!isPartialSharedStateEmpty) ccStoreSetState$1(moduleName, partialSharedState);
-              if (!isPartialGlobalStateEmpty) ccStoreSetState$1(MODULE_GLOBAL, partialGlobalState);
-              Object.keys(module_globalState_).forEach(function (moduleName) {
-                ccStoreSetState$1(moduleName, module_globalState_[moduleName]);
-              });
-
+            if (!isStateEmpty) {
               if (_this2.$$beforeBroadcastState) {
                 //check if user define a life cycle hook $$beforeBroadcastState
                 if (asyncLifecycleHook) {
                   _this2.$$beforeBroadcastState({
                     broadcastTriggeredBy: broadcastTriggeredBy
-                  }, function () {
-                    _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                   });
+
+                  _this2.cc.broadcastGlobalState(validGlobalState);
                 } else {
                   _this2.$$beforeBroadcastState({
                     broadcastTriggeredBy: broadcastTriggeredBy
+                  }, function () {
+                    _this2.cc.broadcastGlobalState(validGlobalState);
                   });
-
-                  _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
                 }
               } else {
+                _this2.cc.broadcastGlobalState(validGlobalState);
+              }
+            }
+          }, _this$cc.prepareBroadcastState = function prepareBroadcastState(stateFor, broadcastTriggeredBy, moduleName, originalState, needClone) {
+            var targetSharedStateKeys, targetGlobalStateKeys;
+
+            try {
+              var result = getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, globalStateKeys, sharedStateKeys);
+              targetSharedStateKeys = result.sharedStateKeys;
+              targetGlobalStateKeys = result.globalStateKeys;
+            } catch (err) {
+              return justWarning$1(err.message + " prepareBroadcastState failed!");
+            }
+
+            var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, originalState, targetSharedStateKeys, targetGlobalStateKeys),
+                isPartialSharedStateEmpty = _extractStateToBeBroa.isPartialSharedStateEmpty,
+                isPartialGlobalStateEmpty = _extractStateToBeBroa.isPartialGlobalStateEmpty,
+                partialSharedState = _extractStateToBeBroa.partialSharedState,
+                partialGlobalState = _extractStateToBeBroa.partialGlobalState,
+                module_globalState_ = _extractStateToBeBroa.module_globalState_;
+
+            if (!isPartialSharedStateEmpty) ccStoreSetState$1(moduleName, partialSharedState);
+            if (!isPartialGlobalStateEmpty) ccStoreSetState$1(MODULE_GLOBAL, partialGlobalState);
+            Object.keys(module_globalState_).forEach(function (moduleName) {
+              ccStoreSetState$1(moduleName, module_globalState_[moduleName]);
+            });
+
+            if (_this2.$$beforeBroadcastState) {
+              //check if user define a life cycle hook $$beforeBroadcastState
+              if (asyncLifecycleHook) {
+                _this2.$$beforeBroadcastState({
+                  broadcastTriggeredBy: broadcastTriggeredBy
+                }, function () {
+                  _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+                });
+              } else {
+                _this2.$$beforeBroadcastState({
+                  broadcastTriggeredBy: broadcastTriggeredBy
+                });
+
                 _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
               }
-            },
-            broadcastState: function broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
-              var _partialSharedState = partialSharedState;
-              if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
+            } else {
+              _this2.cc.broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone);
+            }
+          }, _this$cc.broadcastState = function broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone) {
+            var _partialSharedState = partialSharedState;
+            if (needClone) _partialSharedState = util$1.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
 
-              var currentCcKey = _this2.cc.ccState.ccUniqueKey;
-              // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
-              // so flag ignoreCurrentCcKey as true;
+            var currentCcKey = _this2.cc.ccState.ccUniqueKey;
+            // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
+            // so flag ignoreCurrentCcKey as true;
 
-              var ignoreCurrentCcKey = stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY;
-              var ccClassKeys = moduleName_ccClassKeys_[moduleName];
+            var ignoreCurrentCcKey = stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY;
+            var ccClassKeys = moduleName_ccClassKeys_[moduleName];
 
-              if (ccClassKeys) {
-                //  these ccClass are watching the same module's state
+            if (ccClassKeys) {
+              //  these ccClass are watching the same module's state
+              ccClassKeys.forEach(function (ccClassKey) {
+                var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                var ccKeys = classContext.ccKeys,
+                    sharedStateKeys = classContext.sharedStateKeys,
+                    globalStateKeys = classContext.globalStateKeys;
+                if (ccKeys.length === 0) return;
+                if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
+
+                var _extractStateByKeys6 = extractStateByKeys$1(_partialSharedState, sharedStateKeys),
+                    sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
+                    isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
+                //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
+                //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
+                //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
+
+
+                var _extractStateByKeys7 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+
+                if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
+
+                var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
+
+                ccKeys.forEach(function (ccKey) {
+                  if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
+                  var ref = ccKey_ref_[ccKey];
+
+                  if (ref) {
+                    var option = ccKey_option_[ccKey];
+                    var toSet = null,
+                        changeBy = -1;
+
+                    if (option.syncSharedState && option.syncGlobalState) {
+                      changeBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE;
+                      toSet = mergedStateForCurrentCcClass;
+                    } else if (option.syncSharedState) {
+                      changeBy = CHANGE_BY_BROADCASTED_SHARED_STATE;
+                      toSet = sharedStateForCurrentCcClass;
+                    } else if (option.syncGlobalState) {
+                      changeBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE;
+                      toSet = globalStateForCurrentCcClass;
+                    }
+
+                    if (toSet) {
+                      if (ccContext.isDebug) {
+                        console.log(ss$1("ref " + ccKey + " to be rendered state(changeBy " + changeBy + ") is broadcast from same module's other ref " + currentCcKey), cl$1());
+                      }
+
+                      ref.cc.prepareReactSetState(changeBy, toSet);
+                    }
+                  }
+                });
+              });
+            }
+
+            if (util$1.isObjectNotNull(module_globalState_)) {
+              var moduleNames = Object.keys(module_globalState_);
+              moduleNames.forEach(function (mName) {
+                var partialGlobalState = module_globalState_[mName];
+                var ccClassKeys = moduleName_ccClassKeys_[mName];
                 ccClassKeys.forEach(function (ccClassKey) {
                   var classContext = ccClassKey_ccClassContext_[ccClassKey];
                   var ccKeys = classContext.ccKeys,
-                      sharedStateKeys = classContext.sharedStateKeys,
                       globalStateKeys = classContext.globalStateKeys;
                   if (ccKeys.length === 0) return;
-                  if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
+                  if (globalStateKeys.length === 0) return;
 
-                  var _extractStateByKeys6 = extractStateByKeys$1(_partialSharedState, sharedStateKeys),
-                      sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                      isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
-                  //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
-                  //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
-                  //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
+                  var _extractStateByKeys8 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
-
-                  var _extractStateByKeys7 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
-                      globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                      isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
-
-                  if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
-
-                  var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
-
+                  if (isPartialGlobalStateEmpty) return;
                   ccKeys.forEach(function (ccKey) {
-                    if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
                     var ref = ccKey_ref_[ccKey];
 
                     if (ref) {
                       var option = ccKey_option_[ccKey];
-                      var toSet = null,
-                          changeBy = -1;
 
-                      if (option.syncSharedState && option.syncGlobalState) {
-                        changeBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE;
-                        toSet = mergedStateForCurrentCcClass;
-                      } else if (option.syncSharedState) {
-                        changeBy = CHANGE_BY_BROADCASTED_SHARED_STATE;
-                        toSet = sharedStateForCurrentCcClass;
-                      } else if (option.syncGlobalState) {
-                        changeBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE;
-                        toSet = globalStateForCurrentCcClass;
-                      }
-
-                      if (toSet) {
+                      if (option.syncGlobalState) {
                         if (ccContext.isDebug) {
-                          console.log(ss$1("ref " + ccKey + " to be rendered state(changeBy " + changeBy + ") is broadcast from same module's other ref " + currentCcKey), cl$1());
+                          console.log(ss$1("ref " + ccKey + " to be rendered state(only global state) is broadcast from other module " + moduleName), cl$1());
                         }
 
-                        ref.cc.prepareReactSetState(changeBy, toSet);
+                        ref.cc.prepareReactSetState(CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, globalStateForCurrentCcClass);
                       }
                     }
                   });
                 });
-              }
-
-              if (util.isObjectNotNull(module_globalState_)) {
-                var moduleNames = Object.keys(module_globalState_);
-                moduleNames.forEach(function (mName) {
-                  var partialGlobalState = module_globalState_[mName];
-                  var ccClassKeys = moduleName_ccClassKeys_[mName];
-                  ccClassKeys.forEach(function (ccClassKey) {
-                    var classContext = ccClassKey_ccClassContext_[ccClassKey];
-                    var ccKeys = classContext.ccKeys,
-                        globalStateKeys = classContext.globalStateKeys;
-                    if (ccKeys.length === 0) return;
-                    if (globalStateKeys.length === 0) return;
-
-                    var _extractStateByKeys8 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
-                        globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
-                        isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
-
-                    if (isPartialGlobalStateEmpty) return;
-                    ccKeys.forEach(function (ccKey) {
-                      var ref = ccKey_ref_[ccKey];
-
-                      if (ref) {
-                        var option = ccKey_option_[ccKey];
-
-                        if (option.syncGlobalState) {
-                          if (ccContext.isDebug) {
-                            console.log(ss$1("ref " + ccKey + " to be rendered state(only global state) is broadcast from other module " + moduleName), cl$1());
-                          }
-
-                          ref.cc.prepareReactSetState(CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, globalStateForCurrentCcClass);
-                        }
-                      }
-                    });
-                  });
-                });
-              }
-
-              broadcastPropState(moduleName, originalState);
-            },
-            broadcastGlobalState: function broadcastGlobalState(globalSate) {
-              globalCcClassKeys.forEach(function (ccClassKey) {
-                var classContext = ccClassKey_ccClassContext_[ccClassKey];
-                var globalStateKeys = classContext.globalStateKeys,
-                    ccKeys = classContext.ccKeys;
-
-                var _extractStateByKeys9 = extractStateByKeys$1(globalSate, globalStateKeys),
-                    partialState = _extractStateByKeys9.partialState,
-                    isStateEmpty = _extractStateByKeys9.isStateEmpty;
-
-                if (!isStateEmpty) {
-                  ccKeys.forEach(function (ccKey) {
-                    var ref = ccKey_ref_[ccKey];
-
-                    if (ref) {
-                      var option = ccKey_option_[ccKey];
-
-                      if (option.syncGlobalState === true) {
-                        ref.cc.prepareReactSetState(CHANGE_BY_BROADCASTED_GLOBAL_STATE, partialState);
-                      }
-                    }
-                  });
-                }
-              });
-              broadcastPropState(MODULE_GLOBAL, globalSate);
-            },
-            emit: function emit(event) {
-              for (var _len16 = arguments.length, args = new Array(_len16 > 1 ? _len16 - 1 : 0), _key16 = 1; _key16 < _len16; _key16++) {
-                args[_key16 - 1] = arguments[_key16];
-              }
-
-              findEventHandlersToPerform.apply(void 0, [event, {
-                identity: null
-              }].concat(args));
-            },
-            emitIdentity: function emitIdentity(event, identity) {
-              for (var _len17 = arguments.length, args = new Array(_len17 > 2 ? _len17 - 2 : 0), _key17 = 2; _key17 < _len17; _key17++) {
-                args[_key17 - 2] = arguments[_key17];
-              }
-
-              findEventHandlersToPerform.apply(void 0, [event, {
-                identity: identity
-              }].concat(args));
-            },
-            emitWith: function emitWith(event, option) {
-              for (var _len18 = arguments.length, args = new Array(_len18 > 2 ? _len18 - 2 : 0), _key18 = 2; _key18 < _len18; _key18++) {
-                args[_key18 - 2] = arguments[_key18];
-              }
-
-              findEventHandlersToPerform.apply(void 0, [event, option].concat(args));
-            },
-            on: function on(event, handler) {
-              bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, null, handler);
-            },
-            onIdentity: function onIdentity(event, identity, handler) {
-              bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, identity, handler);
-            },
-            off: function off(event, _temp9) {
-              var _ref12 = _temp9 === void 0 ? {} : _temp9,
-                  module = _ref12.module,
-                  ccClassKey = _ref12.ccClassKey,
-                  identity = _ref12.identity;
-
-              //  consider if module === currentModule, let off happened?
-              findEventHandlersToOff(event, {
-                module: module,
-                ccClassKey: ccClassKey,
-                identity: identity
               });
             }
-          };
+
+            broadcastPropState(moduleName, originalState);
+          }, _this$cc.broadcastGlobalState = function broadcastGlobalState(globalSate) {
+            globalCcClassKeys.forEach(function (ccClassKey) {
+              var classContext = ccClassKey_ccClassContext_[ccClassKey];
+              var globalStateKeys = classContext.globalStateKeys,
+                  ccKeys = classContext.ccKeys;
+
+              var _extractStateByKeys9 = extractStateByKeys$1(globalSate, globalStateKeys),
+                  partialState = _extractStateByKeys9.partialState,
+                  isStateEmpty = _extractStateByKeys9.isStateEmpty;
+
+              if (!isStateEmpty) {
+                ccKeys.forEach(function (ccKey) {
+                  var ref = ccKey_ref_[ccKey];
+
+                  if (ref) {
+                    var option = ccKey_option_[ccKey];
+
+                    if (option.syncGlobalState === true) {
+                      ref.cc.prepareReactSetState(CHANGE_BY_BROADCASTED_GLOBAL_STATE, partialState);
+                    }
+                  }
+                });
+              }
+            });
+            broadcastPropState(MODULE_GLOBAL, globalSate);
+          }, _this$cc.emit = function emit(event) {
+            for (var _len21 = arguments.length, args = new Array(_len21 > 1 ? _len21 - 1 : 0), _key21 = 1; _key21 < _len21; _key21++) {
+              args[_key21 - 1] = arguments[_key21];
+            }
+
+            findEventHandlersToPerform.apply(void 0, [event, {
+              identity: null
+            }].concat(args));
+          }, _this$cc.emitIdentity = function emitIdentity(event, identity) {
+            for (var _len22 = arguments.length, args = new Array(_len22 > 2 ? _len22 - 2 : 0), _key22 = 2; _key22 < _len22; _key22++) {
+              args[_key22 - 2] = arguments[_key22];
+            }
+
+            findEventHandlersToPerform.apply(void 0, [event, {
+              identity: identity
+            }].concat(args));
+          }, _this$cc.emitWith = function emitWith(event, option) {
+            for (var _len23 = arguments.length, args = new Array(_len23 > 2 ? _len23 - 2 : 0), _key23 = 2; _key23 < _len23; _key23++) {
+              args[_key23 - 2] = arguments[_key23];
+            }
+
+            findEventHandlersToPerform.apply(void 0, [event, option].concat(args));
+          }, _this$cc.on = function on(event, handler) {
+            bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, null, handler);
+          }, _this$cc.onIdentity = function onIdentity(event, identity, handler) {
+            bindEventHandlerToCcContext(currentModule, ccClassKey, ccUniqueKey, event, identity, handler);
+          }, _this$cc.off = function off(event, _temp9) {
+            var _ref12 = _temp9 === void 0 ? {} : _temp9,
+                module = _ref12.module,
+                ccClassKey = _ref12.ccClassKey,
+                identity = _ref12.identity;
+
+            //  consider if module === currentModule, let off happened?
+            findEventHandlersToOff(event, {
+              module: module,
+              ccClassKey: ccClassKey,
+              identity: identity
+            });
+          }, _this$cc);
           this.cc.reactSetState = this.cc.reactSetState.bind(this);
           this.cc.prepareReactSetState = this.cc.prepareReactSetState.bind(this);
           this.cc.forceUpdate = this.cc.forceUpdate.bind(this);
@@ -5211,18 +5290,19 @@
                 forceSync = _ref14$forceSync === void 0 ? false : _ref14$forceSync,
                 type = _ref14.type,
                 payload = _ref14.payload,
-                reactCallback = _ref14.cb,
-                afterStateChanged = _ref14.afterStateChanged;
+                reactCallback = _ref14.cb;
 
-            _this5.cc.dispatch({
-              stateFor: stateFor,
-              module: module,
-              reducerModule: reducerModule,
-              forceSync: forceSync,
-              type: type,
-              payload: payload,
-              cb: reactCallback,
-              afterStateChanged: afterStateChanged
+            return new Promise(function (resolve, reject) {
+              _this5.cc.dispatch({
+                stateFor: stateFor,
+                module: module,
+                reducerModule: reducerModule,
+                forceSync: forceSync,
+                type: type,
+                payload: payload,
+                cb: reactCallback,
+                __innerCb: _promiseErrorHandler(resolve, reject)
+              });
             });
           };
         };
@@ -5247,10 +5327,10 @@
           }
 
           if (extendReactComponent) {
-            // cc class extends ReactBasicClass, render user inputted ReactClass
+            // now cc class extends ReactComponent, render user inputted ReactClass
             return react.createElement(ReactClass, _extends({}, this, this.props));
           } else {
-            // cc class extends ReactClass, call super.render()
+            //now cc class extends ReactClass, call super.render()
             return _TargetClass.prototype.render.call(this);
           }
         };
@@ -5431,7 +5511,7 @@
     }
   }
 
-  var vbi$2 = util.verboseInfo;
+  var vbi$2 = util$1.verboseInfo;
   var ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_,
       ccKey_ref_$1 = ccContext.ccKey_ref_;
   /**
@@ -5451,14 +5531,14 @@
     var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
 
     if (!classContext) {
-      var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey));
+      var err = util$1.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey));
       if (ccContext.isStrict) throw err;else return console.error(err);
     }
 
     var ref;
 
     if (ccInstanceKey) {
-      var ccKey = util.makeUniqueCcKey(ccClassKey, ccInstanceKey);
+      var ccKey = util$1.makeUniqueCcKey(ccClassKey, ccInstanceKey);
       ref = ccKey_ref_$1[ccKey];
     } else {
       var ccKeys = classContext.ccKeys;
@@ -5466,7 +5546,7 @@
     }
 
     if (!ref) {
-      var _err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey + " ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!
+      var _err = util$1.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey + " ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!
 
 
       return console.error(_err.message);
@@ -5475,7 +5555,7 @@
     var fn = ref[method];
 
     if (!fn) {
-      var _err2 = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi$2(" method:" + method)); // only error
+      var _err2 = util$1.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi$2(" method:" + method)); // only error
 
 
       return console.error(_err2.message);
@@ -5488,13 +5568,13 @@
     (_ref$method = ref[method]).call.apply(_ref$method, [ref].concat(args));
   }
 
-  var vbi$3 = util.verboseInfo;
+  var vbi$3 = util$1.verboseInfo;
   var ccClassKey_ccClassContext_$2 = ccContext.ccClassKey_ccClassContext_;
   function invokeSingle (ccClassKey, method) {
     var classContext = ccClassKey_ccClassContext_$2[ccClassKey];
 
     if (!classContext.isSingle) {
-      var err = util.makeError(ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE, vbi$3("ccClassKey:" + ccClassKey)); // only error, the target instance may has been unmounted really!
+      var err = util$1.makeError(ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE, vbi$3("ccClassKey:" + ccClassKey)); // only error, the target instance may has been unmounted really!
 
       return console.error(err.message);
     }
@@ -5516,7 +5596,7 @@
 
       ref.$$emit.apply(ref, [event].concat(args));
     } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+      if (throwError) throw err;else util$1.justWarning(err.message);
     }
   }
 
@@ -5530,7 +5610,7 @@
 
       ref.$$emitWith.apply(ref, [event, option].concat(args));
     } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+      if (throwError) throw err;else util$1.justWarning(err.message);
     }
   }
 
@@ -5539,7 +5619,7 @@
       var ref = pickOneRef();
       ref.$$off(event, option);
     } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+      if (throwError) throw err;else util$1.justWarning(err.message);
     }
   }
 
@@ -5563,7 +5643,7 @@
   function dispatch (action, ccClassKey, ccKey, throwError) {
     try {
       if (ccClassKey && ccKey) {
-        var uKey = util.makeUniqueCcKey(ccClassKey, ccKey);
+        var uKey = util$1.makeUniqueCcKey(ccClassKey, ccKey);
         var targetRef = ccContext.refs[uKey];
 
         if (!targetRef) {
@@ -5576,7 +5656,7 @@
         ref.$$dispatchForModule(action);
       }
     } catch (err) {
-      if (throwError) throw err;else util.justWarning(err.message);
+      if (throwError) throw err;else util$1.justWarning(err.message);
     }
   }
 

@@ -130,7 +130,7 @@ function isStateModuleValid(inputModule, currentModule, reactCallback, cb) {
     }
     cb(null, targetCb);
   } else {
-    cb(`inputModule:${inputModule} invalid`, null);
+    cb(new Error(`inputModule:${inputModule} invalid`), null);
   }
 }
 
@@ -934,11 +934,11 @@ export default function register(ccClassKey, {
 
             const targetReducerMap = _reducer[targetReducerModule];
             if (!targetReducerMap) {
-              return __innerCb(`no reducerMap found for module:${targetReducerModule}`);
+              return __innerCb(new Error(`no reducerMap found for module:${targetReducerModule}`));
             }
             const reducerFn = targetReducerMap[type];
             if (!reducerFn) {
-              return __innerCb(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}`);
+              return __innerCb(new Error(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}`));
             }
             // const errMsg = util.isCcActionValid({ type, payload });
             // if (errMsg) return justWarning(errMsg);
