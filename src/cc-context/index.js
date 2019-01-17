@@ -179,7 +179,8 @@ const ccContext = {
   refs,
   info: {
     startupTime: Date.now(),
-  }
+  },
+  errorHandler: null,
 }
 
 if (window && !window.sss) {

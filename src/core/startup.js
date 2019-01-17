@@ -334,6 +334,7 @@ export default function ({
   isReducerKeyMeanNamespacedActionType = false,
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
+  errorHandler = null,
 } = {}) {
   if (window) {
     window.CC_CONTEXT = ccContext;
@@ -362,4 +363,5 @@ export default function ({
   }
 
   ccContext.isCcAlreadyStartup = true;
+  ccContext.errorHandler = errorHandler;
 }

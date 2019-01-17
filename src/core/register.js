@@ -18,6 +18,7 @@ import util, { isPlainJsonObject } from '../support/util';
 import uuid from 'uuid';
 import co from 'co';
 import * as helper from './helper';
+import { isRegExp } from 'util';
 
 const { extractStateByKeys, getAndStoreValidGlobalState } = helper;
 const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning } = util;
@@ -127,7 +128,9 @@ function isStateModuleValid(inputModule, currentModule, reactCallback, cb) {
         targetCb = null;//let user's reactCallback has no change to be triggered
       }
     }
-    cb(targetCb);
+    cb(null, targetCb);
+  } else {
+    cb(`inputModule:${inputModule} invalid`, null);
   }
 }
 
@@ -624,6 +627,25 @@ function broadcastPropState(module, commitState) {
   });
 }
 
+function _promiseErrorHandler(resolve, reject) {
+  return err => err ? reject() : resolve();
+}
+
+function _promisifyCcFn(ccFn, userLogicFn, executionContext, ...args) {
+  return new Promise((resolve, reject) => {
+    const _executionContext = { ...executionContext, __innerCb: _promiseErrorHandler(resolve, reject) }
+    ccFn(userLogicFn, _executionContext, ...args);
+  });
+}
+
+function handleCcFnError(err, __innerCb) {
+  if (err) {
+    if (__innerCb) __innerCb(err);
+    else if (ccContext.errorHandler) ccContext.errorHandler(err);
+    else justWarning(err);
+  }
+}
+
 /*
 options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
@@ -806,56 +828,79 @@ export default function register(ccClassKey, {
           },
           // always change self module's state
           invoke: (userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule }, ...args);
+            return this.cc.__promisifiedInvokeWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule }, ...args);
           },
           // change other module's state, mostly you should use this method to generate new state instead of xeffect,
           // because xeffect will force your logicFn to put your first param as ExecutionContext
           effect: (targetModule, userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, context: false, module: targetModule }, ...args);
+            return this.cc.__promisifiedInvokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, context: false, module: targetModule }, ...args);
           },
           // change other module's state, cc will give userLogicFn EffectContext object as first param
           xeffect: (targetModule, userLogicFn, ...args) => {
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect: this.cc.xeffect, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
+            return this.cc.__promisifiedInvokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect: this.cc.xeffect, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
+          },
+          __promisifiedInvokeWith: (userLogicFn, executionContext, ...args) => {
+            return _promisifyCcFn(this.cc.__invokeWith, userLogicFn, executionContext, ...args);
           },
           // advanced invoke, can change other module state, but user should put module to option
           // and user can decide userLogicFn's first param is ExecutionContext by set context = true
           invokeWith: (userLogicFn, option, ...args) => {
             const { module = currentModule, context = false, forceSync = false, cb } = option;
-            this.cc.__invokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, moduleState: getState(module), state: this.state, context, forceSync, cb }, ...args);
+            return this.cc.__promisifiedInvokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, moduleState: getState(module), state: this.state, context, forceSync, cb }, ...args);
           },
           __invokeWith: (userLogicFn, executionContext, ...args) => {
-            const { stateFor, module: targetModule = currentModule, context = false, forceSync = false, cb } = executionContext;
-            isStateModuleValid(targetModule, currentModule, cb, (newCb) => {
+            const { stateFor, module: targetModule = currentModule, context = false, forceSync = false, cb, __innerCb } = executionContext;
+            isStateModuleValid(targetModule, currentModule, cb, (err, newCb) => {
+              if (err) return handleCcFnError(err, __innerCb);
+
               if (context) args.unshift(executionContext);
               co.wrap(userLogicFn)(...args).then(partialState => {
                 this.$$changeState(partialState, { stateFor, module: targetModule, forceSync, cb: newCb });
               }).then(() => {
-                if (executionContext.afterStateChanged) { executionContext.afterStateChanged() }
-              }).catch(justWarning);
+                if (__innerCb) __innerCb();
+              }).catch(err => {
+                handleCcFnError(err, __innerCb);
+              });
             });
           },
 
           call: (userLogicFn, ...args) => {
-            this.cc.__callWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule }, ...args);
+            return this.cc.__promisifiedCallWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule }, ...args);
           },
           callWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
-            this.cc.__callWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb }, ...args);
+            return this.cc.__promisifiedCallWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb }, ...args);
           },
-          __callWith: (userLogicFn, { stateFor, module = currentModule, forceSync = false, cb } = {}, ...args) => {
-            isStateModuleValid(module, currentModule, cb, (newCb) => {
-              userLogicFn.call(this, this.__$$getChangeStateHandler({ stateFor, module, forceSync, cb: newCb }), ...args);
+          __promisifiedCallWith: (userLogicFn, executionContext, ...args) => {
+            return _promisifyCcFn(this.cc.__callWith, userLogicFn, executionContext, ...args);
+          },
+          __callWith: (userLogicFn, { stateFor, module = currentModule, forceSync = false, cb, __innerCb } = {}, ...args) => {
+            isStateModuleValid(module, currentModule, cb, (err, newCb) => {
+              if (err) return handleCcFnError(err, __innerCb);
+              try {
+                userLogicFn.call(this, this.__$$getChangeStateHandler({ stateFor, module, forceSync, cb: newCb }), ...args);
+              } catch (err) {
+                handleCcFnError(err, __innerCb);
+              }
             });
           },
 
           callThunk: (userLogicFn, ...args) => {
-            this.cc.__callThunkWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule }, ...args);
+            this.cc.__promisifiedCallThunkWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule }, ...args);
           },
           callThunkWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
-            this.cc.__callThunkWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb }, ...args);
+            this.cc.__promisifiedCallThunkWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb }, ...args);
           },
-          __callThunkWith: (userLogicFn, { stateFor, module = currentModule, forceSync = false, cb } = {}, ...args) => {
-            isStateModuleValid(module, currentModule, cb, (newCb) => {
-              userLogicFn.call(this, ...args)(this.__$$getChangeStateHandler({ stateFor, module, forceSync, cb: newCb }));
+          __promisifiedCallThunkWith: (userLogicFn, executionContext, ...args) => {
+            return _promisifyCcFn(this.cc.__callThunkWith, userLogicFn, executionContext, ...args);
+          },
+          __callThunkWith: (userLogicFn, { stateFor, module = currentModule, forceSync = false, cb, __innerCb } = {}, ...args) => {
+            isStateModuleValid(module, currentModule, cb, (err, newCb) => {
+              if (err) return handleCcFnError(err, __innerCb);
+              try {
+                userLogicFn.call(this, ...args)(this.__$$getChangeStateHandler({ stateFor, module, forceSync, cb: newCb }));
+              } catch (err) {
+                handleCcFnError(err, __innerCb);
+              }
             });
           },
 
@@ -865,14 +910,22 @@ export default function register(ccClassKey, {
           commitWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
             this.cc.__commitWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb }, ...args);
           },
-          __commitWith: (userLogicFn, { stateFor, module = currentModule, forceSync = false, cb } = {}, ...args) => {
-            isStateModuleValid(module, currentModule, cb, (newCb) => {
-              const state = userLogicFn.call(this, ...args);
-              this.$$changeState(state, { stateFor, module, forceSync, cb: newCb });
+          __promisifiedCallWith: (userLogicFn, executionContext, ...args) => {
+            return _promisifyCcFn(this.cc.__commitWith, userLogicFn, executionContext, ...args);
+          },
+          __commitWith: (userLogicFn, { stateFor, module = currentModule, forceSync = false, cb, __innerCb } = {}, ...args) => {
+            isStateModuleValid(module, currentModule, cb, (err, newCb) => {
+              if (err) return handleCcFnError(err, __innerCb);
+              try {
+                const state = userLogicFn.call(this, ...args);
+                this.$$changeState(state, { stateFor, module, forceSync, cb: newCb });
+              } catch (err) {
+                handleCcFnError(err, __innerCb);
+              }
             });
           },
 
-          dispatch: ({ stateFor, module: inputModule, reducerModule: inputReducerModule, forceSync = false, type, payload, cb: reactCallback, afterStateChanged } = {}) => {
+          dispatch: ({ stateFor, module: inputModule, reducerModule: inputReducerModule, forceSync = false, type, payload, cb: reactCallback, __innerCb } = {}) => {
             //if module not defined, targetStateModule will be currentModule
             const targetStateModule = inputModule || currentModule;
 
@@ -880,19 +933,24 @@ export default function register(ccClassKey, {
             const targetReducerModule = inputReducerModule || targetStateModule;
 
             const targetReducerMap = _reducer[targetReducerModule];
-            if (!targetReducerMap) return justWarning(`no reducerMap found for module:${targetReducerModule}`);
+            if (!targetReducerMap) {
+              return __innerCb(`no reducerMap found for module:${targetReducerModule}`);
+            }
             const reducerFn = targetReducerMap[type];
-            if (!reducerFn) return justWarning(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}`);
+            if (!reducerFn) {
+              return __innerCb(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}`);
+            }
             // const errMsg = util.isCcActionValid({ type, payload });
             // if (errMsg) return justWarning(errMsg);
 
             const contextDispatch = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
 
-            isStateModuleValid(targetStateModule, currentModule, reactCallback, (newCb) => {
+            isStateModuleValid(targetStateModule, currentModule, reactCallback, (err, newCb) => {
+              if (err) return __innerCb(err);
               const executionContext = {
                 stateFor, ccUniqueKey, ccOption, module: targetStateModule, reducerModule: targetReducerModule, type, dispatch: contextDispatch,
                 payload, state: this.state, moduleState: getState(targetStateModule), effect: this.$$effect, xeffect: this.$$xeffect,
-                forceSync, cb: newCb, context: true, afterStateChanged
+                forceSync, cb: newCb, context: true, __innerCb
               };
 
               this.cc.__invokeWith(reducerFn, executionContext);
@@ -1219,8 +1277,10 @@ export default function register(ccClassKey, {
       }
 
       __$$getDispatchHandler(stateFor) {
-        return ({ module, reducerModule, forceSync = false, type, payload, cb: reactCallback, afterStateChanged } = {}) => {
-          this.cc.dispatch({ stateFor, module, reducerModule, forceSync, type, payload, cb: reactCallback, afterStateChanged });
+        return ({ module, reducerModule, forceSync = false, type, payload, cb: reactCallback } = {}) => {
+          return new Promise((resolve, reject) => {
+            this.cc.dispatch({ stateFor, module, reducerModule, forceSync, type, payload, cb: reactCallback, __innerCb: _promiseErrorHandler(resolve, reject) });
+          });
         }
       }
 
@@ -1242,10 +1302,9 @@ export default function register(ccClassKey, {
           console.log(ss(`@@@ render ${ccClassDisplayName(ccClassKey)}`), cl());
         }
         if (extendReactComponent) {
-          // cc class extends ReactBasicClass, render user inputted ReactClass
-
+          // now cc class extends ReactComponent, render user inputted ReactClass
           return <ReactClass {...this} {...this.props} />
-        } else {// cc class extends ReactClass, call super.render()
+        } else {//now cc class extends ReactClass, call super.render()
           return super.render();
         }
       }
