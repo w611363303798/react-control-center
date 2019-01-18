@@ -628,7 +628,7 @@ function broadcastPropState(module, commitState) {
 }
 
 function _promiseErrorHandler(resolve, reject) {
-  return err => err ? reject() : resolve();
+  return err => err ? reject(err) : resolve();
 }
 
 function _promisifyCcFn(ccFn, userLogicFn, executionContext, ...args) {
