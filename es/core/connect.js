@@ -6,13 +6,13 @@ export default function (ccClassKey, stateToPropMapping, _temp) {
       isPropStateModuleMode = _ref$isPropStateModul === void 0 ? false : _ref$isPropStateModul,
       _ref$module = _ref.module,
       module = _ref$module === void 0 ? MODULE_DEFAULT : _ref$module,
-      _ref$extendReactCompo = _ref.extendReactComponent,
-      extendReactComponent = _ref$extendReactCompo === void 0 ? false : _ref$extendReactCompo;
+      _ref$extendInputClass = _ref.extendInputClass,
+      extendInputClass = _ref$extendInputClass === void 0 ? true : _ref$extendInputClass;
 
   return register(ccClassKey, {
     module: module,
     stateToPropMapping: stateToPropMapping,
     isPropStateModuleMode: isPropStateModuleMode,
-    extendReactComponent: extendReactComponent
+    extendInputClass: extendInputClass
   });
 }

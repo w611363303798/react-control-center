@@ -169,8 +169,15 @@ const ccContext = {
     },
   },
   ccKey_ref_: refs,
-  //  key:eventName,  value: Array<{ccKey, identity,  handler}>
+  //  key:eventName,  value: Array<{ccKey, identity,  handlerKey}>
   event_handlers_: {
+
+  },
+  ccUniqueKey_handlerKeys_: {},
+  // to avoid memory leak, the handlerItem of event_handlers_ just store handlerKey, 
+  // it is a ref that towards ccUniqueKeyEvent_handler_'s key
+  // when component unmounted, it's handler will been removed
+  handlerKey_handler_: {
 
   },
   ccKey_option_: {

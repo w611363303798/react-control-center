@@ -1,23 +1,75 @@
 
 # Change Log
 
-#### 2018-01-17 09:00
-* now cc.register support set extendReactComponent as true, if you want to a real HOC ccComponent, extendReactComponent is false by default
-  ```
-  the difference between extendReactComponent is true and false is below;
+#### 2018-01-19 19:00
+* optimize storing way on on-handler, avoid memory leak.
+* promisify all cc instantce method
+* the dispatch handler called in a reducer method block will implicitly find originalComputedReducerModule when the user trigger dispatch in cc instance if you don't define a reducerModule in its action, it means if a method were hit in reducer, in the reducer function block , use dispatch handler to change other module state and don't set reducerModule explicitly, reducerModule will alway be current reducer module, 
+* and also the dispatch handler called in a reducer method block will implicitly find originalComputedStateModule when the user trigger dispatch in cc instance if you don't define a module in its action 
+* how cc compute originalComputedReducerModule and originalComputedStateModule, for example:
+```
+cc.register('Foo', {module:'chart'});
+class Foo extends Component{
+  componentDidMount(){
+    // because current cc instance belong to module chart, so if you don't set module explicitly,
+    // so this dispatch will change chart module state, and find chart module reducer method changeXXX to execute
+    // so originalComputedStateModule is 'chart', originalComputedReducerModule is 'chart';
+    this.$$dispatch({type:'changeXXX'});
 
-  when extendReactComponent is true;
+    // because current cc instance belong to module chart, so if you don't set module explicitly but you set myTargetReducer explicitly!
+    // so this dispatch will change chart module state, and find myTargetReducer module reducer method changeXXX to execute
+    // so originalComputedStateModule is 'chart', originalComputedReducerModule is 'myTargetReducer';
+    this.$$dispatch({reducer:'myTargetReducer', type:'changeXXX'});
+
+    // if you set module explicitly but don't set reducerModule explicitly, cc will let reducerModule value equal 'otherModule'.
+    // so this dispatch will change otherModule module state, and find otherModule module reducer method changeXXX to execute
+    // so originalComputedStateModule is 'otherModule', originalComputedReducerModule is 'otherModule';
+    this.$$dispatch({module:'otherModule', type:'changeXXX'});
+
+    // if you set both explicitly and myTargetReducer explicitly!
+    //this dispatch will change otherModule module state, and find myTargetReducer module reducer method changeXXX to execute
+    // so originalComputedStateModule is 'otherModule', originalComputedReducerModule is 'myTargetReducer';
+    this.$$dispatch({module:'otherModule', reducer:'myTargetReducer', type:'changeXXX'});
+  }
+}
+
+// code in chart-reducer.js,  method changeXXX of reducer 'chart'
+function changeXXX({dispatch}){
+  // if you call dispatch here and don't set reducerModule in action, dispatch will find reducerModule chart
+}
+
+// code in my-target-reducer.js,  method changeXXX of reducer 'myTargetReducer'
+function changeXXX({dispatch}){
+  // if you call dispatch here and don't set reducerModule in action, dispatch will find myTargetReducer reducer module method
+}
+
+// other-module-reducer.js, method changeXXX of reducer 'otherModule'
+function changeXXX({dispatch}){
+  // if you call dispatch here and don't set reducerModule in action, dispatch will find otherModule reducer module method
+}
+
+```
+- if this makes you confused, always give a `module` for a action when you call dispatch whether in cc instance or reducer method block!
+- and if your reducer module naming is different with state module naming, always give a `reducerModule` for a action also！ 
+
+
+
+#### 2018-01-17 09:00
+* now cc.register support set extendReactComponent as true, if you want to a real HOC ccComponent, extendInputClass is true by default
+  ```
+  the difference between extendInputClass is true and false is below;
+
+  when extendInputClass is false;
   - every cc method you can not call directly, they are attached to props, so you can call them like
   this.props.$$dispatch、 this.props.$emit、 this.props.$$effect etc.
   - your component's state is not been controlled by cc yet!
 
-  when extendReactComponent is false;
+  when extendInputClass is true;
   every cc method you can call directly, like this.$$dispatch、 this.$emit、 this.$$effect etc.
 
-
-  when set extendReactComponent as true?
-  if you change your project to cc, found your exist component has multi class decorator like below, 
-  you have to set extendReactComponent as true if you want it works well
+  when set extendInputClass as false?
+  if the component you change from redux to cc has multi class decorator like below, 
+  you have to set extendInputClass as false if you want it works well
 
   // this is dva.connect, I change it to cc.connect
   // @connect(state => ({
@@ -28,7 +80,7 @@
     {
       'form/regularFormSubmitting': 'submitting',
     },
-    { extendReactComponent: true }
+    { extendInputClass: false }
   )
   @Form.create()
   export default class BasicForms extends PureComponent {

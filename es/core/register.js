@@ -1,14 +1,14 @@
-import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
-import _extends from "@babel/runtime/helpers/esm/extends";
-import React from 'react';
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/extends";
+import React from 'react'; // import hoistNonReactStatic from 'hoist-non-react-statics';
+
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
 import ccContext, { getCcContext } from '../cc-context';
-import util, { isPlainJsonObject } from '../support/util';
+import util, { isPlainJsonObject, makeHandlerKey } from '../support/util';
 import uuid from 'uuid';
 import co from 'co';
 import * as helper from './helper';
-import { isRegExp } from 'util';
 var extractStateByKeys = helper.extractStateByKeys,
     getAndStoreValidGlobalState = helper.getAndStoreValidGlobalState;
 var verifyKeys = util.verifyKeys,
@@ -28,6 +28,8 @@ var _ccContext$store = ccContext.store,
     globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
     _computedValue = ccContext.computed._computedValue,
     event_handlers_ = ccContext.event_handlers_,
+    handlerKey_handler_ = ccContext.handlerKey_handler_,
+    ccUniqueKey_handlerKeys_ = ccContext.ccUniqueKey_handlerKeys_,
     propModuleName_ccClassKeys_ = ccContext.propModuleName_ccClassKeys_,
     moduleName_sharedStateKeys_ = ccContext.moduleName_sharedStateKeys_,
     moduleName_globalStateKeys_ = ccContext.moduleName_globalStateKeys_,
@@ -68,7 +70,7 @@ function handleError(err, throwError) {
   }
 
   if (throwError) throw err;else {
-    justWarning(err);
+    handleCcFnError(err);
   }
 }
 
@@ -122,6 +124,14 @@ function unsetCcInstanceRef(ccKeys, ccUniqueKey) {
   var ccKeyIdx = ccKeys.indexOf(ccUniqueKey);
   if (ccKeyIdx >= 0) ccKeys.splice(ccKeyIdx, 1);
   decCcKeyInsCount(ccUniqueKey);
+  var handlerKeys = ccUniqueKey_handlerKeys_[ccUniqueKey];
+
+  if (handlerKeys) {
+    handlerKeys.forEach(function (hKey) {
+      delete handlerKey_handler_[hKey]; // ccUniqueKey maybe generated randomly, so delete the key instead of set null
+      // handlerKey_handler_[hKey] = null;
+    });
+  }
 }
 
 function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
@@ -603,21 +613,19 @@ function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, ccCl
     globalStateKeys: globalStateKeys,
     sharedStateKeys: sharedStateKeys
   };
-} // function _throwForExtendReactComponentAsTrueCheck() {
-//   throw me(`cc found set sharedStateKeys、globalStateKeys or storedStateKeys, but you set extendReactComponent as true at the same time
-//     while you register a ccClass:${ccClassKey}, this is not allowed, extendReactComponent=true means cc will give you
-//     a real HOC component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys
-//     is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!
-//   `);
-// }
+}
 
+function _throwForExtendInputClassAsFalseCheck(ccClassKey) {
+  throw me("cc found that you set sharedStateKeys\u3001globalStateKeys or storedStateKeys, but you set extendInputClass as false at the same time\n    while you register a ccClass:" + ccClassKey + ", this is not allowed, extendInputClass=false means cc will give you\n    a props proxy component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys\n    is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!\n  ");
+}
 
-function mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
-  // if (extendReactComponent === true) {
-  //   if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
-  //     _throwForExtendReactComponentAsTrueCheck();
-  //   }
-  // }
+function mapModuleAssociateDataToCcContext(extendInputClass, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+  if (extendInputClass === false) {
+    if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
+      _throwForExtendInputClassAsFalseCheck(ccClassKey);
+    }
+  }
+
   var _getSharedKeysAndGlob = getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys),
       targetSharedStateKeys = _getSharedKeysAndGlob.sharedStateKeys,
       targetGlobalStateKeys = _getSharedKeysAndGlob.globalStateKeys;
@@ -661,21 +669,26 @@ function bindEventHandlerToCcContext(module, ccClassKey, ccUniqueKey, event, ide
 
   var targetHandler = handlers.find(function (v) {
     return v.ccKey === ccUniqueKey && v.identity === identity;
-  }); //  that means the component of ccUniqueKey mounted again 
+  });
+  var handlerKeys = util.safeGetArrayFromObject(ccUniqueKey_handlerKeys_, ccUniqueKey);
+  var handlerKey = makeHandlerKey(ccUniqueKey, event); //  that means the component of ccUniqueKey mounted again 
   //  or user call $$on for a same event in a same instance more than once
 
   if (targetHandler) {
     //  cc will alway use the latest handler
-    targetHandler.handler = handler;
+    targetHandler.handler = handlerKey;
   } else {
     handlers.push({
       module: module,
       ccClassKey: ccClassKey,
       ccKey: ccUniqueKey,
       identity: identity,
-      handler: handler
+      handlerKey: handlerKey
     });
+    handlerKeys.push(handlerKey);
   }
+
+  handlerKey_handler_[handlerKey] = handler;
 }
 
 function _findEventHandlers(event, module, ccClassKey, identity) {
@@ -713,11 +726,12 @@ function findEventHandlersToPerform(event, _ref) {
 
   handlers.forEach(function (_ref2) {
     var ccKey = _ref2.ccKey,
-        handler = _ref2.handler;
+        handlerKey = _ref2.handlerKey;
 
-    if (ccKey_ref_[ccKey] && handler) {
+    if (ccKey_ref_[ccKey] && handlerKey) {
       //  confirm the instance is mounted and handler is not been offed
-      handler.apply(void 0, args);
+      var handlerFn = handlerKey_handler_[handlerKey];
+      if (handlerFn) handlerFn.apply(void 0, args);
     }
   });
 }
@@ -730,7 +744,8 @@ function findEventHandlersToOff(event, _ref3) {
   var handlers = _findEventHandlers(event, module, ccClassKey, identity);
 
   handlers.forEach(function (item) {
-    return item.handler = null;
+    handlerKey_handler_[item.handler] = null;
+    item.handler = null;
   });
 }
 
@@ -819,7 +834,10 @@ function _promisifyCcFn(ccFn, userLogicFn, executionContext) {
 
 function handleCcFnError(err, __innerCb) {
   if (err) {
-    if (__innerCb) __innerCb(err);else if (ccContext.errorHandler) ccContext.errorHandler(err);else justWarning(err);
+    if (__innerCb) __innerCb(err);else {
+      justWarning(err);
+      if (ccContext.errorHandler) ccContext.errorHandler(err);
+    }
   }
 }
 /*
@@ -830,8 +848,8 @@ options.sharedStateKeys = ['aa', 'bbb']
 
 export default function register(ccClassKey, _temp) {
   var _ref4 = _temp === void 0 ? {} : _temp,
-      _ref4$extendReactComp = _ref4.extendReactComponent,
-      extendReactComponent = _ref4$extendReactComp === void 0 ? false : _ref4$extendReactComp,
+      _ref4$extendInputClas = _ref4.extendInputClass,
+      extendInputClass = _ref4$extendInputClas === void 0 ? true : _ref4$extendInputClas,
       _ref4$isSingle = _ref4.isSingle,
       isSingle = _ref4$isSingle === void 0 ? false : _ref4$isSingle,
       _ref4$asyncLifecycleH = _ref4.asyncLifecycleHook,
@@ -857,7 +875,7 @@ export default function register(ccClassKey, _temp) {
   checkStoreModule(_curStateModule);
   checkReducerModule(_reducerModule);
 
-  var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode),
+  var _mapModuleAssociateDa = mapModuleAssociateDataToCcContext(extendInputClass, ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode),
       sKeys = _mapModuleAssociateDa.sharedStateKeys,
       gKeys = _mapModuleAssociateDa.globalStateKeys;
 
@@ -868,7 +886,7 @@ export default function register(ccClassKey, _temp) {
       throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CcClass!"));
     }
 
-    var TargetClass = extendReactComponent ? React.Component : ReactClass;
+    var TargetClass = extendInputClass ? ReactClass : React.Component;
 
     var CcClass =
     /*#__PURE__*/
@@ -1418,12 +1436,13 @@ export default function register(ccClassKey, _temp) {
           var reducerFn = targetReducerMap[type];
 
           if (!reducerFn) {
-            return __innerCb(new Error("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type));
+            var fns = Object.keys(targetReducerMap);
+            return __innerCb(new Error("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type + ", maybe you want to invoke one of them:" + fns));
           } // const errMsg = util.isCcActionValid({ type, payload });
           // if (errMsg) return justWarning(errMsg);
 
 
-          var contextDispatch = _this2.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
+          var contextDispatch = _this2.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, targetStateModule, targetReducerModule);
 
           isStateModuleValid(targetStateModule, currentModule, reactCallback, function (err, newCb) {
             if (err) return __innerCb(err);
@@ -1839,13 +1858,15 @@ export default function register(ccClassKey, _temp) {
         };
       };
 
-      _proto.__$$getDispatchHandler = function __$$getDispatchHandler(stateFor) {
+      _proto.__$$getDispatchHandler = function __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule) {
         var _this5 = this;
 
         return function (_temp11) {
           var _ref14 = _temp11 === void 0 ? {} : _temp11,
-              module = _ref14.module,
-              reducerModule = _ref14.reducerModule,
+              _ref14$module = _ref14.module,
+              module = _ref14$module === void 0 ? originalComputedStateModule : _ref14$module,
+              _ref14$reducerModule = _ref14.reducerModule,
+              reducerModule = _ref14$reducerModule === void 0 ? originalComputedReducerModule : _ref14$reducerModule,
               _ref14$forceSync = _ref14.forceSync,
               forceSync = _ref14$forceSync === void 0 ? false : _ref14$forceSync,
               type = _ref14.type,
@@ -1886,12 +1907,12 @@ export default function register(ccClassKey, _temp) {
           console.log(ss("@@@ render " + ccClassDisplayName(ccClassKey)), cl());
         }
 
-        if (extendReactComponent) {
-          // now cc class extends ReactComponent, render user inputted ReactClass
-          return React.createElement(ReactClass, _extends({}, this, this.props));
+        if (extendInputClass) {
+          return _TargetClass.prototype.render.call(this);
         } else {
           //now cc class extends ReactClass, call super.render()
-          return _TargetClass.prototype.render.call(this);
+          // now cc class extends ReactComponent, render user inputted ReactClass
+          return React.createElement(ReactClass, _extends({}, this, this.props));
         }
       };
 

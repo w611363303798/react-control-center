@@ -117,6 +117,9 @@ export function makeUniqueCcKey(ccClassKey, ccKey) {
   // return `${ccClassKey}/${ccKey}`;
   return ccClassKey + "$" + ccKey;
 }
+export function makeHandlerKey(ccUniqueKey, eventName) {
+  return ccUniqueKey + "$" + eventName;
+}
 export function isModuleNameValid(moduleName) {
   return /^[\$\#\&a-zA-Z0-9_-]+$/.test(moduleName);
 }
@@ -306,6 +309,7 @@ export default {
   makeCcClassContext: makeCcClassContext,
   makeStateMail: makeStateMail,
   makeUniqueCcKey: makeUniqueCcKey,
+  makeHandlerKey: makeHandlerKey,
   isActionTypeValid: isActionTypeValid,
   isModuleNameValid: isModuleNameValid,
   isModuleNameCcLike: isModuleNameCcLike,

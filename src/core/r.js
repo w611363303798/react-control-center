@@ -9,6 +9,7 @@ import register from './register';
  * option.isSingle is called is for short 
  * option.asyncLifecycleHook is called as for short 
  * option.reducerModule is called re for short 
+ * option.extendInputClass is called ex for short 
  */
 export default function (ccClassKey, {
   m: module,
@@ -17,6 +18,7 @@ export default function (ccClassKey, {
   is: isSingle,
   as: asyncLifecycleHook,
   re: reducerModule,
+  ex: extendInputClass,
 } = {}) {
-  return register(ccClassKey, { module, sharedStateKeys, globalStateKeys, isSingle, asyncLifecycleHook, reducerModule });
+  return register(ccClassKey, { extendInputClass, module, sharedStateKeys, globalStateKeys, isSingle, asyncLifecycleHook, reducerModule });
 }

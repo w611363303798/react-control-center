@@ -68,10 +68,10 @@ export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
     sharedStateKeys,
     globalStateKeys,
     ccKeys: [],
-    propState:{},
+    propState: {},
     propKey_stateKeyDescriptor_: {},
     stateKey_propKeyDescriptor_: {},
-    stateToPropMapping:null,
+    stateToPropMapping: null,
   }
 }
 
@@ -90,6 +90,10 @@ export function makeStateMail(ccUniqueKey, ccOption, module, type, cb) {
 export function makeUniqueCcKey(ccClassKey, ccKey) {
   // return `${ccClassKey}/${ccKey}`;
   return `${ccClassKey}$${ccKey}`;
+}
+
+export function makeHandlerKey(ccUniqueKey, eventName) {
+  return `${ccUniqueKey}$${eventName}`;
 }
 
 export function isModuleNameValid(moduleName) {
@@ -254,6 +258,7 @@ export default {
   makeCcClassContext,
   makeStateMail,
   makeUniqueCcKey,
+  makeHandlerKey,
   isActionTypeValid,
   isModuleNameValid,
   isModuleNameCcLike,
