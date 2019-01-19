@@ -482,19 +482,19 @@ function getSuitableGlobalStateKeysAndSharedStateKeys(stateFor, moduleName, ccCl
   return { globalStateKeys, sharedStateKeys };
 }
 
-// function _throwForExtendReactComponentAsTrueCheck() {
-//   throw me(`cc found set sharedStateKeys、globalStateKeys or storedStateKeys, but you set extendReactComponent as true at the same time
-//     while you register a ccClass:${ccClassKey}, this is not allowed, extendReactComponent=true means cc will give you
-//     a real HOC component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys
-//     is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!
-//   `);
-// }
-function mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
-  // if (extendReactComponent === true) {
-  //   if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
-  //     _throwForExtendReactComponentAsTrueCheck();
-  //   }
-  // }
+function _throwForExtendInputClassAsFalseCheck(ccClassKey) {
+  throw me(`cc found that you set sharedStateKeys、globalStateKeys or storedStateKeys, but you set extendInputClass as false at the same time
+    while you register a ccClass:${ccClassKey}, this is not allowed, extendInputClass=false means cc will give you
+    a props proxy component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys
+    is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!
+  `);
+}
+function mapModuleAssociateDataToCcContext(extendInputClass, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+  if (extendInputClass === false) {
+    if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
+      _throwForExtendInputClassAsFalseCheck(ccClassKey);
+    }
+  }
 
   const { sharedStateKeys: targetSharedStateKeys, globalStateKeys: targetGlobalStateKeys } =
     getSharedKeysAndGlobalKeys(stateModule, ccClassKey, sharedStateKeys, globalStateKeys);
@@ -653,7 +653,7 @@ options.module = 'xxx'
 options.sharedStateKeys = ['aa', 'bbb']
 */
 export default function register(ccClassKey, {
-  extendReactComponent = false,
+  extendInputClass = true,
   isSingle = false,
   asyncLifecycleHook = true,// is asyncLifecycleHook = false, it may block cc broadcast state to other when it takes a long time to finish
   module = MODULE_DEFAULT,
@@ -672,7 +672,7 @@ export default function register(ccClassKey, {
   checkReducerModule(_reducerModule);
 
   const { sharedStateKeys: sKeys, globalStateKeys: gKeys } =
-    mapModuleAssociateDataToCcContext(extendReactComponent, ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode);
+    mapModuleAssociateDataToCcContext(extendInputClass, ccClassKey, _curStateModule, inputSharedStateKeys, inputGlobalStateKeys, stateToPropMapping, isPropStateModuleMode);
   const sharedStateKeys = sKeys, globalStateKeys = gKeys;
 
   return function (ReactClass) {
@@ -680,8 +680,8 @@ export default function register(ccClassKey, {
       throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi(`if you want to register ${ccClassKey} to cc successfully, the ReactClass can not be a CcClass!`));
     }
 
-    const TargetClass = extendReactComponent ? React.Component : ReactClass;
-    const CcClass = class extends TargetClass {
+    const TargetClass = extendInputClass ? ReactClass : React.Component;
+    const CcClass = class CcClass extends TargetClass {
 
       constructor(props, context) {
         super(props, context);
@@ -940,7 +940,8 @@ export default function register(ccClassKey, {
             }
             const reducerFn = targetReducerMap[type];
             if (!reducerFn) {
-              return __innerCb(new Error(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}`));
+              fns = Object.keys(reducerFn);
+              return __innerCb(new Error(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}, maybe you want to invoke one of them:${fns}`));
             }
             // const errMsg = util.isCcActionValid({ type, payload });
             // if (errMsg) return justWarning(errMsg);
@@ -1303,7 +1304,7 @@ export default function register(ccClassKey, {
         if (ccContext.isDebug) {
           console.log(ss(`@@@ render ${ccClassDisplayName(ccClassKey)}`), cl());
         }
-        if (extendReactComponent) {
+        if (extendInputClass) {
           // now cc class extends ReactComponent, render user inputted ReactClass
           return <ReactClass {...this} {...this.props} />
         } else {//now cc class extends ReactClass, call super.render()
