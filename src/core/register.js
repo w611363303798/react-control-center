@@ -1260,6 +1260,8 @@ export default function register(ccClassKey, {
       //           and be careful: cc will clone this piece of state before broadcasting, so it will overwrite the target module's state !!!
       //        if ccIns option.syncSharedState is true, change it's own state and broadcast the state to target module
       $$changeState(state, { stateFor = STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, broadcastTriggeredBy, changeBy, forceSync, cb: reactCallback } = {}) {//executionContext
+        if (state == undefined) return;//do nothing
+        
         if (!isPlainJsonObject(state)) {
           justWarning(`cc found your commit state is not a plain json object!`);
         }
