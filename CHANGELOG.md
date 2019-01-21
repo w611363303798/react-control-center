@@ -1,5 +1,42 @@
 
 # Change Log
+#### 2018-01-21 12:00
+* now cc allow reducer method return undefined, cc will do nothing then
+```
+/** code in foo-reducer.js */
+function incFoo(){
+  //this will not trigger render
+  console.log('return nothing');
+}
+function incFoo2(){
+  //this will trigger render
+  return {foo:2};
+}
+
+/** code in Foo.js */
+class Foo extends Component{
+  incFoo = ()=>{
+    this.$$dispatch({type:'incFoo'}).then(partialState=>{
+      console.log(partialState);// undefined
+    });
+  }
+  incFoo2 = ()=>{
+    this.$$dispatch({type:'incFoo2'}).then(partialState=>{
+      console.log(partialState);// {foo:2}
+    });
+  }
+  render(){
+    return(
+      <div>
+        {this.state.foo}
+        <button onClick={this.incFoo}></button>
+        <button onClick={this.incFoo2}></button>
+      </div>
+    );
+  }
+}
+
+```
 
 #### 2018-01-19 19:00
 * optimize storing way on on-handler, avoid memory leak.

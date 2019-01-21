@@ -645,7 +645,7 @@ function broadcastPropState(module, commitState) {
 }
 
 function _promiseErrorHandler(resolve, reject) {
-  return err => err ? reject(err) : resolve();
+  return (err, ...args) => err ? reject(err) : resolve(...args);
 }
 
 function _promisifyCcFn(ccFn, userLogicFn, executionContext, ...args) {
@@ -873,10 +873,12 @@ export default function register(ccClassKey, {
               if (err) return handleCcFnError(err, __innerCb);
 
               if (context) args.unshift(executionContext);
+              let _partialState = null;
               co.wrap(userLogicFn)(...args).then(partialState => {
+                _partialState = partialState;
                 this.$$changeState(partialState, { stateFor, module: targetModule, forceSync, cb: newCb });
               }).then(() => {
-                if (__innerCb) __innerCb();
+                if (__innerCb) __innerCb(null, _partialState);
               }).catch(err => {
                 handleCcFnError(err, __innerCb);
               });
@@ -1261,7 +1263,7 @@ export default function register(ccClassKey, {
       //        if ccIns option.syncSharedState is true, change it's own state and broadcast the state to target module
       $$changeState(state, { stateFor = STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, broadcastTriggeredBy, changeBy, forceSync, cb: reactCallback } = {}) {//executionContext
         if (state == undefined) return;//do nothing
-        
+
         if (!isPlainJsonObject(state)) {
           justWarning(`cc found your commit state is not a plain json object!`);
         }

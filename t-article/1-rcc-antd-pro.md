@@ -283,12 +283,19 @@ export default {
   module:'',
   state:getInitialState(),
   reducer:{
-    *fetch() {
+    callAnotherMethod:function*(){
+      return {wow:'changeWowValue'};
+    }
+    fetch:function*() {
       const response = yield fakeChartData();
       return response;
     },
-    *fetchSalesData() {
-      const response = yield fakeChartData();
+    //这里稍做修改，演示了reducer方法内如何调用其他reducer方法
+    fetchSalesData:async function({state, moduleState, dispatch, payload}) {
+      console.log(sate, moduleState, payload);
+      //这里的dispatch如果不指定module和reducerModule，就隐含的是由最初的在cc实例里触发$$dispatch时计算好的module和reducerModule
+      await dispatch({type:'callAnotherMethod'});
+      const response = await fakeChartData();
       const salesData = response.salesData;
       return { salesData };
     },
@@ -301,7 +308,7 @@ export default {
 ```
 ##### 由上可以发现，cc里的`setState`需要的`state`和`dispatch`对应函数返回的`state`，都是react鼓励的`部分state`,你需要改变哪一部分的`state`，就仅仅把这一部分`state`交给`cc`就好了。同时cc也兼容`redux`生态的思路，一切共享的数据源都从`props`注入，而非存储在`state`里。
 
-##### 因为所以的`改变state的行为`都会经过`$$changeState`,所以状态的变化依然是可预测的同时也是可以追踪的，后面cc的迭代版本里会利用`immutable.js`,来让状态树可以回溯，这样`cc`就可以实现`时间旅行`的功能了，敬请期待.
+##### 因为所有的`改变state的行为`都会经过`$$changeState`,所以状态的变化依然是可预测的同时也是可以追踪的，后面cc的迭代版本里会利用`immutable.js`,来让状态树可以回溯，这样`cc`就可以实现`时间旅行`的功能了，敬请期待.
 ---
 ##### 注意哦! 现在我仅仅先把两个路由级别的组件交给cc处理, ant pro任然完美工作起立, 这两个路由文件是 `routes/Dashboard/Analysis.js` 和 `routes/Forms/Basic.js`.
 ##### 同时我也新增了一个路由组件 `routes/Dashboard/CCState.js` 来展示cc强大能力, 这个组件还没有彻底写完，将会被持续更新的, 就像 [我为cc专门写的引导示例一样](https://github.com/fantasticsoul/rcc-simple-demo)，将会很快会为大家带来更多的精彩演示

@@ -4269,13 +4269,17 @@
 
   function _promiseErrorHandler(resolve, reject) {
     return function (err) {
-      return err ? reject(err) : resolve();
+      for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        args[_key2 - 1] = arguments[_key2];
+      }
+
+      return err ? reject(err) : resolve.apply(void 0, args);
     };
   }
 
   function _promisifyCcFn(ccFn, userLogicFn, executionContext) {
-    for (var _len2 = arguments.length, args = new Array(_len2 > 3 ? _len2 - 3 : 0), _key2 = 3; _key2 < _len2; _key2++) {
-      args[_key2 - 3] = arguments[_key2];
+    for (var _len3 = arguments.length, args = new Array(_len3 > 3 ? _len3 - 3 : 0), _key3 = 3; _key3 < _len3; _key3++) {
+      args[_key3 - 3] = arguments[_key3];
     }
 
     return new Promise(function (resolve, reject) {
@@ -4413,9 +4417,9 @@
 
           if (syncGlobalState) {
             var _extractStateByKeys4 = extractStateByKeys$1(globalState, globalStateKeys),
-                _partialState = _extractStateByKeys4.partialState;
+                _partialState2 = _extractStateByKeys4.partialState;
 
-            partialGlobalState = _partialState;
+            partialGlobalState = _partialState2;
           }
 
           var selfState = this.state;
@@ -4553,8 +4557,8 @@
             invoke: function invoke(userLogicFn) {
               var _this2$cc;
 
-              for (var _len3 = arguments.length, args = new Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-                args[_key3 - 1] = arguments[_key3];
+              for (var _len4 = arguments.length, args = new Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+                args[_key4 - 1] = arguments[_key4];
               }
 
               return (_this2$cc = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc, [userLogicFn, {
@@ -4567,8 +4571,8 @@
             effect: function effect(targetModule, userLogicFn) {
               var _this2$cc2;
 
-              for (var _len4 = arguments.length, args = new Array(_len4 > 2 ? _len4 - 2 : 0), _key4 = 2; _key4 < _len4; _key4++) {
-                args[_key4 - 2] = arguments[_key4];
+              for (var _len5 = arguments.length, args = new Array(_len5 > 2 ? _len5 - 2 : 0), _key5 = 2; _key5 < _len5; _key5++) {
+                args[_key5 - 2] = arguments[_key5];
               }
 
               return (_this2$cc2 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc2, [userLogicFn, {
@@ -4581,8 +4585,8 @@
             xeffect: function xeffect(targetModule, userLogicFn) {
               var _this2$cc3;
 
-              for (var _len5 = arguments.length, args = new Array(_len5 > 2 ? _len5 - 2 : 0), _key5 = 2; _key5 < _len5; _key5++) {
-                args[_key5 - 2] = arguments[_key5];
+              for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
+                args[_key6 - 2] = arguments[_key6];
               }
 
               return (_this2$cc3 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc3, [userLogicFn, {
@@ -4595,8 +4599,8 @@
               }].concat(args));
             },
             __promisifiedInvokeWith: function __promisifiedInvokeWith(userLogicFn, executionContext) {
-              for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
-                args[_key6 - 2] = arguments[_key6];
+              for (var _len7 = arguments.length, args = new Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
+                args[_key7 - 2] = arguments[_key7];
               }
 
               return _promisifyCcFn.apply(void 0, [_this2.cc.__invokeWith, userLogicFn, executionContext].concat(args));
@@ -4614,8 +4618,8 @@
                   forceSync = _option$forceSync === void 0 ? false : _option$forceSync,
                   cb = option.cb;
 
-              for (var _len7 = arguments.length, args = new Array(_len7 > 2 ? _len7 - 2 : 0), _key7 = 2; _key7 < _len7; _key7++) {
-                args[_key7 - 2] = arguments[_key7];
+              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
+                args[_key8 - 2] = arguments[_key8];
               }
 
               return (_this2$cc4 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc4, [userLogicFn, {
@@ -4629,8 +4633,8 @@
               }].concat(args));
             },
             __invokeWith: function __invokeWith(userLogicFn, executionContext) {
-              for (var _len8 = arguments.length, args = new Array(_len8 > 2 ? _len8 - 2 : 0), _key8 = 2; _key8 < _len8; _key8++) {
-                args[_key8 - 2] = arguments[_key8];
+              for (var _len9 = arguments.length, args = new Array(_len9 > 2 ? _len9 - 2 : 0), _key9 = 2; _key9 < _len9; _key9++) {
+                args[_key9 - 2] = arguments[_key9];
               }
 
               var stateFor = executionContext.stateFor,
@@ -4645,7 +4649,10 @@
               isStateModuleValid(targetModule, currentModule, cb, function (err, newCb) {
                 if (err) return handleCcFnError(err, __innerCb);
                 if (context) args.unshift(executionContext);
+                var _partialState = null;
                 co_1.wrap(userLogicFn).apply(void 0, args).then(function (partialState) {
+                  _partialState = partialState;
+
                   _this2.$$changeState(partialState, {
                     stateFor: stateFor,
                     module: targetModule,
@@ -4653,7 +4660,7 @@
                     cb: newCb
                   });
                 }).then(function () {
-                  if (__innerCb) __innerCb();
+                  if (__innerCb) __innerCb(null, _partialState);
                 }).catch(function (err) {
                   handleCcFnError(err, __innerCb);
                 });
@@ -4662,8 +4669,8 @@
             call: function call(userLogicFn) {
               var _this2$cc5;
 
-              for (var _len9 = arguments.length, args = new Array(_len9 > 1 ? _len9 - 1 : 0), _key9 = 1; _key9 < _len9; _key9++) {
-                args[_key9 - 1] = arguments[_key9];
+              for (var _len10 = arguments.length, args = new Array(_len10 > 1 ? _len10 - 1 : 0), _key10 = 1; _key10 < _len10; _key10++) {
+                args[_key10 - 1] = arguments[_key10];
               }
 
               return (_this2$cc5 = _this2.cc).__promisifiedCallWith.apply(_this2$cc5, [userLogicFn, {
@@ -4681,8 +4688,8 @@
                   forceSync = _ref5$forceSync === void 0 ? false : _ref5$forceSync,
                   cb = _ref5.cb;
 
-              for (var _len10 = arguments.length, args = new Array(_len10 > 2 ? _len10 - 2 : 0), _key10 = 2; _key10 < _len10; _key10++) {
-                args[_key10 - 2] = arguments[_key10];
+              for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
+                args[_key11 - 2] = arguments[_key11];
               }
 
               return (_this2$cc6 = _this2.cc).__promisifiedCallWith.apply(_this2$cc6, [userLogicFn, {
@@ -4693,8 +4700,8 @@
               }].concat(args));
             },
             __promisifiedCallWith: function __promisifiedCallWith(userLogicFn, executionContext) {
-              for (var _len11 = arguments.length, args = new Array(_len11 > 2 ? _len11 - 2 : 0), _key11 = 2; _key11 < _len11; _key11++) {
-                args[_key11 - 2] = arguments[_key11];
+              for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
+                args[_key12 - 2] = arguments[_key12];
               }
 
               return _promisifyCcFn.apply(void 0, [_this2.cc.__callWith, userLogicFn, executionContext].concat(args));
@@ -4709,8 +4716,8 @@
                   cb = _ref6.cb,
                   __innerCb = _ref6.__innerCb;
 
-              for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
-                args[_key12 - 2] = arguments[_key12];
+              for (var _len13 = arguments.length, args = new Array(_len13 > 2 ? _len13 - 2 : 0), _key13 = 2; _key13 < _len13; _key13++) {
+                args[_key13 - 2] = arguments[_key13];
               }
 
               isStateModuleValid(module, currentModule, cb, function (err, newCb) {
@@ -4731,8 +4738,8 @@
             callThunk: function callThunk(userLogicFn) {
               var _this2$cc7;
 
-              for (var _len13 = arguments.length, args = new Array(_len13 > 1 ? _len13 - 1 : 0), _key13 = 1; _key13 < _len13; _key13++) {
-                args[_key13 - 1] = arguments[_key13];
+              for (var _len14 = arguments.length, args = new Array(_len14 > 1 ? _len14 - 1 : 0), _key14 = 1; _key14 < _len14; _key14++) {
+                args[_key14 - 1] = arguments[_key14];
               }
 
               (_this2$cc7 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc7, [userLogicFn, {
@@ -4750,8 +4757,8 @@
                   forceSync = _ref7$forceSync === void 0 ? false : _ref7$forceSync,
                   cb = _ref7.cb;
 
-              for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
-                args[_key14 - 2] = arguments[_key14];
+              for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
+                args[_key15 - 2] = arguments[_key15];
               }
 
               (_this2$cc8 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc8, [userLogicFn, {
@@ -4762,8 +4769,8 @@
               }].concat(args));
             },
             __promisifiedCallThunkWith: function __promisifiedCallThunkWith(userLogicFn, executionContext) {
-              for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
-                args[_key15 - 2] = arguments[_key15];
+              for (var _len16 = arguments.length, args = new Array(_len16 > 2 ? _len16 - 2 : 0), _key16 = 2; _key16 < _len16; _key16++) {
+                args[_key16 - 2] = arguments[_key16];
               }
 
               return _promisifyCcFn.apply(void 0, [_this2.cc.__callThunkWith, userLogicFn, executionContext].concat(args));
@@ -4778,8 +4785,8 @@
                   cb = _ref8.cb,
                   __innerCb = _ref8.__innerCb;
 
-              for (var _len16 = arguments.length, args = new Array(_len16 > 2 ? _len16 - 2 : 0), _key16 = 2; _key16 < _len16; _key16++) {
-                args[_key16 - 2] = arguments[_key16];
+              for (var _len17 = arguments.length, args = new Array(_len17 > 2 ? _len17 - 2 : 0), _key17 = 2; _key17 < _len17; _key17++) {
+                args[_key17 - 2] = arguments[_key17];
               }
 
               isStateModuleValid(module, currentModule, cb, function (err, newCb) {
@@ -4800,8 +4807,8 @@
             commit: function commit(userLogicFn) {
               var _this2$cc9;
 
-              for (var _len17 = arguments.length, args = new Array(_len17 > 1 ? _len17 - 1 : 0), _key17 = 1; _key17 < _len17; _key17++) {
-                args[_key17 - 1] = arguments[_key17];
+              for (var _len18 = arguments.length, args = new Array(_len18 > 1 ? _len18 - 1 : 0), _key18 = 1; _key18 < _len18; _key18++) {
+                args[_key18 - 1] = arguments[_key18];
               }
 
               (_this2$cc9 = _this2.cc).__commitWith.apply(_this2$cc9, [userLogicFn, {
@@ -4819,8 +4826,8 @@
                   forceSync = _ref9$forceSync === void 0 ? false : _ref9$forceSync,
                   cb = _ref9.cb;
 
-              for (var _len18 = arguments.length, args = new Array(_len18 > 2 ? _len18 - 2 : 0), _key18 = 2; _key18 < _len18; _key18++) {
-                args[_key18 - 2] = arguments[_key18];
+              for (var _len19 = arguments.length, args = new Array(_len19 > 2 ? _len19 - 2 : 0), _key19 = 2; _key19 < _len19; _key19++) {
+                args[_key19 - 2] = arguments[_key19];
               }
 
               (_this2$cc10 = _this2.cc).__commitWith.apply(_this2$cc10, [userLogicFn, {
@@ -4831,8 +4838,8 @@
               }].concat(args));
             }
           }, _this$cc["__promisifiedCallWith"] = function __promisifiedCallWith(userLogicFn, executionContext) {
-            for (var _len19 = arguments.length, args = new Array(_len19 > 2 ? _len19 - 2 : 0), _key19 = 2; _key19 < _len19; _key19++) {
-              args[_key19 - 2] = arguments[_key19];
+            for (var _len20 = arguments.length, args = new Array(_len20 > 2 ? _len20 - 2 : 0), _key20 = 2; _key20 < _len20; _key20++) {
+              args[_key20 - 2] = arguments[_key20];
             }
 
             return _promisifyCcFn.apply(void 0, [_this2.cc.__commitWith, userLogicFn, executionContext].concat(args));
@@ -4846,8 +4853,8 @@
                 cb = _ref10.cb,
                 __innerCb = _ref10.__innerCb;
 
-            for (var _len20 = arguments.length, args = new Array(_len20 > 2 ? _len20 - 2 : 0), _key20 = 2; _key20 < _len20; _key20++) {
-              args[_key20 - 2] = arguments[_key20];
+            for (var _len21 = arguments.length, args = new Array(_len21 > 2 ? _len21 - 2 : 0), _key21 = 2; _key21 < _len21; _key21++) {
+              args[_key21 - 2] = arguments[_key21];
             }
 
             isStateModuleValid(module, currentModule, cb, function (err, newCb) {
@@ -5164,24 +5171,24 @@
             });
             broadcastPropState(MODULE_GLOBAL, globalSate);
           }, _this$cc.emit = function emit(event) {
-            for (var _len21 = arguments.length, args = new Array(_len21 > 1 ? _len21 - 1 : 0), _key21 = 1; _key21 < _len21; _key21++) {
-              args[_key21 - 1] = arguments[_key21];
+            for (var _len22 = arguments.length, args = new Array(_len22 > 1 ? _len22 - 1 : 0), _key22 = 1; _key22 < _len22; _key22++) {
+              args[_key22 - 1] = arguments[_key22];
             }
 
             findEventHandlersToPerform.apply(void 0, [event, {
               identity: null
             }].concat(args));
           }, _this$cc.emitIdentity = function emitIdentity(event, identity) {
-            for (var _len22 = arguments.length, args = new Array(_len22 > 2 ? _len22 - 2 : 0), _key22 = 2; _key22 < _len22; _key22++) {
-              args[_key22 - 2] = arguments[_key22];
+            for (var _len23 = arguments.length, args = new Array(_len23 > 2 ? _len23 - 2 : 0), _key23 = 2; _key23 < _len23; _key23++) {
+              args[_key23 - 2] = arguments[_key23];
             }
 
             findEventHandlersToPerform.apply(void 0, [event, {
               identity: identity
             }].concat(args));
           }, _this$cc.emitWith = function emitWith(event, option) {
-            for (var _len23 = arguments.length, args = new Array(_len23 > 2 ? _len23 - 2 : 0), _key23 = 2; _key23 < _len23; _key23++) {
-              args[_key23 - 2] = arguments[_key23];
+            for (var _len24 = arguments.length, args = new Array(_len24 > 2 ? _len24 - 2 : 0), _key24 = 2; _key24 < _len24; _key24++) {
+              args[_key24 - 2] = arguments[_key24];
             }
 
             findEventHandlersToPerform.apply(void 0, [event, option].concat(args));
@@ -5270,6 +5277,8 @@
               reactCallback = _ref13.cb;
 
           //executionContext
+          if (state == undefined) return; //do nothing
+
           if (!isPlainJsonObject(state)) {
             justWarning$1("cc found your commit state is not a plain json object!");
           }
