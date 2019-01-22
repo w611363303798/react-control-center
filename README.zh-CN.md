@@ -35,7 +35,9 @@ cc内建了一个CC_CONTEXT管理所有的CC组件，可以方便你直接呼叫
 支持类redux模式的store、reducer、action、dispatch等概念的编程体验，但是更容易与现有项目集成，不需要顶层包裹Provider来提供redux上下文，但是如果你的项目不需要这些概念的引入，你仅仅只需要setState，数据从this.state获取，其他的都交给cc去完成吧,cc本身也可以在redux使用，并不会入侵redux现有的模式，可以局部引入cc，渐进式的体验它的优雅。
 <li style="font-size:16px;color:#4EB899">可模块化管理的store、reducer</li>
 cc内置的store和reducer可以被模块化拆分，方便你的视图逻辑和业务逻辑组织得更低耦合高内聚
-<li style="font-size:16px;color:#4EB899"></li>
+<li style="font-size:16px;color:#4EB899">支持cc实例定义$$computed属性</li>
+computed属性计算出的值会被缓存，如果对应的key的原始值不发生变化，computed对应的值不会再次计算
+<li style="font-size:16px;color:#4EB899">支持cc实例方法内通过调用$$emit, $$on和其他cc示例完成通信 </li>
 </ul>
 
 <h2 style="text-align:left;color:#4EB899">其他</h2>
@@ -44,18 +46,19 @@ cc内置的store和reducer可以被模块化拆分，方便你的视图逻辑和
 - 更多信息请参考 待添加。
 - ![工作示意图](http://cdn.boldseas.com/img/cc-1.png)
 ---
-## 核心api
+## 核心api -- 顶层api
 
-### startup
->项目的头文件里调用startup，接下来你可以在任何地方调用cc的其他功能了
-
+  ### startup
+> 启动cc后，才能在项目其他任何地方使用cc的所有功能，通常将cc的启动操作放在整个应用的入口文件的第一行
+> * 非模块化模式，直接启动cc，cc默认将所有cc实例的状态存储到$$default模块，可以在console里通过ccc.store.getState()查看cc管理的所有状态，注册一个ccClass时，如果设置了sharedStateKeys标记想要共享的状态key，则该ccClass的所有实例都共享这些key对应的值，不设置sharedStateKeys则表示该ccClass的所有实例里的状态都是各自独立的，并不会相互共享。
+随着应用规模越来越大，组件越来越多，组件间的状态都应该属于各自专有领域对应的模块，所以生产环境建议使用模块的方式来使用cc。
 ```
 import cc from 'react-control-center';
 
 cc.startup()
 
 ```
->配置store，reducer启动项目
+> * 非模块化模式，配置store，reducer, init 启动cc, store和reducer都将默认归属到$$default模块
 ```
 import cc from 'react-control-center';
 
@@ -72,12 +75,23 @@ cc.startup(
         const newBookList = payload;
         setState({bookList:newBookList});
       }
+    },
+    init: setState=>{
+      api.getBooks(books=>{
+        setState({books})
+      });
     }
   }
 )
 
 ```
->配置模块化的store，reducer启动项目
+> * 配置模块化的store，reducer, init启动cc,
+>> {Object} [startOption]
+>> {Boolean} [startOption.isStoreModuleMode] 设置为true，表示以模块化的方式启动cc
+>> {Object} [startOption.store] 配置的store, key代表名，value代表整个模块对应的初始化state
+>> {Object} [startOption.reducer] 配置的reducer， key代表reducerModule, 可以让reducerModule和store的名称保持一致，这样在ccInstance里调用this.$$dispatch时只需要指定type，cc自动会寻找同一个模块的type对应函数去处理action，当然你也可以自定义reducerModule为别的值，dispatch时设置reducerModule和type，表示寻找指定的reducerModule下的指定type的函数去处理action.
+value代表reducer function -- rfn.
+cc支持rfn为普通函数，生成器函数，async函数
 ```
 import cc from 'react-control-center';
 
@@ -94,13 +108,13 @@ cc.startup(
     },
     reducer:{
       user:{
-          'serUser':(setState, payload:user, [dispatchContext])=>{
+          serUser:({state, payload:user, dispatch, effect, xeffect})=>{
           //your code here
-          setState({user});
+          return {user}
          }
       }
       product:{
-          'setProducts':(setState, payload:products, [dispatchContext])=>{
+          setProducts:({payload:products})=>{
           //your code here
           setState({products});
          }
@@ -156,7 +170,7 @@ class BookMenu extends react.Component{
         <button onClick={this.addBookByDispatch}>通过dispatch添加一本书</button>
         <button onClick={this.addBookByInvoke}>通过invoke添加一本书</button>
         {
-          books.map((b,idx)=><div key={idx}>{b.name} --- {b.author}</div>)
+          books.map(b=><div>{b.name} --- {b.author}</div>)
         }
       </div>
     );
@@ -194,9 +208,59 @@ export default class App extends react.Component{
 starup后，cc的CC_CONTEXT管理着所有cc实例的引用，可以直接调用实例的任何方法
 
 ---
+## 核心api -- cc实例定义的函数
 
+### cc实例的自定义生命周期函数 
+```
+$$beforeSetState, $$beforeBroadcastState，$$afterSetState 各自的触发时机处于以下位置
+
+$$beforeSetState
+$$beforeBroadcastState（如果存在要广播的状态，此方法被调用）
+componentWillReceiveProps
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+$$afterSetState
+```
+### cc实例的自定义$$computed函数 
+```
+@cc.register('Foo');
+class Foo extends React.Component{
+  constructor(props, context){
+    super(props, context);
+    this.state = {
+      foo: 'foo',
+      bar: 'bar',
+    };
+  }
+  $$computed = ()=>{
+    return {
+      foo: foo=> `wrapped foo:${foo}`,
+      bar: bar=> `reversed bar:${bar.split('').reverse().join('')}`
+    }
+  }
+  render(){
+    const {foo, bar} = this.state;
+    const {foo:cFoo, bar:cBar} = this.$$refComputed;
+    return (
+      <div>
+        <p>foo {foo}</p>
+        <p>bar {bar}</p>
+        <p>computed foo {cFoo}</p>
+        <p>computed bar {cBar}</p>
+      </div>
+    );
+  }
+}
+```
+---
+## 核心api -- cc实例运行时可以调用的函数
+### cc实例的自定义$$computed函数 
+
+---
 ### 结语
-* 此项目启发于redux的高阶函数，在脑海里构思了一周左右，觉得通过控制引用接管setState函数，可以精确的控制想要渲染的组件，数据都从state获取，从而降低编程的复杂度
+* 此项目启发于redux的高阶函数，在脑海里构思了一周左右，觉得通过控制引用接管setState函数，可以精确的控制想要渲染的组件，数据都从state降低编程的复杂度
 * 所有cc组件都具有相互感知到共享的key的数据变化，且组件销毁后数据能够存储的store里，使得再次实例化组件时数据能够自动恢复，让state能够变得更智能
 * 有了具体的思路，整个核心源码的实现一共花了2天左右，个人的目的是让react-control-center能够在已有项目中能够局部的渐进式的使用，所以设计的非常弹性，核心api非常少，不需要你为了react-control-center而让现有项目改动特别大，使用期待大家能够给我更多的star，提出更多的issues，让react-control-center 成为一种新的状态管理工具的可选项
 * 也欢迎fork和提PR，让我们为react-control-center的成长一起贡献力量，如有兴趣讨论更多有意思的功能或者给予我更多的帮助，可以直接加我QQ 624313307。
