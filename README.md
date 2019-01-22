@@ -31,7 +31,7 @@
 - 5 recommended ways to trigger render in `cc instance`
   > `setState`、`$$dispatch`、`$$invoke`、`$$effect`、`$$xeffect`
 
-![](https://user-gold-cdn.xitu.io/2019/1/21/1686e03f133218ad?w=845&h=784&f=png&s=76088)
+![](https://github.com/fantasticsoul/static/blob/master/img/cc/cc3.png?raw=true)
 
 ## simple introduction
 - using cc requires only two steps: `startup` and `register`, `startup` must been written in your app's entry file first line to make sure your `cc class` works well.
@@ -106,6 +106,8 @@ cc.startup({
 // now your can open your console in your chrome browser, and type sss to view the store tree ^_^
 // type cc to view the top api
 ```
+![](https://github.com/fantasticsoul/static/blob/master/img/cc/cc_module.png?raw=true)
+
 - registering a `react class` is very easy, all `smart react component` (`react class`) can be registered as `cc component` (`cc class`), you must supply a unique `ccClassKey` for every `cc class`.
 ```
 import react, {Component} from 'react';
@@ -208,5 +210,5 @@ class App extends Component{
 ```
 
 ## react class、 cc class and cc instance relationship
-![](https://user-gold-cdn.xitu.io/2019/1/16/168559cf0123ae69?w=1379&h=816&f=png&s=197933)
+![](https://raw.githubusercontent.com/fantasticsoul/static/master/img/cc/cc2.png)
 
