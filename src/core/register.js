@@ -1221,6 +1221,7 @@ export default function register(ccClassKey, {
         // let CcComponent instance can call dispatch directly
         // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
         this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
+        this.$$domDispatch = this.__$$getDomDispatchHandler;
         this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
 
         this.$$invoke = this.cc.invoke.bind(this);// commit state to cc directly, but userFn can be promise or generator both!
@@ -1300,12 +1301,19 @@ export default function register(ccClassKey, {
         }
       }
 
-      __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule) {
-        return ({ module = originalComputedStateModule, reducerModule = originalComputedReducerModule, forceSync = false, type, payload, cb: reactCallback } = {}) => {
+      __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
+        return ({ module = originalComputedStateModule, reducerModule = originalComputedReducerModule,
+          forceSync = false, type = inputType, payload = inputPayload, cb: reactCallback } = {}) => {
           return new Promise((resolve, reject) => {
             this.cc.dispatch({ stateFor, module, reducerModule, forceSync, type, payload, cb: reactCallback, __innerCb: _promiseErrorHandler(resolve, reject) });
           });
         }
+      }
+
+      __$$getDomDispatchHandler(e) {
+        const payload = e.currentTarget.dataset;
+        const { cct: type, ccm: module, ccrm: reducerModule } = payload;
+        return this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
       }
 
       componentDidUpdate() {
