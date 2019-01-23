@@ -4360,7 +4360,7 @@
           var ccKey = props.ccKey,
               _props$ccOption = props.ccOption,
               ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
-          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler']);
+          util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler', '$$domDispatch']);
           if (!ccOption.storedStateKeys) ccOption.storedStateKeys = []; // if you flag syncSharedState false, that means this ccInstance's state changing will not effect other ccInstance and not effected by other ccInstance's state changing
 
           if (ccOption.syncSharedState === undefined) ccOption.syncSharedState = true; // if you flag syncGlobalState false, that means this ccInstance's globalState changing will not effect cc's globalState and not effected by cc's globalState changing
@@ -4892,14 +4892,14 @@
             var targetReducerMap = _reducer$1[targetReducerModule];
 
             if (!targetReducerMap) {
-              return __innerCb(new Error("no reducerMap found for module:" + targetReducerModule));
+              return __innerCb(new Error("no reducerMap found for reducer module:" + targetReducerModule));
             }
 
             var reducerFn = targetReducerMap[type];
 
             if (!reducerFn) {
               var fns = Object.keys(targetReducerMap);
-              return __innerCb(new Error("no reducer defined in ccContext for module:" + targetReducerModule + " type:" + type + ", maybe you want to invoke one of them:" + fns));
+              return __innerCb(new Error("no reducer defined in ccContext for reducer module:" + targetReducerModule + " type:" + type + ", maybe you want to invoke one of them:" + fns));
             } // const errMsg = util.isCcActionValid({ type, payload });
             // if (errMsg) return justWarning(errMsg);
 
@@ -5221,7 +5221,6 @@
           // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
 
           this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
-          this.$$domDispatch = this.__$$getDomDispatchHandler;
           this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
           this.$$invoke = this.cc.invoke.bind(this); // commit state to cc directly, but userFn can be promise or generator both!
 
@@ -5349,7 +5348,7 @@
           };
         };
 
-        _proto.__$$getDomDispatchHandler = function __$$getDomDispatchHandler(event) {
+        _proto.$$domDispatch = function $$domDispatch(event) {
           var currentTarget = event.currentTarget;
           var value = currentTarget.value,
               dataset = currentTarget.dataset;
@@ -5361,7 +5360,10 @@
             dataset: dataset,
             value: value
           };
-          return this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
+
+          var handler = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
+
+          handler();
         };
 
         _proto.componentDidUpdate = function componentDidUpdate() {

@@ -706,7 +706,7 @@ export default function register(ccClassKey, {
         const { ccKey, ccOption = {} } = props;
         util.bindThis(this, [
           '__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState',
-          '__$$recoverState', '__$$getDispatchHandler'
+          '__$$recoverState', '__$$getDispatchHandler', '$$domDispatch'
         ]);
         if (!ccOption.storedStateKeys) ccOption.storedStateKeys = [];
 
@@ -955,12 +955,12 @@ export default function register(ccClassKey, {
 
             const targetReducerMap = _reducer[targetReducerModule];
             if (!targetReducerMap) {
-              return __innerCb(new Error(`no reducerMap found for module:${targetReducerModule}`));
+              return __innerCb(new Error(`no reducerMap found for reducer module:${targetReducerModule}`));
             }
             const reducerFn = targetReducerMap[type];
             if (!reducerFn) {
               const fns = Object.keys(targetReducerMap);
-              return __innerCb(new Error(`no reducer defined in ccContext for module:${targetReducerModule} type:${type}, maybe you want to invoke one of them:${fns}`));
+              return __innerCb(new Error(`no reducer defined in ccContext for reducer module:${targetReducerModule} type:${type}, maybe you want to invoke one of them:${fns}`));
             }
             // const errMsg = util.isCcActionValid({ type, payload });
             // if (errMsg) return justWarning(errMsg);
@@ -1221,7 +1221,6 @@ export default function register(ccClassKey, {
         // let CcComponent instance can call dispatch directly
         // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
         this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
-        this.$$domDispatch = this.__$$getDomDispatchHandler;
         this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
 
         this.$$invoke = this.cc.invoke.bind(this);// commit state to cc directly, but userFn can be promise or generator both!
@@ -1310,13 +1309,13 @@ export default function register(ccClassKey, {
         }
       }
 
-      __$$getDomDispatchHandler(event) {
-        
+      $$domDispatch(event) {
         const currentTarget = event.currentTarget;
         const { value, dataset } = currentTarget;
         const { cct: type, ccm: module, ccrm: reducerModule } = dataset;
         const payload = { event, dataset, value };
-        return this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
+        const handler = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
+        handler();
       }
 
       componentDidUpdate() {

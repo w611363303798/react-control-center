@@ -1,5 +1,36 @@
 
 # Change Log
+#### 2018-01-23 12:00
+* now cc instance api support `$$domDispatch` to let you bind it to dom directly.
+```
+@cc.connect('Foo', { 'chart/*': '' }, { module: 'ccStage', sharedStateKeys:'*', isSingle:true })
+export default class Foo extends Component {
+  render(){
+    const { inputValue } = this.state;
+    return (
+      <div>
+       {/** if you only set data-cct like below, means current instance will find reducer module:ccStage's method changeInputValue, and change module:ccStage's state  */}
+       <input data-cct="changeInputValue" onChange={this.$$domDispatch} value={inputValue} />
+
+       {/** if you only set data-cct、data-ccm like below, means current instance will find reducer module:xx's method changeInputValue, and change module:xx's state  */}
+       <input data-cct="changeInputValue" data-ccm="xx" onChange={this.$$domDispatch} value={inputValue} />
+
+       {/** if you only set data-cct、data-ccm、data-ccrm like below, means current instance will find reducer module:yy's method changeInputValue, and change module:xx's state  */}
+       <input data-cct="changeInputValue" data-ccm="xx" data-ccrm="yy" onChange={this.$$domDispatch} value={inputValue} />
+
+       {/** data-cct is alias fo type,  data-ccm is alias of module, data-ccrm is alias of reducerModule */}
+      </div>
+    );
+  }
+}
+
+/** code in reducer, you will get event、dataset、value these 3 params in payload */
+function changeInputValue({ payload:{event, dataset, value} }){
+  return { inputValue: value };
+}
+
+```
+  
 #### 2018-01-21 12:00
 * now cc allow reducer method return undefined, cc will do nothing then
 ```
