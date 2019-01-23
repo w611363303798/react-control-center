@@ -1310,9 +1310,12 @@ export default function register(ccClassKey, {
         }
       }
 
-      __$$getDomDispatchHandler(e) {
-        const payload = e.currentTarget.dataset;
-        const { cct: type, ccm: module, ccrm: reducerModule } = payload;
+      __$$getDomDispatchHandler(event) {
+        
+        const currentTarget = event.currentTarget;
+        const { value, dataset } = currentTarget;
+        const { cct: type, ccm: module, ccrm: reducerModule } = dataset;
+        const payload = { event, dataset, value };
         return this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
       }
 

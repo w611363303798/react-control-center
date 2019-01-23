@@ -1771,6 +1771,7 @@ export default function register(ccClassKey, _temp) {
         // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
 
         this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
+        this.$$domDispatch = this.__$$getDomDispatchHandler;
         this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
         this.$$invoke = this.cc.invoke.bind(this); // commit state to cc directly, but userFn can be promise or generator both!
 
@@ -1867,7 +1868,7 @@ export default function register(ccClassKey, _temp) {
         };
       };
 
-      _proto.__$$getDispatchHandler = function __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule) {
+      _proto.__$$getDispatchHandler = function __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
         var _this5 = this;
 
         return function (_temp11) {
@@ -1878,8 +1879,10 @@ export default function register(ccClassKey, _temp) {
               reducerModule = _ref14$reducerModule === void 0 ? originalComputedReducerModule : _ref14$reducerModule,
               _ref14$forceSync = _ref14.forceSync,
               forceSync = _ref14$forceSync === void 0 ? false : _ref14$forceSync,
-              type = _ref14.type,
-              payload = _ref14.payload,
+              _ref14$type = _ref14.type,
+              type = _ref14$type === void 0 ? inputType : _ref14$type,
+              _ref14$payload = _ref14.payload,
+              payload = _ref14$payload === void 0 ? inputPayload : _ref14$payload,
               reactCallback = _ref14.cb;
 
           return new Promise(function (resolve, reject) {
@@ -1895,6 +1898,21 @@ export default function register(ccClassKey, _temp) {
             });
           });
         };
+      };
+
+      _proto.__$$getDomDispatchHandler = function __$$getDomDispatchHandler(event) {
+        var currentTarget = event.currentTarget;
+        var value = currentTarget.value,
+            dataset = currentTarget.dataset;
+        var type = dataset.cct,
+            module = dataset.ccm,
+            reducerModule = dataset.ccrm;
+        var payload = {
+          event: event,
+          dataset: dataset,
+          value: value
+        };
+        return this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module, reducerModule, type, payload);
       };
 
       _proto.componentDidUpdate = function componentDidUpdate() {
