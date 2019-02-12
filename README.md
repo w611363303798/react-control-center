@@ -212,4 +212,7 @@ class App extends Component{
 
 ## react class、 cc class and cc instance relationship
 ![](https://raw.githubusercontent.com/fantasticsoul/static/master/img/cc/cc2.png)
+---
+## how cc instance's state and prop state comes
+![](https://raw.githubusercontent.com/fantasticsoul/static/master/img/cc/cc-class-and-ins.png)
 
