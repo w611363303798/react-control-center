@@ -435,7 +435,7 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
           });
         }
 
-        if (isPropStateSet = true) {
+        if (isPropStateSet === true) {
           const pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
           if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
         }
