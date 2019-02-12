@@ -3776,17 +3776,17 @@
 
         if (descriptor) {
           var globalMappingKey = descriptor.globalMappingKey;
-          var toModules = globalMappingKey_toModules_[globalMappingKey];
+          var toModules = globalMappingKey_toModules_[globalMappingKey]; //  !!!set this state to globalState, let other module that watching this globalMappingKey
+          //  can recover it correctly while they are mounted again!
+
+          setStateByModuleAndKey$1(MODULE_GLOBAL, globalMappingKey, stateValue);
 
           if (toModules) {
             toModules.forEach(function (m) {
               if (m != refModule) {
                 // current ref's module global state has been extracted into partialGlobalState above, so here exclude it
                 var modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
-                modulePartialGlobalState[globalMappingKey] = stateValue; //  !!!set this state to globalState, let other module that watching this globalMappingKey
-                //  can recover it correctly while they are mounted again!
-
-                setStateByModuleAndKey$1(MODULE_GLOBAL, globalMappingKey, stateValue);
+                modulePartialGlobalState[globalMappingKey] = stateValue;
               }
             });
           }
