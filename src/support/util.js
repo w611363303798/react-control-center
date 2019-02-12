@@ -218,8 +218,8 @@ export function justWarning(err) {
 }
 
 export function justTip(msg) {
-  console.error(' ------------ CC TIP ------------');
-  console.error(`%c${msg}`, 'color:green;border:1px solid green;');
+  console.log(' ------------ CC TIP ------------');
+  console.log(`%c${msg}`, 'color:green;border:1px solid green;');
 }
 
 export function safeGetObjectFromObject(object, key) {
