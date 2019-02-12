@@ -1561,10 +1561,11 @@ export default function register(ccClassKey, _temp) {
               module_globalState_ = _extractStateToBeBroa.module_globalState_;
 
           if (!isPartialSharedStateEmpty) ccStoreSetState(moduleName, partialSharedState);
-          if (!isPartialGlobalStateEmpty) ccStoreSetState(MODULE_GLOBAL, partialGlobalState);
-          Object.keys(module_globalState_).forEach(function (moduleName) {
-            ccStoreSetState(moduleName, module_globalState_[moduleName]);
-          });
+          if (!isPartialGlobalStateEmpty) ccStoreSetState(MODULE_GLOBAL, partialGlobalState); // ??? here logic code is redundant, in extractStateToBeBroadcasted, 
+          // value of sourceState's stateKey which been mapped to global has been stored to globalState
+          // Object.keys(module_globalState_).forEach(moduleName => {
+          //   ccStoreSetState(moduleName, module_globalState_[moduleName]);
+          // });
 
           if (_this2.$$beforeBroadcastState) {
             //check if user define a life cycle hook $$beforeBroadcastState
@@ -1883,7 +1884,7 @@ export default function register(ccClassKey, _temp) {
               payload = _ref14$payload === void 0 ? inputPayload : _ref14$payload,
               reactCallback = _ref14.cb;
 
-          // picker user input reducerModule first
+          // pick user input reducerModule firstly
           var targetReducerModule = reducerModule || originalComputedReducerModule || module;
           return new Promise(function (resolve, reject) {
             _this5.cc.dispatch({

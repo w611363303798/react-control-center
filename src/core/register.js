@@ -264,14 +264,15 @@ function extractStateToBeBroadcasted(refModule, sourceState, sharedStateKeys, gl
       if (descriptor) {
         const { globalMappingKey } = descriptor;
         const toModules = globalMappingKey_toModules_[globalMappingKey];
+        //  !!!set this state to globalState, let other module that watching this globalMappingKey
+        //  can recover it correctly while they are mounted again!
+        setStateByModuleAndKey(MODULE_GLOBAL, globalMappingKey, stateValue);
+
         if (toModules) {
           toModules.forEach(m => {
             if (m != refModule) {// current ref's module global state has been extracted into partialGlobalState above, so here exclude it
               let modulePartialGlobalState = util.safeGetObjectFromObject(module_globalState_, m);
               modulePartialGlobalState[globalMappingKey] = stateValue;
-              //  !!!set this state to globalState, let other module that watching this globalMappingKey
-              //  can recover it correctly while they are mounted again!
-              setStateByModuleAndKey(MODULE_GLOBAL, globalMappingKey, stateValue);
             }
           });
         }
@@ -1044,9 +1045,12 @@ export default function register(ccClassKey, {
 
             if (!isPartialSharedStateEmpty) ccStoreSetState(moduleName, partialSharedState);
             if (!isPartialGlobalStateEmpty) ccStoreSetState(MODULE_GLOBAL, partialGlobalState);
-            Object.keys(module_globalState_).forEach(moduleName => {
-              ccStoreSetState(moduleName, module_globalState_[moduleName]);
-            });
+
+            // ??? here logic code is redundant, in extractStateToBeBroadcasted, 
+            // value of sourceState's stateKey which been mapped to global has been stored to globalState
+            // Object.keys(module_globalState_).forEach(moduleName => {
+            //   ccStoreSetState(moduleName, module_globalState_[moduleName]);
+            // });
 
             if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
               if (asyncLifecycleHook) {
@@ -1302,7 +1306,7 @@ export default function register(ccClassKey, {
 
       __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
         return ({ module = originalComputedStateModule, reducerModule, forceSync = false, type = inputType, payload = inputPayload, cb: reactCallback } = {}) => {
-          // picker user input reducerModule first
+          // pick user input reducerModule firstly
           let targetReducerModule = reducerModule || (originalComputedReducerModule || module);
           return new Promise((resolve, reject) => {
             this.cc.dispatch({ stateFor, module, targetReducerModule, forceSync, type, payload, cb: reactCallback, __innerCb: _promiseErrorHandler(resolve, reject) });
