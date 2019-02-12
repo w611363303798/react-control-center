@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/extends";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import register from './register';
 export default function (ccClassKey, stateToPropMapping, option) {
   if (option === void 0) {

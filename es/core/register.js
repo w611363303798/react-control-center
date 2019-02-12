@@ -1,6 +1,6 @@
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
-import _extends from "@babel/runtime/helpers/extends";
+import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import React from 'react'; // import hoistNonReactStatic from 'hoist-non-react-statics';
 
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
@@ -551,7 +551,7 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
           });
         }
 
-        if (isPropStateSet = true) {
+        if (isPropStateSet === true) {
           var pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
           if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
         }
@@ -1874,8 +1874,7 @@ export default function register(ccClassKey, _temp) {
           var _ref14 = _temp11 === void 0 ? {} : _temp11,
               _ref14$module = _ref14.module,
               module = _ref14$module === void 0 ? originalComputedStateModule : _ref14$module,
-              _ref14$reducerModule = _ref14.reducerModule,
-              reducerModule = _ref14$reducerModule === void 0 ? originalComputedReducerModule : _ref14$reducerModule,
+              reducerModule = _ref14.reducerModule,
               _ref14$forceSync = _ref14.forceSync,
               forceSync = _ref14$forceSync === void 0 ? false : _ref14$forceSync,
               _ref14$type = _ref14.type,
@@ -1884,11 +1883,13 @@ export default function register(ccClassKey, _temp) {
               payload = _ref14$payload === void 0 ? inputPayload : _ref14$payload,
               reactCallback = _ref14.cb;
 
+          // picker user input reducerModule first
+          var targetReducerModule = reducerModule || originalComputedReducerModule || module;
           return new Promise(function (resolve, reject) {
             _this5.cc.dispatch({
               stateFor: stateFor,
               module: module,
-              reducerModule: reducerModule,
+              targetReducerModule: targetReducerModule,
               forceSync: forceSync,
               type: type,
               payload: payload,

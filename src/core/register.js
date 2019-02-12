@@ -1301,10 +1301,11 @@ export default function register(ccClassKey, {
       }
 
       __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
-        return ({ module = originalComputedStateModule, reducerModule = originalComputedReducerModule,
-          forceSync = false, type = inputType, payload = inputPayload, cb: reactCallback } = {}) => {
+        return ({ module = originalComputedStateModule, reducerModule, forceSync = false, type = inputType, payload = inputPayload, cb: reactCallback } = {}) => {
+          // picker user input reducerModule first
+          let targetReducerModule = reducerModule || (originalComputedReducerModule || module);
           return new Promise((resolve, reject) => {
-            this.cc.dispatch({ stateFor, module, reducerModule, forceSync, type, payload, cb: reactCallback, __innerCb: _promiseErrorHandler(resolve, reject) });
+            this.cc.dispatch({ stateFor, module, targetReducerModule, forceSync, type, payload, cb: reactCallback, __innerCb: _promiseErrorHandler(resolve, reject) });
           });
         }
       }

@@ -316,8 +316,8 @@
     if (err instanceof Error) console.error(err.message);else console.error(err);
   }
   function justTip(msg) {
-    console.error(' ------------ CC TIP ------------');
-    console.error("%c" + msg, 'color:green;border:1px solid green;');
+    console.log(' ------------ CC TIP ------------');
+    console.log("%c" + msg, 'color:green;border:1px solid green;');
   }
   function safeGetObjectFromObject(object, key) {
     var childrenObject = object[key];
@@ -643,6 +643,11 @@
     for (var k = 0; k < sLen; k++) {
       var sharedKey = sharedKeys[k];
       var globalMappingKey = moduleSharedKeyToGlobalKeyConfig[sharedKey];
+
+      if (typeof globalMappingKey !== 'string') {
+        throw new Error("globalMappingKey type error, is must be string, check your sharedToGlobalMapping! " + util.verboseInfo("module:" + moduleName + ", sharedKey:" + sharedKey));
+      }
+
       mapSharedKeyToGlobal(moduleName, sharedKey, globalMappingKey);
     }
   }
@@ -4006,7 +4011,7 @@
             });
           }
 
-          if (isPropStateSet = true) {
+          if (isPropStateSet === true) {
             var pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
             if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
           }
@@ -5323,8 +5328,7 @@
             var _ref14 = _temp11 === void 0 ? {} : _temp11,
                 _ref14$module = _ref14.module,
                 module = _ref14$module === void 0 ? originalComputedStateModule : _ref14$module,
-                _ref14$reducerModule = _ref14.reducerModule,
-                reducerModule = _ref14$reducerModule === void 0 ? originalComputedReducerModule : _ref14$reducerModule,
+                reducerModule = _ref14.reducerModule,
                 _ref14$forceSync = _ref14.forceSync,
                 forceSync = _ref14$forceSync === void 0 ? false : _ref14$forceSync,
                 _ref14$type = _ref14.type,
@@ -5333,11 +5337,13 @@
                 payload = _ref14$payload === void 0 ? inputPayload : _ref14$payload,
                 reactCallback = _ref14.cb;
 
+            // picker user input reducerModule first
+            var targetReducerModule = reducerModule || originalComputedReducerModule || module;
             return new Promise(function (resolve, reject) {
               _this5.cc.dispatch({
                 stateFor: stateFor,
                 module: module,
-                reducerModule: reducerModule,
+                targetReducerModule: targetReducerModule,
                 forceSync: forceSync,
                 type: type,
                 payload: payload,
