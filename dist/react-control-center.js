@@ -5240,7 +5240,7 @@
           this.$$commit = this.cc.commit.bind(this); // commit state to cc directly, userFn can only be normal function
 
           this.$$commitWith = this.cc.commitWith.bind(this);
-          this.$$effect = this.cc.effect.bind(this); // commit state to cc directly, userFn can only be normal function
+          this.$$effect = this.cc.effect.bind(this); // commit state to cc directly, userFn can be normal 、 generator or async function
 
           this.$$xeffect = this.cc.xeffect.bind(this);
           this.$$emit = this.cc.emit.bind(this);
