@@ -1,5 +1,72 @@
 
 # Change Log
+#### 2018-02-19 21:00
+* now top api dispatch and instance api $$dispatch support action be string
+```
+@cc.register('Foo', {module:'Foo', sharedStateKeys:'*'});
+export default class Foo extends Component {
+  doStaff = ()=>{
+    // the 2 code sentence below have the same effect
+    // you don't need specify module if your want to change 'Foo' module state, cc know the target module is 'Foo' because key word 'this' of component belong to module 'Foo'
+    this.$$dispatch({type:'changeName'});
+    this.$$dispatch('changeName');
+
+    // the 2 code sentence below have the same effect, if you specify param module
+    this.$$dispatch({module:'Foo', type:'changeName'});
+    this.$$dispatch('Foo/changeName');
+
+    // the 2 code sentence below have the same effect, if you specify param module 、reducerModule
+    this.$$dispatch({module:'Foo', reducerModule:'Foo', type:'changeName'});
+    this.$$dispatch('Foo/Foo/changeName');
+
+    // the 2 code sentence below have the same effect, if you specify param module 、reducerModule and payload
+    this.$$dispatch({module:'Foo', reducerModule:'Foo', type:'changeName', payload:'newName'});
+    this.$$dispatch('Foo/Foo/changeName', 'newName');
+  }
+}
+
+// in console, you can type
+cc.dispatch({module:'Foo', reducerModule:'Foo', type:'changeName', payload:'newName'});
+// or
+cc.dispatch('Foo/Foo/changeName', 'newName');
+```
+* inject xeffect and dispatch handler to xeffect's first param ExecutionContext, if your call $$xeffect in instance, user function's first param mean ExecutionContext, and now you can get 
+xeffect and dispatch handler from it
+```
+// code may like:
+
+async function sleep(ms = 1000) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, ms);
+  });
+}
+
+function changeGlobalMsg(msg) {
+  return { msg };
+}
+
+async function myLogic(executionContext, param1, param2){
+  const {dispatch, effect, xeffect} = executionContext;
+    const { state, dispatch, effect } = executionContext;
+  await effect('$$global', changeGlobalMsg, 'changeNameWithEx_' + Date.now());
+  await sleep();
+  await effect('$$global', changeGlobalMsg, 'changeNameWithEx_' + Date.now());
+  await sleep();
+  await dispatch({ module: '$$global', type:'changeMsg', payload: 'dispatchToGlobal_' + Date.now() });
+  await sleep();
+  await dispatch('$$global/changeMsg', 'simpleDispatchToGlobal_' + Date.now());
+  await dispatch('$$global/$$global/changeMsg', 'simpleDispatchToGlobal_' + Date.now());
+}
+
+@cc.register('Foo', {module:'Foo', sharedStateKeys:'*'});
+export default class Foo extends Component {
+  doStaff = ()=>{
+    this.$$xeffect('Foo', myLogic, 'param1', 'param2');
+  }
+}
+```
 #### 2018-01-23 12:00
 * now cc instance api support `$$domDispatch` to let you bind it to dom directly.
 ```

@@ -5341,7 +5341,7 @@
         _proto.__$$getDispatchHandler = function __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
           var _this5 = this;
 
-          return function (paramObj) {
+          return function (paramObj, payloadWhenFirstParamIsString) {
             if (paramObj === void 0) {
               paramObj = {};
             }
@@ -5378,6 +5378,7 @@
               var slashCount = paramObj.split('').filter(function (v) {
                 return v === '/';
               }).length;
+              _payload = payloadWhenFirstParamIsString;
 
               if (slashCount === 0) {
                 _type = paramObj;
@@ -5784,7 +5785,12 @@
     return register(ccClassKey, mergedOption);
   }
 
-  function dispatch (action, ccClassKey, ccKey, throwError) {
+  function dispatch (action, payLoadWhenActionIsString, _temp) {
+    var _ref = _temp === void 0 ? [] : _temp,
+        ccClassKey = _ref[0],
+        ccKey = _ref[1],
+        throwError = _ref[2];
+
     try {
       if (ccClassKey && ccKey) {
         var uKey = util.makeUniqueCcKey(ccClassKey, ccKey);
@@ -5793,11 +5799,11 @@
         if (!targetRef) {
           throw new Error("no ref found for uniqueCcKey:" + uKey + "!");
         } else {
-          targetRef.$$dispatch(action);
+          targetRef.$$dispatch(action, payLoadWhenActionIsString);
         }
       } else {
         var ref = pickOneRef();
-        ref.$$dispatchForModule(action);
+        ref.$$dispatchForModule(action, payLoadWhenActionIsString);
       }
     } catch (err) {
       if (throwError) throw err;else util.justWarning(err.message);
