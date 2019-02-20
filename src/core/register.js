@@ -861,7 +861,11 @@ export default function register(ccClassKey, {
           },
           // change other module's state, cc will give userLogicFn EffectContext object as first param
           xeffect: (targetModule, userLogicFn, ...args) => {
-            return this.cc.__promisifiedInvokeWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect: this.cc.xeffect, moduleState: getState(targetModule), state: this.state, context: true, module: targetModule }, ...args);
+            const dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, currentModule, currentReducerModule);
+            return this.cc.__promisifiedInvokeWith(userLogicFn, {
+              stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, xeffect: this.cc.xeffect, effect: this.cc.effect, dispatch,
+              moduleState: getState(targetModule), state: this.state, context: true, module: targetModule
+            }, ...args);
           },
           __promisifiedInvokeWith: (userLogicFn, executionContext, ...args) => {
             return _promisifyCcFn(this.cc.__invokeWith, userLogicFn, executionContext, ...args);

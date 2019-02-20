@@ -1,6 +1,6 @@
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
-import _extends from "@babel/runtime/helpers/extends";
+import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import React from 'react'; // import hoistNonReactStatic from 'hoist-non-react-statics';
 
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
@@ -74,7 +74,11 @@ function handleError(err, throwError) {
   }
 }
 
-function checkStoreModule(module, throwError) {
+function checkStoreModule(module, checkGlobalModule, throwError) {
+  if (checkGlobalModule === void 0) {
+    checkGlobalModule = true;
+  }
+
   if (throwError === void 0) {
     throwError = true;
   }
@@ -85,7 +89,7 @@ function checkStoreModule(module, throwError) {
       return false;
     } else return true;
   } else {
-    if (module === MODULE_GLOBAL) {
+    if (checkGlobalModule && module === MODULE_GLOBAL) {
       handleError(me(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED), throwError);
       return false;
     }
@@ -154,7 +158,7 @@ function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
 function isStateModuleValid(inputModule, currentModule, reactCallback, cb) {
   var targetCb = reactCallback;
 
-  if (checkStoreModule(inputModule, false)) {
+  if (checkStoreModule(inputModule, false, false)) {
     if (inputModule != currentModule) {
       if (reactCallback) {
         justWarning(me(ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID, vbi(paramCallBackShouldNotSupply(inputModule, currentModule))));

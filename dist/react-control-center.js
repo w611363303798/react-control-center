@@ -3542,7 +3542,11 @@
     }
   }
 
-  function checkStoreModule(module, throwError) {
+  function checkStoreModule(module, checkGlobalModule, throwError) {
+    if (checkGlobalModule === void 0) {
+      checkGlobalModule = true;
+    }
+
     if (throwError === void 0) {
       throwError = true;
     }
@@ -3553,7 +3557,7 @@
         return false;
       } else return true;
     } else {
-      if (module === MODULE_GLOBAL) {
+      if (checkGlobalModule && module === MODULE_GLOBAL) {
         handleError(me(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED), throwError);
         return false;
       }
@@ -3618,7 +3622,7 @@
   function isStateModuleValid(inputModule, currentModule, reactCallback, cb) {
     var targetCb = reactCallback;
 
-    if (checkStoreModule(inputModule, false)) {
+    if (checkStoreModule(inputModule, false, false)) {
       if (inputModule != currentModule) {
         if (reactCallback) {
           justWarning$1(me(ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID, vbi$1(paramCallBackShouldNotSupply(inputModule, currentModule))));
@@ -5528,10 +5532,10 @@
    * @export
    * @param {String} module
    * @param {Object} state
-   * @param {Option？} [option] reducer、init、sharedToGlobalMapping
-   * @param {Option？} [option.reducer]  you can define multi reducer for a module by specify a reducer
-   * @param {Option？} [option.moduleReducer]  if you specify moduleReducer for module, 
-   * the reducer's module name is equal to statue module name, and the reducer will be ignored automatically
+   * @param {Object} [option] reducer、init、sharedToGlobalMapping
+   * @param {Object} [option.reducer]  you can define multi reducer for a module by specify a reducer
+   * @param {Object} [option.moduleReducer]  if you specify moduleReducer and reducer at the same time, the reducer will be ignored!
+   * cc will give state module name as moduleReducer key
    */
 
   function configure (module, state, _temp) {

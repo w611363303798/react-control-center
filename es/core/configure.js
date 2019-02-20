@@ -9,10 +9,10 @@ var ccGlobalStateKeys = ccContext.globalStateKeys;
  * @export
  * @param {String} module
  * @param {Object} state
- * @param {Option？} [option] reducer、init、sharedToGlobalMapping
- * @param {Option？} [option.reducer]  you can define multi reducer for a module by specify a reducer
- * @param {Option？} [option.moduleReducer]  if you specify moduleReducer for module, 
- * the reducer's module name is equal to statue module name, and the reducer will be ignored automatically
+ * @param {Object} [option] reducer、init、sharedToGlobalMapping
+ * @param {Object} [option.reducer]  you can define multi reducer for a module by specify a reducer
+ * @param {Object} [option.moduleReducer]  if you specify moduleReducer and reducer at the same time, the reducer will be ignored!
+ * cc will give state module name as moduleReducer key
  */
 
 export default function (module, state, _temp) {
