@@ -34,6 +34,9 @@ export const ERR = {
   CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1009,
   CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID: 1010,
   CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION: 1011,
+  CC_MODULE_NOT_FOUND: 1012,
+  CC_DISPATCH_STRING_INVALID: 1013,
+  CC_DISPATCH_PARAM_INVALID: 1014,
 
   CC_CLASS_KEY_DUPLICATE: 1100,
   CC_CLASS_NOT_FOUND: 1101,
@@ -85,7 +88,9 @@ export const ERR_MESSAGE = {
   [ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer is invalid, must be a plain json object(not an array also)!`,
   [ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID]: `argument reducer's value is invalid, must be a plain json object(not an array also), maybe you can use moduleReducer to config the reducer for this module!`,
   [ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION]: `one of the computed keys is not a valid module name in store!`,
-
+  [ERR.CC_MODULE_NOT_FOUND]: `module not found!`,
+  [ERR.CC_DISPATCH_STRING_INVALID]: `dispatch param writing is invalid when its type is string, only these 3 is valid: (functionName)、(moduleName)/(functionName)、(moduleName)/(reducerModuleName)/(functionName)`,
+  [ERR.CC_DISPATCH_PARAM_INVALID]: `dispatch param type is invalid, it must be string or object`,
 
   [ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE]: `ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   `,
   [ERR.CC_CLASS_INSTANCE_OPTION_INVALID]: 'ccOption must be a plain json object! ',

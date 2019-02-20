@@ -393,6 +393,10 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, sharedStateKeys,
       const propKey_appeared_ = {};//help cc to judge propKey is duplicated or not
       targetModules.forEach(module => {
         const moduleState = _state[module];
+        if (moduleState === undefined) {
+          throw me(ERR.CC_MODULE_NOT_FOUND, vbi(`module:${module}, check your stateToPropMapping config!`))
+        }
+
         let isPropStateSet = false;
 
         if (module_mapAllStateToProp_[module] === true) {
@@ -1305,11 +1309,41 @@ export default function register(ccClassKey, {
       }
 
       __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
-        return ({ module = originalComputedStateModule, reducerModule, forceSync = false, type = inputType, payload = inputPayload, cb: reactCallback } = {}) => {
+        return (paramObj = {}) => {
+          const paramObjType = typeof paramObj;
+          let _module = originalComputedStateModule, _reducerModule, _forceSync = false, _type, _payload = inputPayload, _cb;
+          if (paramObjType === 'object') {
+            const { module = originalComputedStateModule, reducerModule, forceSync = false, type = inputType, payload = inputPayload, cb } = paramObj;
+            _module = module;
+            _reducerModule = reducerModule;
+            _forceSync = forceSync;
+            _type = type;
+            _payload = payload;
+            _cb = cb;
+          } else if (paramObjType === 'string') {
+            const slashCount = paramObj.split('').filter(v => v === '/').length;
+            if (slashCount === 0) {
+              _type = paramObj;
+            } else if (slashCount === 1) {
+              const [module, type] = paramObj.split('/');
+              _module = module;
+              _type = type;
+            } else if (slashCount === 2) {
+              const [module, reducerModule, type] = paramObj.split('/');
+              _module = module;
+              _reducerModule = reducerModule;
+              _type = type;
+            } else {
+              return Promise.reject(me(ERR.CC_DISPATCH_STRING_INVALID, vbi(paramObj)));
+            }
+          } else {
+            return Promise.reject(me(ERR.CC_DISPATCH_PARAM_INVALID));
+          }
+
           // pick user input reducerModule firstly
-          let targetReducerModule = reducerModule || (originalComputedReducerModule || module);
+          let targetReducerModule = _reducerModule || (originalComputedReducerModule || module);
           return new Promise((resolve, reject) => {
-            this.cc.dispatch({ stateFor, module, targetReducerModule, forceSync, type, payload, cb: reactCallback, __innerCb: _promiseErrorHandler(resolve, reject) });
+            this.cc.dispatch({ stateFor, module: _module, targetReducerModule, forceSync: _forceSync, type: _type, payload: _payload, cb: _cb, __innerCb: _promiseErrorHandler(resolve, reject) });
           });
         }
       }
