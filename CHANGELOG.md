@@ -364,7 +364,6 @@ you can get refComputed with this.$$refComputed, get moduleComputed with this.$$
   then cc will use the this module's globalStateKeys and sharedStateKeys to extract the state.
   usually ccInstance's $$commitWith, $$callWith, $$callThunkWith, $$effect, $$xeffect, $$invokeWith and dispatch handler in reducer function's block
   will trigger this extraction strategy
- */
   ```
   
 #### 2018-01-03 08:00
@@ -374,8 +373,8 @@ you can get refComputed with this.$$refComputed, get moduleComputed with this.$$
   
 #### 2018-01-02 08:00
 * optimize register: now startup support init option, to set your store asynchronously
-* add top api cc.setState
-* add top api cc.setGlobalState
+* add top api `cc.setState`
+* add top api `cc.setGlobalState`
 
 #### 2018-12-26 08:00
 * optimize register: make sure cc startup is called before register
@@ -383,27 +382,27 @@ you can get refComputed with this.$$refComputed, get moduleComputed with this.$$
 
 #### 2018-12-26 09:00
 * fix bug: if register a CCClass, will cause endless loop when call setState in one of its instance, to avoid this, add strict check while register a ReactClass, if it has been registered to cc, it can not been registered again.
-* optimize setGlobalState: if user call setGlobalState, state will only treated as a global state.
-* rename effectCtx to xeffect
+* optimize `setGlobalState`: if user call `setGlobalState`, state will only treated as a global state.
+* rename `effectCtx` to `xeffect`
 
 #### 2018-12-09 17:00
-* now ccClass can watch other module's state changing by config sharedToGlobalMapping while startup
+* now ccClass can watch other module's state changing by config `sharedToGlobalMapping` while startup
 
 #### 2018-12-08 13:00
 * optimize ccInstance state recovering logic, fix bugs of broadcasting state.
 
 #### 2018-12-06 13:00
-* every CCClass automatically watch $$global state 's change, if you give CCClass a globalStateKeys to let cc know this CCClass want to know which keys it want to watch, then any state of these keys changed will trigger this CCClass's all instance render, if you want to reject render triggered by global state change in some CCInstance, you can specify syncGlobalState=false in these CCInstance
-* now ccInstance can call setGlobalState, your can also call cc.setGlobalState in any where;
+* every CCClass automatically watch `$$global` state 's change, if you give CCClass a `globalStateKeys` to let cc know this CCClass want to know which keys it want to watch, then any state of these keys changed will trigger this CCClass's all instance render, if you want to reject render triggered by global state change in some CCInstance, you can specify syncGlobalState=false in these CCInstance
+* now ccInstance can call `setGlobalState`, your can also call `cc.setGlobalState` in any where;
 
 #### 2018-12-05 10:00
-* now ccInstance can declare storedStateKeys in ccOption if you want to hold the state back while the ccInstance destroyed and mount again! note that any key of storedStateKeys can not be duplicate with any key of sharedStateKeys， and you must explicitly specify a ccKey if you want to use storedStateKeys
-* add life cycle hook $$afterSetState
+* now ccInstance can declare `storedStateKeys` in ccOption if you want to hold the state back while the ccInstance destroyed and mount again! note that any key of `storedStateKeys` can not be duplicate with any key of `sharedStateKeys`， and you must explicitly specify a ccKey if you want to use `storedStateKeys`
+* add life cycle hook `$$afterSetState`
 
 #### 2018-12-05 8:00
 * rename cor api of ccIns! add prefix $$, and optimize their code
 * now reducer function can be can be any type of them (async, generator, normal);
-* add life cycle hook fo cc instance: $$beforeSetState , $$beforeBroadcastState
+* add life cycle hook fo cc instance: `$$beforeSetState` , `$$beforeBroadcastState`
 
 #### 2018-12-04 14:00
 * attach $invoke and $invokeWith method to ccInstance, with co module, ccInstance.$invoke can invoke user's customize function which can be any type of them (async, generator, normal);
