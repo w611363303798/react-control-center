@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/esm/extends";
+import _extends from "@babel/runtime/helpers/extends";
 
 var _state2, _reducer;
 

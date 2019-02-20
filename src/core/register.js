@@ -60,14 +60,14 @@ function handleError(err, throwError = true) {
   }
 }
 
-function checkStoreModule(module, throwError = true) {
+function checkStoreModule(module, checkGlobalModule = true, throwError = true) {
   if (!ccContext.isModuleMode) {
     if (module !== MODULE_DEFAULT) {
       handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, vbi(`module:${module}`)), throwError);
       return false;
     } else return true;
   } else {
-    if (module === MODULE_GLOBAL) {
+    if (checkGlobalModule && module === MODULE_GLOBAL) {
       handleError(me(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED), throwError);
       return false;
     }
@@ -130,7 +130,7 @@ function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
 // any error in this function will not been throwed, cc just warning, 
 function isStateModuleValid(inputModule, currentModule, reactCallback, cb) {
   let targetCb = reactCallback;
-  if (checkStoreModule(inputModule, false)) {
+  if (checkStoreModule(inputModule, false, false)) {
     if (inputModule != currentModule) {
       if (reactCallback) {
         justWarning(me(ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID, vbi(paramCallBackShouldNotSupply(inputModule, currentModule))));
