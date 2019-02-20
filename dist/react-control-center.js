@@ -4602,6 +4602,8 @@
             xeffect: function xeffect(targetModule, userLogicFn) {
               var _this2$cc3;
 
+              var dispatch = _this2.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, currentModule, currentReducerModule);
+
               for (var _len6 = arguments.length, args = new Array(_len6 > 2 ? _len6 - 2 : 0), _key6 = 2; _key6 < _len6; _key6++) {
                 args[_key6 - 2] = arguments[_key6];
               }
@@ -4609,6 +4611,8 @@
               return (_this2$cc3 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc3, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 xeffect: _this2.cc.xeffect,
+                effect: _this2.cc.effect,
+                dispatch: dispatch,
                 moduleState: getState(targetModule),
                 state: _this2.state,
                 context: true,

@@ -1313,7 +1313,7 @@ export default function register(ccClassKey, {
       }
 
       __$$getDispatchHandler(stateFor, originalComputedStateModule, originalComputedReducerModule, inputType, inputPayload) {
-        return (paramObj = {}) => {
+        return (paramObj = {}, payloadWhenFirstParamIsString) => {
           const paramObjType = typeof paramObj;
           let _module = originalComputedStateModule, _reducerModule, _forceSync = false, _type, _payload = inputPayload, _cb;
           if (paramObjType === 'object') {
@@ -1326,6 +1326,7 @@ export default function register(ccClassKey, {
             _cb = cb;
           } else if (paramObjType === 'string') {
             const slashCount = paramObj.split('').filter(v => v === '/').length;
+            _payload = payloadWhenFirstParamIsString;
             if (slashCount === 0) {
               _type = paramObj;
             } else if (slashCount === 1) {
