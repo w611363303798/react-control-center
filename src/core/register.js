@@ -904,7 +904,7 @@ export default function register(ccClassKey, {
               let _partialState = null;
               co.wrap(userLogicFn)(...args).then(partialState => {
                 _partialState = partialState;
-                this.$$changeState(partialState, { stateFor, module: targetModule, forceSync, cb: newCb, type, reducerModule, changedBy:CHANGE_BY_SELF, calledBy, fnName });
+                this.$$changeState(partialState, { stateFor, module: targetModule, forceSync, cb: newCb, type, reducerModule, changedBy: CHANGE_BY_SELF, calledBy, fnName });
               }).then(() => {
                 if (__innerCb) __innerCb(null, _partialState);
               }).catch(err => {
@@ -934,10 +934,10 @@ export default function register(ccClassKey, {
           },
 
           callThunk: (userLogicFn, ...args) => {
-            this.cc.__promisifiedCallThunkWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule, calledBy: CALL_THUNK, fnName: userLogicFn.name  }, ...args);
+            this.cc.__promisifiedCallThunkWith(userLogicFn, { stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule, calledBy: CALL_THUNK, fnName: userLogicFn.name }, ...args);
           },
           callThunkWith: (userLogicFn, { module = currentModule, forceSync = false, cb } = {}, ...args) => {
-            this.cc.__promisifiedCallThunkWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb, calledBy: CALL_THUNK_WITH, fnName: userLogicFn.name  }, ...args);
+            this.cc.__promisifiedCallThunkWith(userLogicFn, { stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, module, forceSync, cb, calledBy: CALL_THUNK_WITH, fnName: userLogicFn.name }, ...args);
           },
           __promisifiedCallThunkWith: (userLogicFn, executionContext, ...args) => {
             return _promisifyCcFn(this.cc.__callThunkWith, userLogicFn, executionContext, ...args);
@@ -1010,6 +1010,11 @@ export default function register(ccClassKey, {
             if (storedStateKeys.length > 0) {
               const { partialState, isStateEmpty } = extractStateByKeys(state, storedStateKeys);
               if (!isStateEmpty) {
+                if (ccOption.storeInLocalStorage === true) {
+                  const { partialState: entireStoredState } = extractStateByKeys(this.state, storedStateKeys);
+                  const currentStoredState = { ...entireStoredState, ...partialState };
+                  localStorage.setItem('CCSS_' + ccUniqueKey, JSON.stringify(currentStoredState));
+                }
                 refStore.setState(ccUniqueKey, partialState);
               }
             }

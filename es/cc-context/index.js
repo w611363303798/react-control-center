@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/extends";
+import _extends from "@babel/runtime/helpers/esm/extends";
 
 var _state2, _reducer;
 
@@ -152,4 +152,15 @@ if (window && !window.sss) {
 export function getCcContext() {
   return ccContext;
 }
+var lsLen = localStorage.length;
+var _refStoreState = ccContext.refStore._state;
+
+for (var i = 0; i < lsLen; i++) {
+  var lsKey = localStorage.key(i);
+
+  if (lsKey.startsWith('CCSS_')) {
+    _refStoreState[lsKey.substr(5)] = JSON.parse(localStorage.getItem(lsKey));
+  }
+}
+
 export default ccContext;

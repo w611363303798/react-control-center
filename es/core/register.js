@@ -1,6 +1,6 @@
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
-import _extends from "@babel/runtime/helpers/extends";
+import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import React from 'react'; // import hoistNonReactStatic from 'hoist-non-react-statics';
 
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
@@ -1542,6 +1542,15 @@ export default function register(ccClassKey, _temp) {
                 isStateEmpty = _extractStateByKeys5.isStateEmpty;
 
             if (!isStateEmpty) {
+              if (ccOption.storeInLocalStorage === true) {
+                var _extractStateByKeys6 = extractStateByKeys(_this2.state, storedStateKeys),
+                    entireStoredState = _extractStateByKeys6.partialState;
+
+                var currentStoredState = _extends({}, entireStoredState, partialState);
+
+                localStorage.setItem('CCSS_' + ccUniqueKey, JSON.stringify(currentStoredState));
+              }
+
               refStore.setState(ccUniqueKey, partialState);
             }
           }
@@ -1670,17 +1679,17 @@ export default function register(ccClassKey, _temp) {
               if (ccKeys.length === 0) return;
               if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
 
-              var _extractStateByKeys6 = extractStateByKeys(_partialSharedState, sharedStateKeys),
-                  sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                  isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
+              var _extractStateByKeys7 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                  sharedStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                  isSharedStateEmpty = _extractStateByKeys7.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
               //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
               //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
               //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-              var _extractStateByKeys7 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                  globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                  isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+              var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                  globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                  isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
               if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
@@ -1732,9 +1741,9 @@ export default function register(ccClassKey, _temp) {
                 if (ccKeys.length === 0) return;
                 if (globalStateKeys.length === 0) return;
 
-                var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
+                var _extractStateByKeys9 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys9.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys9.isStateEmpty;
 
                 if (isPartialGlobalStateEmpty) return;
                 ccKeys.forEach(function (ccKey) {
@@ -1763,9 +1772,9 @@ export default function register(ccClassKey, _temp) {
             var globalStateKeys = classContext.globalStateKeys,
                 ccKeys = classContext.ccKeys;
 
-            var _extractStateByKeys9 = extractStateByKeys(globalSate, globalStateKeys),
-                partialState = _extractStateByKeys9.partialState,
-                isStateEmpty = _extractStateByKeys9.isStateEmpty;
+            var _extractStateByKeys10 = extractStateByKeys(globalSate, globalStateKeys),
+                partialState = _extractStateByKeys10.partialState,
+                isStateEmpty = _extractStateByKeys10.isStateEmpty;
 
             if (!isStateEmpty) {
               ccKeys.forEach(function (ccKey) {

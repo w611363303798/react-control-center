@@ -531,6 +531,16 @@
   if (window && !window.sss) {
     window.sss = ccContext.store._state;
   }
+  var lsLen = localStorage.length;
+  var _refStoreState = ccContext.refStore._state;
+
+  for (var i = 0; i < lsLen; i++) {
+    var lsKey = localStorage.key(i);
+
+    if (lsKey.startsWith('CCSS_')) {
+      _refStoreState[lsKey.substr(5)] = JSON.parse(localStorage.getItem(lsKey));
+    }
+  }
 
   /****
    * pick one ccInstance ref randomly
@@ -3052,8 +3062,8 @@
    * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
    */
   var byteToHex = [];
-  for (var i = 0; i < 256; ++i) {
-    byteToHex[i] = (i + 0x100).toString(16).substr(1);
+  for (var i$1 = 0; i$1 < 256; ++i$1) {
+    byteToHex[i$1] = (i$1 + 0x100).toString(16).substr(1);
   }
 
   function bytesToUuid(buf, offset) {
@@ -4977,6 +4987,15 @@
                   isStateEmpty = _extractStateByKeys5.isStateEmpty;
 
               if (!isStateEmpty) {
+                if (ccOption.storeInLocalStorage === true) {
+                  var _extractStateByKeys6 = extractStateByKeys$1(_this2.state, storedStateKeys),
+                      entireStoredState = _extractStateByKeys6.partialState;
+
+                  var currentStoredState = _extends({}, entireStoredState, partialState);
+
+                  localStorage.setItem('CCSS_' + ccUniqueKey, JSON.stringify(currentStoredState));
+                }
+
                 refStore.setState(ccUniqueKey, partialState);
               }
             }
@@ -5102,17 +5121,17 @@
                 if (ccKeys.length === 0) return;
                 if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
 
-                var _extractStateByKeys6 = extractStateByKeys$1(_partialSharedState, sharedStateKeys),
-                    sharedStateForCurrentCcClass = _extractStateByKeys6.partialState,
-                    isSharedStateEmpty = _extractStateByKeys6.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
+                var _extractStateByKeys7 = extractStateByKeys$1(_partialSharedState, sharedStateKeys),
+                    sharedStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                    isSharedStateEmpty = _extractStateByKeys7.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
                 //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
                 //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
                 //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-                var _extractStateByKeys7 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
-                    globalStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                    isPartialGlobalStateEmpty = _extractStateByKeys7.isStateEmpty;
+                var _extractStateByKeys8 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
+                    globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                    isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
                 if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
@@ -5162,9 +5181,9 @@
                   if (ccKeys.length === 0) return;
                   if (globalStateKeys.length === 0) return;
 
-                  var _extractStateByKeys8 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
-                      globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
-                      isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
+                  var _extractStateByKeys9 = extractStateByKeys$1(partialGlobalState, globalStateKeys),
+                      globalStateForCurrentCcClass = _extractStateByKeys9.partialState,
+                      isPartialGlobalStateEmpty = _extractStateByKeys9.isStateEmpty;
 
                   if (isPartialGlobalStateEmpty) return;
                   ccKeys.forEach(function (ccKey) {
@@ -5193,9 +5212,9 @@
               var globalStateKeys = classContext.globalStateKeys,
                   ccKeys = classContext.ccKeys;
 
-              var _extractStateByKeys9 = extractStateByKeys$1(globalSate, globalStateKeys),
-                  partialState = _extractStateByKeys9.partialState,
-                  isStateEmpty = _extractStateByKeys9.isStateEmpty;
+              var _extractStateByKeys10 = extractStateByKeys$1(globalSate, globalStateKeys),
+                  partialState = _extractStateByKeys10.partialState,
+                  isStateEmpty = _extractStateByKeys10.isStateEmpty;
 
               if (!isStateEmpty) {
                 ccKeys.forEach(function (ccKey) {
@@ -5795,6 +5814,8 @@
     invoke.apply(void 0, [ccClassKey, ccClassKey, method].concat(args));
   }
 
+  var getState$1 = ccContext.store.getState;
+
   function emit (event) {
     try {
       var ref = pickOneRef();
@@ -5899,6 +5920,7 @@
     invokeSingle: invokeSingle,
     setGlobalState: setGlobalState,
     setState: setState,
+    getState: getState$1,
     ccContext: ccContext
   };
 

@@ -8,6 +8,7 @@ import invoke from './core/invoke';
 import invokeSingle from './core/invoke-single';
 import setGlobalState from './core/set-global-state';
 import setState from './core/set-state';
+import getState from './core/get-state';
 import emit from './core/emit';
 import emitWith from './core/emit-with';
 import off from './core/off';
@@ -31,6 +32,7 @@ const defaultExport = {
   invokeSingle,
   setGlobalState,
   setState,
+  getState,
   ccContext,
 }
 
