@@ -13,6 +13,10 @@ var ccGlobalStateKeys = ccContext.globalStateKeys;
  * @param {Object} [option.reducer]  you can define multi reducer for a module by specify a reducer
  * @param {Object} [option.moduleReducer]  if you specify moduleReducer and reducer at the same time, the reducer will be ignored!
  * cc will give state module name as moduleReducer key
+ * @param {Object} [option.init]
+ * @param {Object} [option.globalState]  this globalState will been merged to $$global module state
+ * @param {Object} [option.sharedToGlobalMapping]
+ * @param {Object} [option.middlewares]
  */
 
 export default function (module, state, _temp) {
@@ -22,7 +26,9 @@ export default function (module, state, _temp) {
       reducer = _ref.reducer,
       init = _ref.init,
       globalState = _ref.globalState,
-      sharedToGlobalMapping = _ref.sharedToGlobalMapping;
+      sharedToGlobalMapping = _ref.sharedToGlobalMapping,
+      _ref$middlewares = _ref.middlewares,
+      middlewares = _ref$middlewares === void 0 ? [] : _ref$middlewares;
 
   if (!ccContext.isCcAlreadyStartup) {
     throw new Error('cc is not startup yet, you can not call cc.configure!');
@@ -116,5 +122,12 @@ export default function (module, state, _temp) {
     }
 
     init(helper.getStateHandlerForInit(module));
+  }
+
+  if (middlewares.length > 0) {
+    var ccMiddlewares = ccContext.middlewares;
+    middlewares.forEach(function (m) {
+      return ccMiddlewares.push(m);
+    });
   }
 }

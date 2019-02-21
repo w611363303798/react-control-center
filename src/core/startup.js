@@ -125,29 +125,6 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
 /**
  * @description
  * @author zzk
- * @param {*} mergedStore
- * @param {*} namespacedKeyReducer may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
- */
-function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
-  const namespacedActionTypes = Object.keys(namespacedKeyReducer);
-  const _reducer = ccContext.reducer._reducer;
-  const len = namespacedActionTypes.length;
-  for (let i = 0; i < len; i++) {
-    const actionType = namespacedActionTypes[i];
-    if (!util.verifyActionType(actionType)) {
-      throw util.makeError(ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID, ` actionType:${actionType} is invalid!`);
-    }
-    // const { moduleName } = util.disassembleActionType(actionType);
-    _reducer[actionType] = namespacedKeyReducer[actionType];
-  }
-  throw new Error(`now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, 
-    it may comme in the future, but i think modular reducer is the best practice!
-  `);
-}
-
-/**
- * @description
- * @author zzk
  * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
  */
 function bindReducerToCcContext(reducer, isModuleMode) {
@@ -293,8 +270,6 @@ store in CC_CONTEXT may like:
     followCount:15,
   }
 }
- 
-// with isReducerKeyMeanNamespacedActionType = false
 reducer = {
   [moduleName1]:{
     [actionType1]:callback(setState, {type:'',payload:''})
@@ -304,14 +279,6 @@ reducer = {
     [actionType1]:callback(setState, {type:'',payload:''})
   }
 }
- 
-// with isReducerKeyMeanNamespacedActionType = true, to be implement
-reducer = {
-  '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
-  '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
-  '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
-}
- 
 init = {
   global:(setState)=>{}
 }
@@ -331,7 +298,7 @@ export default function ({
   computed = {},
   sharedToGlobalMapping = {},
   moduleSingleClass = {},
-  isReducerKeyMeanNamespacedActionType = false,
+  middlewares = [],
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
   errorHandler = null,
@@ -351,15 +318,17 @@ export default function ({
   util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
 
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-
-  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);
-  else bindReducerToCcContext(reducer, isModuleMode);
-
-  bindComputedToCcContext(computed, isModuleMode)
+  bindReducerToCcContext(reducer, isModuleMode);
+  bindComputedToCcContext(computed, isModuleMode);
 
   if (init) {
     const computedStore = ccContext.store._state;
     executeInitializer(isModuleMode, computedStore, init);
+  }
+
+  if (middlewares.length > 0) {
+    const ccMiddlewares = ccContext.middlewares;
+    middlewares.forEach(m => ccMiddlewares.push(m));
   }
 
   ccContext.isCcAlreadyStartup = true;

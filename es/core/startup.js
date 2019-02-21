@@ -131,32 +131,6 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
 /**
  * @description
  * @author zzk
- * @param {*} mergedStore
- * @param {*} namespacedKeyReducer may like: {'user/getUser':()=>{}, 'user/setUser':()=>{}}
- */
-
-
-function bindNamespacedKeyReducerToCcContext(namespacedKeyReducer) {
-  var namespacedActionTypes = Object.keys(namespacedKeyReducer);
-  var _reducer = ccContext.reducer._reducer;
-  var len = namespacedActionTypes.length;
-
-  for (var i = 0; i < len; i++) {
-    var actionType = namespacedActionTypes[i];
-
-    if (!util.verifyActionType(actionType)) {
-      throw util.makeError(ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID, " actionType:" + actionType + " is invalid!");
-    } // const { moduleName } = util.disassembleActionType(actionType);
-
-
-    _reducer[actionType] = namespacedKeyReducer[actionType];
-  }
-
-  throw new Error("now isReducerKeyMeanNamespacedActionType is not supported by current version react-control-center, \n    it may comme in the future, but i think modular reducer is the best practice!\n  ");
-}
-/**
- * @description
- * @author zzk
  * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
  */
 
@@ -314,8 +288,6 @@ store in CC_CONTEXT may like:
     followCount:15,
   }
 }
- 
-// with isReducerKeyMeanNamespacedActionType = false
 reducer = {
   [moduleName1]:{
     [actionType1]:callback(setState, {type:'',payload:''})
@@ -325,14 +297,6 @@ reducer = {
     [actionType1]:callback(setState, {type:'',payload:''})
   }
 }
- 
-// with isReducerKeyMeanNamespacedActionType = true, to be implement
-reducer = {
-  '[moduleName1]/type1':callback(setState, {type:'',payload:''}),
-  '[moduleName1]/type2':callback(setState, {type:'',payload:''}),
-  '[moduleName2]/type1':callback(setState, {type:'',payload:''}),
-}
- 
 init = {
   global:(setState)=>{}
 }
@@ -363,8 +327,8 @@ export default function (_temp) {
       sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa,
       _ref$moduleSingleClas = _ref.moduleSingleClass,
       moduleSingleClass = _ref$moduleSingleClas === void 0 ? {} : _ref$moduleSingleClas,
-      _ref$isReducerKeyMean = _ref.isReducerKeyMeanNamespacedActionType,
-      isReducerKeyMeanNamespacedActionType = _ref$isReducerKeyMean === void 0 ? false : _ref$isReducerKeyMean,
+      _ref$middlewares = _ref.middlewares,
+      middlewares = _ref$middlewares === void 0 ? [] : _ref$middlewares,
       _ref$isStrict = _ref.isStrict,
       isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict,
       _ref$isDebug = _ref.isDebug,
@@ -387,12 +351,19 @@ export default function (_temp) {
   util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
   util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-  if (isReducerKeyMeanNamespacedActionType) bindNamespacedKeyReducerToCcContext(reducer);else bindReducerToCcContext(reducer, isModuleMode);
+  bindReducerToCcContext(reducer, isModuleMode);
   bindComputedToCcContext(computed, isModuleMode);
 
   if (init) {
     var computedStore = ccContext.store._state;
     executeInitializer(isModuleMode, computedStore, init);
+  }
+
+  if (middlewares.length > 0) {
+    var ccMiddlewares = ccContext.middlewares;
+    middlewares.forEach(function (m) {
+      return ccMiddlewares.push(m);
+    });
   }
 
   ccContext.isCcAlreadyStartup = true;

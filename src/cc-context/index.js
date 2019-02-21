@@ -188,6 +188,7 @@ const ccContext = {
     startupTime: Date.now(),
   },
   errorHandler: null,
+  middlewares:[],
 }
 
 if (window && !window.sss) {

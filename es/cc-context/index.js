@@ -141,7 +141,8 @@ var ccContext = {
   info: {
     startupTime: Date.now()
   },
-  errorHandler: null
+  errorHandler: null,
+  middlewares: []
 };
 
 if (window && !window.sss) {

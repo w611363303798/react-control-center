@@ -1,5 +1,30 @@
 
 # Change Log
+#### 2018-02-21 08:30
+* now cc.startup and cc.configure support passing middlewares, all middlewares will been called before $$changeState in cc core, middleware using case may like:
+```
+function myMiddleware1(params, next) {
+  // parms may like {calledBy, type, module, reducerModule, state, fnName};
+  console.log('myMiddleware1', params);
+  next();// next must been called, or the middlewares chain will been blocked!!
+}
+
+function myMiddleware2(params, next) {
+  console.log('myMiddleware2', params);
+  next();
+}
+
+cc.startup({
+  isModuleMode: true,
+  store,
+  reducer,
+  computed,
+  init,
+  middlewares: [myMiddleware1, myMiddleware2]
+});
+```
+
+
 #### 2018-02-19 21:00
 * now top api dispatch and instance api $$dispatch support action be string
 ```
