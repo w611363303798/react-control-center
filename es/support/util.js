@@ -310,6 +310,14 @@ export function computeFeature(ccUniqueKey, state) {
   var stateKeysStr = stateKeys.sort().join('|');
   return ccUniqueKey + "/" + stateKeysStr;
 }
+export function randomNumber(lessThan) {
+  if (lessThan === void 0) {
+    lessThan = 52;
+  }
+
+  var seed = Math.random();
+  return parseInt(seed * lessThan);
+}
 export default {
   makeError: makeError,
   isHotReloadMode: isHotReloadMode,
@@ -341,5 +349,6 @@ export default {
   safeGetObjectFromObject: safeGetObjectFromObject,
   safeGetArrayFromObject: safeGetArrayFromObject,
   safeAssignObjectValue: safeAssignObjectValue,
-  computeFeature: computeFeature
+  computeFeature: computeFeature,
+  randomNumber: randomNumber
 };

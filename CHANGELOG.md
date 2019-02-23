@@ -1,5 +1,10 @@
 
 # Change Log
+#### 2018-02-23 21:30
+```
+新增延迟广播特性
+```
+
 #### 2018-02-21 08:30
 * now cc.startup and cc.configure support passing middlewares, all middlewares will been called before $$changeState in cc core, middleware using case may like:
 ```

@@ -9,3 +9,4 @@ export { default as getStateHandlerForInit } from './get-state-handler-for-init'
 export { default as extractStateByKeys } from './extract-state-by-keys';
 export { default as getAndStoreValidGlobalState } from './get-and-store-valid-global-state';
 export { default as runLater } from './run-later';
+export { default as uuid } from './uuid';
