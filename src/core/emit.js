@@ -6,7 +6,6 @@ export default function (event, ...args) {
     const ref = pickOneRef();
     ref.$$emit(event, ...args);
   } catch (err) {
-    if (throwError) throw err;
-    else util.justWarning(err.message);
+    util.justWarning(err.message)
   }
 }

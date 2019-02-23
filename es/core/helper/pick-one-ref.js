@@ -34,7 +34,8 @@ export default function (module) {
   }
 
   if (ccKeys.length === 0) {
-    throw new Error('no ccInstance found for any ccClass!');
+    var ignoreIt = "if this message doesn't matter, you can ignore it";
+    if (module) throw new Error("[[pick-one-ref]]: no any ccInstance founded for module:" + module + "!," + ignoreIt);else throw new Error("[[pick-one-ref]]: no any ccInstance founded currently," + ignoreIt);
   }
 
   var oneRef = ccKey_ref_[ccKeys[0]];

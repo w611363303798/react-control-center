@@ -10,6 +10,6 @@ export default function (event) {
 
     ref.$$emit.apply(ref, [event].concat(args));
   } catch (err) {
-    if (throwError) throw err;else util.justWarning(err.message);
+    util.justWarning(err.message);
   }
 }

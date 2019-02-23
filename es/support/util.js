@@ -60,9 +60,11 @@ export function makeError(code, extraMessage) {
   error.code = code;
   return error;
 }
-export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
+export function makeCcClassContext(module, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys) {
   return {
     module: module,
+    originalSharedStateKeys: originalSharedStateKeys,
+    originalGlobalStateKeys: originalGlobalStateKeys,
     sharedStateKeys: sharedStateKeys,
     globalStateKeys: globalStateKeys,
     ccKeys: [],
@@ -303,6 +305,11 @@ export function isStateValid(state) {
     return true;
   }
 }
+export function computeFeature(ccUniqueKey, state) {
+  var stateKeys = Object.keys(state);
+  var stateKeysStr = stateKeys.sort().join('|');
+  return ccUniqueKey + "/" + stateKeysStr;
+}
 export default {
   makeError: makeError,
   isHotReloadMode: isHotReloadMode,
@@ -333,5 +340,6 @@ export default {
   justTip: justTip,
   safeGetObjectFromObject: safeGetObjectFromObject,
   safeGetArrayFromObject: safeGetArrayFromObject,
-  safeAssignObjectValue: safeAssignObjectValue
+  safeAssignObjectValue: safeAssignObjectValue,
+  computeFeature: computeFeature
 };

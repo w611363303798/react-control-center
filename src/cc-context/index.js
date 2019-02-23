@@ -205,7 +205,11 @@ const _refStoreState = ccContext.refStore._state;
 for (var i = 0; i < lsLen; i++) {
   const lsKey = localStorage.key(i);
   if(lsKey.startsWith('CCSS_')){
-    _refStoreState[lsKey.substr(5)] = JSON.parse(localStorage.getItem(lsKey));
+    try{
+      _refStoreState[lsKey.substr(5)] = JSON.parse(localStorage.getItem(lsKey));
+    }catch(err){
+      console.error(err);
+    }
   }
 }
 

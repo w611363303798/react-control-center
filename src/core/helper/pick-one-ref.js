@@ -10,14 +10,14 @@ export default function (module) {
   if (module) {
     if (ccContext.store._state[module]) {
       const ccClassKeys = moduleName_ccClassKeys_[module];
-      if(ccClassKeys && ccClassKeys.length !== 0){
+      if (ccClassKeys && ccClassKeys.length !== 0) {
         const oneCcClassKey = ccClassKeys[0];
         const ccClassContext = ccClassKey_ccClassContext_[oneCcClassKey];
         if (!ccClassContext) {
           throw new Error(`no ccClassContext found for ccClassKey ${oneCcClassKey}!`);
         }
         ccKeys = ccClassContext.ccKeys;
-      }else{
+      } else {
         // find one cc ref later
       }
     } else {
@@ -30,7 +30,9 @@ export default function (module) {
   }
 
   if (ccKeys.length === 0) {
-    throw new Error('no ccInstance found for any ccClass!');
+    const ignoreIt = `if this message doesn't matter, you can ignore it`;
+    if (module) throw new Error(`[[pick-one-ref]]: no any ccInstance founded for module:${module}!,${ignoreIt}`);
+    else throw new Error(`[[pick-one-ref]]: no any ccInstance founded currently,${ignoreIt}`);
   }
   const oneRef = ccKey_ref_[ccKeys[0]];
   if (!oneRef) {

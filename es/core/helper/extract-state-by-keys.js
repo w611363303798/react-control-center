@@ -1,5 +1,5 @@
 import { isStateValid, isObjectNotNull } from '../../support/util';
-export default function (state, targetKeys) {
+export default function (state, stateKeys) {
   if (!isStateValid(state) || !isObjectNotNull(state)) {
     return {
       partialState: {},
@@ -9,7 +9,7 @@ export default function (state, targetKeys) {
 
   var partialState = {};
   var isStateEmpty = true;
-  targetKeys.forEach(function (key) {
+  stateKeys.forEach(function (key) {
     var value = state[key];
 
     if (value !== undefined) {

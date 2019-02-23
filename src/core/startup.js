@@ -66,7 +66,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       console.log(ss('$$default module state not found,cc will generate one for user automatically!'), cl());
     }
   } else {// non module mode
-    if (sharedToGlobalMapping) {
+    if (sharedToGlobalMapping && util.isObjectNotNull(sharedToGlobalMapping)) {
       throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
     }
 

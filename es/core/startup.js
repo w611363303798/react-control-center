@@ -71,7 +71,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     }
   } else {
     // non module mode
-    if (sharedToGlobalMapping) {
+    if (sharedToGlobalMapping && util.isObjectNotNull(sharedToGlobalMapping)) {
       throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
     }
 

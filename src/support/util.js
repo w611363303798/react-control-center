@@ -62,9 +62,11 @@ export function makeError(code, extraMessage) {
   return error;
 }
 
-export function makeCcClassContext(module, sharedStateKeys, globalStateKeys) {
+export function makeCcClassContext(module, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys) {
   return {
     module,
+    originalSharedStateKeys,
+    originalGlobalStateKeys,
     sharedStateKeys,
     globalStateKeys,
     ccKeys: [],
@@ -252,6 +254,17 @@ export function isStateValid(state) {
   }
 }
 
+export function computeFeature(ccUniqueKey, state) {
+  const stateKeys = Object.keys(state);
+  const stateKeysStr = stateKeys.sort().join('|');
+  return `${ccUniqueKey}/${stateKeysStr}`;
+}
+
+export function randomNumber(lessThan = 52) {
+  const seed = Math.random();
+  return parseInt(seed * lessThan);
+}
+
 export default {
   makeError,
   isHotReloadMode,
@@ -283,4 +296,6 @@ export default {
   safeGetObjectFromObject,
   safeGetArrayFromObject,
   safeAssignObjectValue,
+  computeFeature,
+  randomNumber,
 }
