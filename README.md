@@ -2,7 +2,7 @@
 **without redux、mobx, writing react app with cc is a funny way also, it's definitely worth doing!**
 **your star will be greatly appreciated^_^**
 
-## [Online demo](https://codepen.io/fantasticsoul/pen/QYeMje?editors=1010)
+## [Online demo](https://codepen.io/fantasticsoul/pen/QYeMje)
 
 ## why react-control-center
 - focus on react state management.
