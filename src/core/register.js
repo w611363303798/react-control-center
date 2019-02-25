@@ -1578,8 +1578,9 @@ export default function register(ccClassKey, {
           console.log(ss(`@@@ render ${ccClassDisplayName(ccClassKey)}`), cl());
         }
         if (extendInputClass) {
+          //now cc class extends ReactClass, call super.render()
           return super.render();
-        } else {//now cc class extends ReactClass, call super.render()
+        } else {
           // now cc class extends ReactComponent, render user inputted ReactClass
           return <ReactClass {...this} {...this.props} />
         }
