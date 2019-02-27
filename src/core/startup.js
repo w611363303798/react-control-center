@@ -283,13 +283,6 @@ init = {
   global:(setState)=>{}
 }
 */
-/*
-  {
-    vip:{
-      books:'vipBooks'
-    }
-  }
-*/
 export default function ({
   isModuleMode = false,
   store = {},

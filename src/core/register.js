@@ -1511,7 +1511,7 @@ export default function register(ccClassKey, {
           if (paramObjType === 'object') {
             const { module = originalComputedStateModule, reducerModule, forceSync = false, type = inputType, payload = inputPayload, cb, lazyMs = -1 } = paramObj;
             _module = module;
-            _reducerModule = reducerModule;
+            _reducerModule = reducerModule || module;
             _forceSync = forceSync;
             _type = type;
             _payload = payload;
