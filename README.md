@@ -2,7 +2,7 @@
 **without redux、mobx, writing react app with cc is a funny way also, it's definitely worth doing!**
 **your star will be greatly appreciated^_^**
 
-![one-demo](https://user-gold-cdn.xitu.io/2019/2/27/1692cd38dd35997e?w=911&h=760&f=gif&s=4460271)
+![one-demo](http://g.recordit.co/aIThT3wFUT.gif)
 
 ## [Online demo](https://codepen.io/fantasticsoul/pen/QYeMje) [Online advanced demo](https://codepen.io/fantasticsoul/pen/QYeMje)
 
