@@ -2223,7 +2223,7 @@ export default function register(ccClassKey, _temp) {
                 _lazyMs2 = _paramObj$lazyMs === void 0 ? -1 : _paramObj$lazyMs;
 
             _module = _module2;
-            _reducerModule = _reducerModule2;
+            _reducerModule = _reducerModule2 || _module2;
             _forceSync = forceSync;
             _type = type;
             _payload = payload;
@@ -2319,9 +2319,9 @@ export default function register(ccClassKey, _temp) {
         }
 
         if (extendInputClass) {
+          //now cc class extends ReactClass, call super.render()
           return _TargetClass.prototype.render.call(this);
         } else {
-          //now cc class extends ReactClass, call super.render()
           // now cc class extends ReactComponent, render user inputted ReactClass
           return React.createElement(ReactClass, _extends({}, this, this.props));
         }

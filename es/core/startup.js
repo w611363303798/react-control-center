@@ -80,34 +80,33 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     var invalidKeyCount = 0;
 
     if (includeDefaultModule || includeGlobalModule) {
-      if (includeDefaultModule && !includeGlobalModule) {
+      if (includeDefaultModule) {
         if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
-        } else {
-          _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
-          invalidKeyCount += 1;
-          console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
         }
+
+        _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
+        invalidKeyCount += 1;
+        console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
       } else {
         _state[MODULE_DEFAULT] = {};
       }
 
-      if (includeGlobalModule && !includeDefaultModule) {
+      if (includeGlobalModule) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
-        } else {
-          globalState = store[MODULE_GLOBAL];
-          Object.keys(globalState).forEach(function (key) {
-            globalStateKeys.push(key);
-          });
-          invalidKeyCount += 1;
-          console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
         }
-      } else {
-        globalState = {};
-      }
 
-      _state[MODULE_GLOBAL] = globalState;
+        globalState = store[MODULE_GLOBAL];
+        Object.keys(globalState).forEach(function (key) {
+          return globalStateKeys.push(key);
+        });
+        invalidKeyCount += 1;
+        console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
+        _state[MODULE_GLOBAL] = globalState;
+      } else {
+        _state[MODULE_GLOBAL] = {};
+      }
 
       if (Object.keys(store).length > invalidKeyCount) {
         justWarning("now cc is startup with non module mode, cc only allow you define store like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
@@ -300,14 +299,6 @@ reducer = {
 init = {
   global:(setState)=>{}
 }
-*/
-
-/*
-  {
-    vip:{
-      books:'vipBooks'
-    }
-  }
 */
 
 

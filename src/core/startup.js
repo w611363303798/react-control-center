@@ -94,6 +94,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         Object.keys(globalState).forEach(key => globalStateKeys.push(key));
         invalidKeyCount += 1;
         console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
+        _state[MODULE_GLOBAL] = globalState;
       }else{
         _state[MODULE_GLOBAL] = {};
       }

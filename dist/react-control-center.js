@@ -917,34 +917,33 @@
       var invalidKeyCount = 0;
 
       if (includeDefaultModule || includeGlobalModule) {
-        if (includeDefaultModule && !includeGlobalModule) {
+        if (includeDefaultModule) {
           if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
             throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
-          } else {
-            _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
-            invalidKeyCount += 1;
-            console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
           }
+
+          _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
+          invalidKeyCount += 1;
+          console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
         } else {
           _state[MODULE_DEFAULT] = {};
         }
 
-        if (includeGlobalModule && !includeDefaultModule) {
+        if (includeGlobalModule) {
           if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
             throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
-          } else {
-            globalState = store[MODULE_GLOBAL];
-            Object.keys(globalState).forEach(function (key) {
-              globalStateKeys.push(key);
-            });
-            invalidKeyCount += 1;
-            console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
           }
-        } else {
-          globalState = {};
-        }
 
-        _state[MODULE_GLOBAL] = globalState;
+          globalState = store[MODULE_GLOBAL];
+          Object.keys(globalState).forEach(function (key) {
+            return globalStateKeys.push(key);
+          });
+          invalidKeyCount += 1;
+          console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
+          _state[MODULE_GLOBAL] = globalState;
+        } else {
+          _state[MODULE_GLOBAL] = {};
+        }
 
         if (Object.keys(store).length > invalidKeyCount) {
           justWarning("now cc is startup with non module mode, cc only allow you define store like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
@@ -1137,14 +1136,6 @@
   init = {
     global:(setState)=>{}
   }
-  */
-
-  /*
-    {
-      vip:{
-        books:'vipBooks'
-      }
-    }
   */
 
 
@@ -5552,7 +5543,7 @@
                   _lazyMs2 = _paramObj$lazyMs === void 0 ? -1 : _paramObj$lazyMs;
 
               _module = _module2;
-              _reducerModule = _reducerModule2;
+              _reducerModule = _reducerModule2 || _module2;
               _forceSync = forceSync;
               _type = type;
               _payload = payload;
@@ -5648,9 +5639,9 @@
           }
 
           if (extendInputClass) {
+            //now cc class extends ReactClass, call super.render()
             return _TargetClass.prototype.render.call(this);
           } else {
-            //now cc class extends ReactClass, call super.render()
             // now cc class extends ReactComponent, render user inputted ReactClass
             return react.createElement(ReactClass, _extends({}, this, this.props));
           }
