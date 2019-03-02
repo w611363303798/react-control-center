@@ -10,3 +10,4 @@ export { default as extractStateByKeys } from './extract-state-by-keys';
 export { default as getAndStoreValidGlobalState } from './get-and-store-valid-global-state';
 export { default as runLater } from './run-later';
 export { default as uuid } from './uuid';
+export { default as catchCcError } from './catch-cc-error';
