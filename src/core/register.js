@@ -349,12 +349,17 @@ function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
     return { moduledPropKey: propKey, originalPropKey: propKey };
   }
 }
-function _getStateKeyPair(isPropStateModuleMode, module, stateKey) {
-  if (isPropStateModuleMode === true) {
-    return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
-  } else {
-    return { moduledStateKey: stateKey, originalStateKey: stateKey };
-  }
+
+
+// stateKey_propKeyDescriptor_ map's key must be moduledStateKey like 'foo/key'
+// cause different module may include the same state key
+function _getStateKeyPair(module, stateKey) {
+  return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
+  // if (isPropStateModuleMode === true) {
+  //   return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
+  // } else {
+  //   return { moduledStateKey: stateKey, originalStateKey: stateKey };
+  // }
 }
 function _setPropState(propState, propKey, propValue, isPropStateModuleMode, module) {
   if (isPropStateModuleMode) {
@@ -446,7 +451,7 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, originalSharedSt
               _throwPropDuplicateError(prefixedKey, module);
             } else {
               propKey_appeared_[moduledPropKey] = true;
-              const { moduledStateKey } = _getStateKeyPair(isPropStateModuleMode, module, stateKey);
+              const { moduledStateKey } = _getStateKeyPair( module, stateKey);
               propKey_stateKeyDescriptor_[moduledPropKey] = { module: stateModule, originalStateKey: stateKey, moduledStateKey };
               stateKey_propKeyDescriptor_[moduledStateKey] = { module: stateModule, moduledPropKey, originalPropKey };
 
@@ -618,7 +623,7 @@ function updateModulePropState(module_isPropStateChanged, changedPropStateList, 
     Object.keys(state).forEach(sKey => {
       // use input stateModuleName to compute moduledStateKey for current stateKey
       // to see if the propState should be updated
-      const { moduledStateKey } = _getStateKeyPair(isPropStateModuleMode, stateModuleName, sKey);
+      const { moduledStateKey } = _getStateKeyPair(stateModuleName, sKey);
       const moduledPropKeyDescriptor = stateKey_propKeyDescriptor_[moduledStateKey];
       if (moduledPropKeyDescriptor) {
         const { originalPropKey } = moduledPropKeyDescriptor;

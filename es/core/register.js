@@ -417,20 +417,19 @@ function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
       originalPropKey: propKey
     };
   }
-}
+} // stateKey_propKeyDescriptor_ map's key must be moduledStateKey like 'foo/key'
+// cause different module may include the same state key
 
-function _getStateKeyPair(isPropStateModuleMode, module, stateKey) {
-  if (isPropStateModuleMode === true) {
-    return {
-      moduledStateKey: module + "/" + stateKey,
-      originalStateKey: stateKey
-    };
-  } else {
-    return {
-      moduledStateKey: stateKey,
-      originalStateKey: stateKey
-    };
-  }
+
+function _getStateKeyPair(module, stateKey) {
+  return {
+    moduledStateKey: module + "/" + stateKey,
+    originalStateKey: stateKey
+  }; // if (isPropStateModuleMode === true) {
+  //   return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
+  // } else {
+  //   return { moduledStateKey: stateKey, originalStateKey: stateKey };
+  // }
 }
 
 function _setPropState(propState, propKey, propValue, isPropStateModuleMode, module) {
@@ -554,7 +553,7 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, originalSharedSt
             } else {
               propKey_appeared_[moduledPropKey] = true;
 
-              var _getStateKeyPair2 = _getStateKeyPair(isPropStateModuleMode, module, stateKey),
+              var _getStateKeyPair2 = _getStateKeyPair(module, stateKey),
                   moduledStateKey = _getStateKeyPair2.moduledStateKey;
 
               propKey_stateKeyDescriptor_[moduledPropKey] = {

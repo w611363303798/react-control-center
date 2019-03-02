@@ -847,6 +847,10 @@
   var ss = styleStr;
   var cl = color;
 
+  function keysWarning(keyWord) {
+    justWarning("now cc is startup with non module mode, cc only allow you define " + keyWord + " like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
+  }
+
   function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     if (!isPlainJsonObject(store)) {
       throw new Error("the store is not a plain json object!");
@@ -950,7 +954,7 @@
         }
 
         if (Object.keys(store).length > invalidKeyCount) {
-          justWarning("now cc is startup with non module mode, cc only allow you define store like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
+          keysWarning('store');
         }
       } else {
         // treat store as $$default module store
@@ -975,29 +979,23 @@
    */
 
 
-  function bindReducerToCcContext(reducer, isModuleMode) {
+  function bindReducerToCcContext(reducer) {
     var _reducer = ccContext.reducer._reducer;
+    var moduleNames = Object.keys(reducer);
+    var len = moduleNames.length;
+    var isDefaultReducerExist = false,
+        isGlobalReducerExist = false;
 
-    if (isModuleMode) {
-      var moduleNames = Object.keys(reducer);
-      var len = moduleNames.length;
-      var isDefaultReducerExist = false,
-          isGlobalReducerExist = false;
-
-      for (var i = 0; i < len; i++) {
-        var _moduleName2 = moduleNames[i];
-        checkModuleName(_moduleName2, true);
-        _reducer[_moduleName2] = reducer[_moduleName2];
-        if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
-        if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
-      }
-
-      if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
-      if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
-    } else {
-      if (reducer.hasOwnProperty(MODULE_DEFAULT)) _reducer[MODULE_DEFAULT] = reducer[MODULE_DEFAULT];else _reducer[MODULE_DEFAULT] = reducer;
-      if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];else _reducer[MODULE_GLOBAL] = {};
+    for (var i = 0; i < len; i++) {
+      var _moduleName2 = moduleNames[i];
+      checkModuleName(_moduleName2, true);
+      _reducer[_moduleName2] = reducer[_moduleName2];
+      if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
+      if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
     }
+
+    if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
+    if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
   }
 
   function bindComputedToCcContext(computed, isModuleMode) {
@@ -1044,7 +1042,28 @@
         mapComputed(m, computed[m]);
       });
     } else {
-      mapComputed(MODULE_DEFAULT, computed);
+      var includeDefaultKey = computed.hasOwnProperty(MODULE_DEFAULT);
+      var includeGlobalKey = computed.hasOwnProperty(MODULE_GLOBAL);
+
+      if (includeDefaultKey || includeGlobalKey) {
+        var invalidKeyCount = 0;
+
+        if (includeDefaultKey) {
+          invalidKeyCount++;
+          mapComputed(MODULE_DEFAULT, computed[MODULE_DEFAULT]);
+        }
+
+        if (includeGlobalKey) {
+          invalidKeyCount++;
+          mapComputed(MODULE_GLOBAL, computed[MODULE_GLOBAL]);
+        }
+
+        if (Object.keys(computed).length > invalidKeyCount) {
+          keysWarning('computed');
+        }
+      } else {
+        mapComputed(MODULE_DEFAULT, computed);
+      }
     }
   }
 
@@ -1183,7 +1202,7 @@
     util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
     util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
     bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-    bindReducerToCcContext(reducer, isModuleMode);
+    bindReducerToCcContext(reducer);
     bindComputedToCcContext(computed, isModuleMode);
 
     if (init) {
@@ -3748,20 +3767,19 @@
         originalPropKey: propKey
       };
     }
-  }
+  } // stateKey_propKeyDescriptor_ map's key must be moduledStateKey like 'foo/key'
+  // cause different module may include the same state key
 
-  function _getStateKeyPair(isPropStateModuleMode, module, stateKey) {
-    if (isPropStateModuleMode === true) {
-      return {
-        moduledStateKey: module + "/" + stateKey,
-        originalStateKey: stateKey
-      };
-    } else {
-      return {
-        moduledStateKey: stateKey,
-        originalStateKey: stateKey
-      };
-    }
+
+  function _getStateKeyPair(module, stateKey) {
+    return {
+      moduledStateKey: module + "/" + stateKey,
+      originalStateKey: stateKey
+    }; // if (isPropStateModuleMode === true) {
+    //   return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
+    // } else {
+    //   return { moduledStateKey: stateKey, originalStateKey: stateKey };
+    // }
   }
 
   function _setPropState(propState, propKey, propValue, isPropStateModuleMode, module) {
@@ -3884,7 +3902,7 @@
               } else {
                 propKey_appeared_[moduledPropKey] = true;
 
-                var _getStateKeyPair2 = _getStateKeyPair(isPropStateModuleMode, module, stateKey),
+                var _getStateKeyPair2 = _getStateKeyPair(module, stateKey),
                     moduledStateKey = _getStateKeyPair2.moduledStateKey;
 
                 propKey_stateKeyDescriptor_[moduledPropKey] = {

@@ -7,6 +7,10 @@ const vbi = verboseInfo;
 const ss = styleStr;
 const cl = color;
 
+function keysWarning(keyWord) {
+  justWarning(`now cc is startup with non module mode, cc only allow you define ${keyWord} like {"$$default":{}, "$$global":{}}, cc will ignore other module keys`);
+}
+
 function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
   if (!isPlainJsonObject(store)) {
     throw new Error(`the store is not a plain json object!`);
@@ -75,18 +79,18 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     let invalidKeyCount = 0;
 
     if (includeDefaultModule || includeGlobalModule) {
-      if(includeDefaultModule){
+      if (includeDefaultModule) {
         if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
         }
         _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
-          invalidKeyCount += 1;
-          console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
-      }else{
+        invalidKeyCount += 1;
+        console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
+      } else {
         _state[MODULE_DEFAULT] = {};
       }
 
-      if(includeGlobalModule){
+      if (includeGlobalModule) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
           throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
         }
@@ -95,12 +99,12 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
         invalidKeyCount += 1;
         console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
         _state[MODULE_GLOBAL] = globalState;
-      }else{
+      } else {
         _state[MODULE_GLOBAL] = {};
       }
 
       if (Object.keys(store).length > invalidKeyCount) {
-        justWarning(`now cc is startup with non module mode, cc only allow you define store like {"$$default":{}, "$$global":{}}, cc will ignore other module keys`);
+        keysWarning('store');
       }
     } else {// treat store as $$default module store
       if (!util.isModuleStateValid(store)) {
@@ -123,29 +127,21 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
  * @author zzk
  * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
  */
-function bindReducerToCcContext(reducer, isModuleMode) {
+function bindReducerToCcContext(reducer) {
   const _reducer = ccContext.reducer._reducer;
-  if (isModuleMode) {
-    const moduleNames = Object.keys(reducer);
+  const moduleNames = Object.keys(reducer);
 
-    const len = moduleNames.length;
-    let isDefaultReducerExist = false, isGlobalReducerExist = false;
-    for (let i = 0; i < len; i++) {
-      const moduleName = moduleNames[i];
-      helper.checkModuleName(moduleName, true);
-      _reducer[moduleName] = reducer[moduleName];
-      if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
-      if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
-    }
-    if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
-    if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
-  } else {
-    if (reducer.hasOwnProperty(MODULE_DEFAULT)) _reducer[MODULE_DEFAULT] = reducer[MODULE_DEFAULT];
-    else _reducer[MODULE_DEFAULT] = reducer;
-
-    if (reducer.hasOwnProperty(MODULE_GLOBAL)) _reducer[MODULE_GLOBAL] = reducer[MODULE_GLOBAL];
-    else _reducer[MODULE_GLOBAL] = {};
+  const len = moduleNames.length;
+  let isDefaultReducerExist = false, isGlobalReducerExist = false;
+  for (let i = 0; i < len; i++) {
+    const moduleName = moduleNames[i];
+    helper.checkModuleName(moduleName, true);
+    _reducer[moduleName] = reducer[moduleName];
+    if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
+    if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
   }
+  if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
+  if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
 }
 
 function bindComputedToCcContext(computed, isModuleMode) {
@@ -186,7 +182,24 @@ function bindComputedToCcContext(computed, isModuleMode) {
       mapComputed(m, computed[m]);
     });
   } else {
-    mapComputed(MODULE_DEFAULT, computed);
+    const includeDefaultKey = computed.hasOwnProperty(MODULE_DEFAULT);
+    const includeGlobalKey = computed.hasOwnProperty(MODULE_GLOBAL);
+    if (includeDefaultKey || includeGlobalKey) {
+      let invalidKeyCount = 0;
+      if (includeDefaultKey) {
+        invalidKeyCount++;
+        mapComputed(MODULE_DEFAULT, computed[MODULE_DEFAULT]);
+      }
+      if (includeGlobalKey) {
+        invalidKeyCount++;
+        mapComputed(MODULE_GLOBAL, computed[MODULE_GLOBAL]);
+      }
+      if (Object.keys(computed).length > invalidKeyCount) {
+        keysWarning('computed');
+      }
+    } else {
+      mapComputed(MODULE_DEFAULT, computed);
+    }
   }
 }
 
@@ -307,7 +320,7 @@ export default function ({
   util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
 
   bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-  bindReducerToCcContext(reducer, isModuleMode);
+  bindReducerToCcContext(reducer);
   bindComputedToCcContext(computed, isModuleMode);
 
   if (init) {
