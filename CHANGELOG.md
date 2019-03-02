@@ -1,5 +1,18 @@
 
 # Change Log
+#### 2018-03-02 18：00
+* bug fix: when different module may include the same state key,stateKey_propKeyDescriptor_ lose key
+* bug fix: error occured when declare $$global and $$default at the same in non module mode
+* optimize: add cc top api `r` missing param
+* optimize: dispatch support define reducer module only in string param
+  ```
+    // this means use current instance module state as target module state, use 'foo' reducer module as target reducer module
+    this.$$dispatch('/foo/changeName', 'foo')
+
+    // this means use 'foo' module state as target module state and 'foo' reducer module as target reducer module
+    this.$$dispatch('foo/changeName', 'foo')
+  ```
+
 #### 2018-02-23 21:30
 * cc instance api can set lazyMs to lazy broadcast behavior
 * cc.startup support input middlewares

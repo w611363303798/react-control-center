@@ -840,7 +840,7 @@
   }
 
   var catchCcError = (function (err) {
-    if (ccContext.errorHandler) ccContext.errorHandler(err);
+    if (ccContext.errorHandler) ccContext.errorHandler(err);else throw err;
   });
 
   var vbi = verboseInfo;
@@ -3913,7 +3913,8 @@
                 stateKey_propKeyDescriptor_[moduledStateKey] = {
                   module: stateModule,
                   moduledPropKey: moduledPropKey,
-                  originalPropKey: originalPropKey
+                  originalPropKey: originalPropKey,
+                  originalStateKey: stateKey
                 };
 
                 _setPropState(propState, propKey, moduleState[stateKey], isPropStateModuleMode, module);
@@ -4131,7 +4132,7 @@
       Object.keys(state).forEach(function (sKey) {
         // use input stateModuleName to compute moduledStateKey for current stateKey
         // to see if the propState should be updated
-        var _getStateKeyPair3 = _getStateKeyPair(isPropStateModuleMode, stateModuleName, sKey),
+        var _getStateKeyPair3 = _getStateKeyPair(stateModuleName, sKey),
             moduledStateKey = _getStateKeyPair3.moduledStateKey;
 
         var moduledPropKeyDescriptor = stateKey_propKeyDescriptor_[moduledStateKey];
@@ -5391,8 +5392,8 @@
             this.cc.__invokeWith = this.cc.__invokeWith.bind(this); // let CcComponent instance can call dispatch directly
             // if you call $$dispatch in a ccInstance, state extraction strategy will be STATE_FOR_ONE_CC_INSTANCE_FIRSTLY
 
-            this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
-            this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE);
+            this.$$dispatch = this.__$$getDispatchHandler(STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, currentModule);
+            this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, currentModule);
             this.$$invoke = this.cc.invoke.bind(this); // commit state to cc directly, but userFn can be promise or generator both!
 
             this.$$invokeWith = this.cc.invokeWith.bind(this);
@@ -5598,6 +5599,8 @@
                       _reducerModule3 = _paramObj$split2[1],
                       _type3 = _paramObj$split2[2];
 
+                  if (_module4 === '' || _module4 === ' ') _module = originalComputedStateModule; //paramObj may like: /foo/changeName
+                  else _module = _module4;
                   _module = _module4;
                   _reducerModule = _reducerModule3;
                   _type = _type3;
