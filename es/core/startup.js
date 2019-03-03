@@ -53,7 +53,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       if (moduleName !== MODULE_GLOBAL) {
         helper.checkModuleName(moduleName);
         var moduleState = store[moduleName];
-        helper.checkModuleState(moduleState);
+        helper.checkModuleState(moduleState, moduleName);
 
         if (moduleName === MODULE_DEFAULT) {
           isDefaultModuleExist = true;

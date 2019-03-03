@@ -638,7 +638,7 @@
     }
   }
 
-  function checkModuleState (moduleState) {
+  function checkModuleState (moduleState, moduleName) {
     if (!util.isModuleStateValid(moduleState)) {
       throw util.makeError(ERR.CC_STORE_STATE_INVALID, util.verboseInfo("moduleName:" + moduleName + "'s state is invalid!"));
     }
@@ -894,7 +894,7 @@
         if (moduleName !== MODULE_GLOBAL) {
           checkModuleName(moduleName);
           var moduleState = store[moduleName];
-          checkModuleState(moduleState);
+          checkModuleState(moduleState, moduleName);
 
           if (moduleName === MODULE_DEFAULT) {
             isDefaultModuleExist = true;
@@ -5789,7 +5789,7 @@
     }
 
     checkModuleName(module);
-    checkModuleState(state);
+    checkModuleState(state, module);
     var _state = ccContext.store._state;
     var _reducer = ccContext.reducer._reducer;
 
@@ -5849,7 +5849,7 @@
     var storedGlobalState = _state[MODULE_GLOBAL];
 
     if (globalState) {
-      checkModuleState(globalState);
+      checkModuleState(globalState, MODULE_GLOBAL);
       var globalStateKeys = Object.keys(globalState);
       globalStateKeys.forEach(function (gKey) {
         if (storedGlobalState[gKey]) {

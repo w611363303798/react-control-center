@@ -29,7 +29,7 @@ export default function (module, state, { singleClass, moduleReducer, reducer, i
   }
 
   helper.checkModuleName(module);
-  helper.checkModuleState(state);
+  helper.checkModuleState(state, module);
 
   const _state = ccContext.store._state;
   const _reducer = ccContext.reducer._reducer;
@@ -80,7 +80,7 @@ export default function (module, state, { singleClass, moduleReducer, reducer, i
 
   const storedGlobalState = _state[MODULE_GLOBAL];
   if (globalState) {
-    helper.checkModuleState(globalState);
+    helper.checkModuleState(globalState, MODULE_GLOBAL);
     const globalStateKeys = Object.keys(globalState);
     globalStateKeys.forEach(gKey => {
       if (storedGlobalState[gKey]) {
