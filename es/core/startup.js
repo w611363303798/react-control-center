@@ -31,7 +31,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
 
     if (globalState) {
       if (!util.isModuleStateValid(globalState)) {
-        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s value is invalid!"));
+        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s state is invalid!"));
       } else {
         console.log(ss('$$global module state found while startup cc!'), cl());
         Object.keys(globalState).forEach(function (key) {
@@ -48,23 +48,23 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     var isDefaultModuleExist = false;
 
     for (var i = 0; i < len; i++) {
-      var _moduleName = moduleNames[i];
+      var moduleName = moduleNames[i];
 
-      if (_moduleName !== MODULE_GLOBAL) {
-        helper.checkModuleName(_moduleName);
-        var moduleState = store[_moduleName];
+      if (moduleName !== MODULE_GLOBAL) {
+        helper.checkModuleName(moduleName);
+        var moduleState = store[moduleName];
         helper.checkModuleState(moduleState);
 
-        if (_moduleName === MODULE_DEFAULT) {
+        if (moduleName === MODULE_DEFAULT) {
           isDefaultModuleExist = true;
           console.log(ss('$$default module state found while startup cc!'), cl());
         }
 
-        _state[_moduleName] = moduleState;
-        var sharedKey_globalKey_ = sharedToGlobalMapping[_moduleName];
+        _state[moduleName] = moduleState;
+        var sharedKey_globalKey_ = sharedToGlobalMapping[moduleName];
 
         if (sharedKey_globalKey_) {
-          helper.handleModuleSharedToGlobalMapping(_moduleName, sharedKey_globalKey_);
+          helper.handleModuleSharedToGlobalMapping(moduleName, sharedKey_globalKey_);
         }
       }
     }
@@ -86,7 +86,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     if (includeDefaultModule || includeGlobalModule) {
       if (includeDefaultModule) {
         if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
-          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(" moduleName:" + MODULE_DEFAULT + "'s state is invalid!"));
         }
 
         _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
@@ -98,7 +98,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
 
       if (includeGlobalModule) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
-          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + "'s value is invalid!"));
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(" moduleName:" + MODULE_GLOBAL + "'s state is invalid!"));
         }
 
         globalState = store[MODULE_GLOBAL];
@@ -118,7 +118,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     } else {
       // treat store as $$default module store
       if (!util.isModuleStateValid(store)) {
-        throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(" moduleName:" + moduleName + " is invalid!"));
+        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(" moduleName:" + MODULE_DEFAULT + "'s state  is invalid!"));
       }
 
       _state[MODULE_DEFAULT] = store;
@@ -146,11 +146,11 @@ function bindReducerToCcContext(reducer) {
       isGlobalReducerExist = false;
 
   for (var i = 0; i < len; i++) {
-    var _moduleName2 = moduleNames[i];
-    helper.checkModuleName(_moduleName2, true);
-    _reducer[_moduleName2] = reducer[_moduleName2];
-    if (_moduleName2 === MODULE_DEFAULT) isDefaultReducerExist = true;
-    if (_moduleName2 === MODULE_GLOBAL) isGlobalReducerExist = true;
+    var moduleName = moduleNames[i];
+    helper.checkModuleName(moduleName, true);
+    _reducer[moduleName] = reducer[moduleName];
+    if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
+    if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
   }
 
   if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};

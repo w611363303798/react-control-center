@@ -30,7 +30,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     const moduleNames = Object.keys(store);
     if (globalState) {
       if (!util.isModuleStateValid(globalState)) {
-        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(`moduleName:${MODULE_GLOBAL}'s value is invalid!`));
+        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(`moduleName:${MODULE_GLOBAL}'s state is invalid!`));
       } else {
         console.log(ss('$$global module state found while startup cc!'), cl());
         Object.keys(globalState).forEach(key => {
@@ -81,7 +81,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
     if (includeDefaultModule || includeGlobalModule) {
       if (includeDefaultModule) {
         if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
-          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(` moduleName:${MODULE_DEFAULT}'s state is invalid!`));
         }
         _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
         invalidKeyCount += 1;
@@ -92,7 +92,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
 
       if (includeGlobalModule) {
         if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
-          throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName}'s value is invalid!`));
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(` moduleName:${MODULE_GLOBAL}'s state is invalid!`));
         }
         globalState = store[MODULE_GLOBAL];
         Object.keys(globalState).forEach(key => globalStateKeys.push(key));
@@ -108,7 +108,7 @@ function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
       }
     } else {// treat store as $$default module store
       if (!util.isModuleStateValid(store)) {
-        throw util.makeError(ERR.CC_MODULE_NAME_INVALID, vbi(` moduleName:${moduleName} is invalid!`));
+        throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(` moduleName:${MODULE_DEFAULT}'s state  is invalid!`));
       }
       _state[MODULE_DEFAULT] = store;
     }
