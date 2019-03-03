@@ -1187,38 +1187,42 @@
         _ref$errorHandler = _ref.errorHandler,
         errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler;
 
-    if (window) {
-      window.CC_CONTEXT = ccContext;
-      window.ccc = ccContext;
+    try {
+      if (window) {
+        window.CC_CONTEXT = ccContext;
+        window.ccc = ccContext;
+      }
+
+      if (ccContext.isCcAlreadyStartup) {
+        throw util.makeError(ERR.CC_ALREADY_STARTUP);
+      }
+
+      ccContext.isModuleMode = isModuleMode;
+      ccContext.isStrict = isStrict;
+      ccContext.isDebug = isDebug;
+      util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
+      util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
+      bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
+      bindReducerToCcContext(reducer);
+      bindComputedToCcContext(computed, isModuleMode);
+
+      if (init) {
+        var computedStore = ccContext.store._state;
+        executeInitializer(isModuleMode, computedStore, init);
+      }
+
+      if (middlewares.length > 0) {
+        var ccMiddlewares = ccContext.middlewares;
+        middlewares.forEach(function (m) {
+          return ccMiddlewares.push(m);
+        });
+      }
+
+      ccContext.isCcAlreadyStartup = true;
+      ccContext.errorHandler = errorHandler;
+    } catch (err) {
+      if (errorHandler) errorHandler(err);else throw err;
     }
-
-    if (ccContext.isCcAlreadyStartup) {
-      throw util.makeError(ERR.CC_ALREADY_STARTUP);
-    }
-
-    ccContext.isModuleMode = isModuleMode;
-    ccContext.isStrict = isStrict;
-    ccContext.isDebug = isDebug;
-    util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
-    util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
-    bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-    bindReducerToCcContext(reducer);
-    bindComputedToCcContext(computed, isModuleMode);
-
-    if (init) {
-      var computedStore = ccContext.store._state;
-      executeInitializer(isModuleMode, computedStore, init);
-    }
-
-    if (middlewares.length > 0) {
-      var ccMiddlewares = ccContext.middlewares;
-      middlewares.forEach(function (m) {
-        return ccMiddlewares.push(m);
-      });
-    }
-
-    ccContext.isCcAlreadyStartup = true;
-    ccContext.errorHandler = errorHandler;
   }
 
   function createCommonjsModule(fn, module) {
@@ -4206,7 +4210,7 @@
       });
 
       ccFn.apply(void 0, [userLogicFn, _executionContext].concat(args));
-    });
+    }).catch(catchCcError);
   }
 
   function handleCcFnError(err, __innerCb) {
@@ -5625,7 +5629,7 @@
                   __innerCb: _promiseErrorHandler(resolve, reject),
                   lazyMs: _lazyMs
                 });
-              });
+              }).catch(catchCcError);
             };
           };
 

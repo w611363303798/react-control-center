@@ -1,6 +1,6 @@
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
-import _extends from "@babel/runtime/helpers/extends";
+import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/esm/extends";
 import React from 'react'; // import hoistNonReactStatic from 'hoist-non-react-statics';
 
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
@@ -857,7 +857,7 @@ function _promisifyCcFn(ccFn, userLogicFn, executionContext) {
     });
 
     ccFn.apply(void 0, [userLogicFn, _executionContext].concat(args));
-  });
+  }).catch(helper.catchCcError);
 }
 
 function handleCcFnError(err, __innerCb) {
@@ -2282,7 +2282,7 @@ export default function register(ccClassKey, _temp) {
                 __innerCb: _promiseErrorHandler(resolve, reject),
                 lazyMs: _lazyMs
               });
-            });
+            }).catch(helper.catchCcError);
           };
         };
 
