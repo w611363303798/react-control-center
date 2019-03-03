@@ -678,7 +678,7 @@ function _promisifyCcFn(ccFn, userLogicFn, executionContext, ...args) {
   return new Promise((resolve, reject) => {
     const _executionContext = { ...executionContext, __innerCb: _promiseErrorHandler(resolve, reject) }
     ccFn(userLogicFn, _executionContext, ...args);
-  });
+  }).catch(helper.catchCcError);
 }
 
 function handleCcFnError(err, __innerCb) {
@@ -1556,10 +1556,10 @@ export default function register(ccClassKey, {
             return new Promise((resolve, reject) => {
               this.cc.dispatch(
                 {
-                  stateFor, module: _module, reducerModule:targetReducerModule, forceSync: _forceSync, type: _type, payload: _payload,
+                  stateFor, module: _module, reducerModule: targetReducerModule, forceSync: _forceSync, type: _type, payload: _payload,
                   cb: _cb, __innerCb: _promiseErrorHandler(resolve, reject), lazyMs: _lazyMs
                 });
-            });
+            }).catch(helper.catchCcError);
           }
         }
   
