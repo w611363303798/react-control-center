@@ -1,5 +1,8 @@
 
 # Change Log
+#### 2018-03-03 02：00
+* bug fix: helper/check-module-state miss moduleName
+  
 #### 2018-03-02 18：00
 * bug fix: when different module may include the same state key,stateKey_propKeyDescriptor_ lose key
 * bug fix: error occured when declare $$global and $$default at the same in non module mode

@@ -4,7 +4,7 @@
 
 ![one-demo](http://g.recordit.co/aIThT3wFUT.gif)
 
-## [Online demo](https://codepen.io/fantasticsoul/pen/QYeMje) [Online advanced demo](https://codepen.io/fantasticsoul/pen/QYeMje)
+## [Online demo](https://codepen.io/fantasticsoul/pen/QYeMje) [Online advanced demo](https://codepen.io/fantasticsoul/pen/QYeMje) [Jsrun video](http://jsrun.net/vLXKp/play)
 
 ## why react-control-center
 - focus on react state management.

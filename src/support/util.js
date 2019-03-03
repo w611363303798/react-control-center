@@ -54,7 +54,11 @@ export function isActionTypeValid(type) {
 }
 
 export function makeError(code, extraMessage) {
-  let message = ERR_MESSAGE[code] || '';
+  let message = '';
+  if (typeof code === 'string') message = code;
+  else {
+    message = ERR_MESSAGE[code] || '';
+  }
   if (extraMessage) message += extraMessage;
   if (!message) message = `undefined message for code:${code}`;
   const error = new Error(message);
