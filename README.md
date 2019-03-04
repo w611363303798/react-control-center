@@ -1,6 +1,7 @@
 # react-control-center [C_C]
 **without redux、mobx, writing react app with cc is a funny way also, it's definitely worth doing!**
 **your star will be greatly appreciated^_^**
+### for collecting feedback I create a QQ group number: 647642619, welcome to join it.
 
 ![one-demo](http://g.recordit.co/aIThT3wFUT.gif)
 
