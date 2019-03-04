@@ -162,7 +162,7 @@ class Counter extends React.Component {
     this.$$xeffect('counter', incNum2, `xffect will use custom function's first param to inject executionContext `);
   }
   incNum1ByInvoke = () => {
-    // $$effect must user input first param as module
+    // $$effect let user custom function's first param must be module
     //if you can make sure that you want to change the state of current instance's module, use $$invoke
     this.$$invoke(incNum1, this.state.num1 + 1);
   }
