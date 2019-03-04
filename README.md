@@ -38,6 +38,210 @@
 
 ![](https://github.com/fantasticsoul/static/blob/master/img/cc/cc3.png?raw=true)
 
+## Getting Started
+
+### Creating an App
+Use [create-react-app](https://github.com/facebookincubator/create-react-app) to create an app:
+
+```sh
+$ npm i -g create-react-app
+$ create-react-app cc-app
+```
+After creating, install react-control-center from npm:
+
+```sh
+$ cd cc-app
+$ npm i --save react-control-center
+$ npm start
+```
+### `index.js` [online demo](http://jsrun.net/b6XKp/play)
+```js
+import React from 'react'
+import cc from 'react-control-center'
+
+// startup cc with module mode
+cc.startup(
+  {
+    isModuleMode: true,
+    // declare a module state named 'counter'
+    store: {
+      counter: {
+        num1: 0,
+        num2: 0,
+      }
+    },
+    reducer: {
+      // a reducer module named 'counter'
+      counter: {
+        incNum1({ moduleState }) {
+          return { num1: moduleState.num1 + 1 };
+        },
+        async incNum2({ moduleState }) {
+          // await api.doSomethingOther();
+          return { num2: moduleState.num2 + 1 };
+        },
+        decNum1({ moduleState }) {
+          return { num1: moduleState.num1 - 1 };
+        },
+        decNum2({ moduleState }) {
+          return { num2: moduleState.num2 - 1 };
+        }
+      },
+      // cc allow you declare your customized reducer module
+      foo: {
+        incNum1AndNum2({ moduleState }) {
+          const { num1, num2 } = moduleState;
+          return { num1: num1 + 1, num2: num2 + 1 };
+        },
+        async incNum1AndNum2Wow({ dispatch }) {
+          //this means use counter module reducer's incNum1 method to change counter module state
+          dispatch('counter/incNum1');
+          dispatch('counter/incNum2');
+
+          // if this method is called by counter module's instance, the default state module in dispatch handler will be counter, so we can write like this: dispatch('/foo/incNum1');
+
+          /** dispatch return a promise, so we can also write like below
+           * await dispatch('counter/foo/incNum1');
+           * await dispatch('counter/foo/incNum2');
+           */
+        }
+      }
+    }
+  }
+);
+
+function incNum1(num1) {
+  return { num1 };
+}
+
+async function incNum2(executionContext, sentence) {
+  const { moduleState, dispatch, effect, xeffect } = executionContext;
+  // you can use dispatch 、 effect、 xeffect to compose different custom function or reducer function to do interesting things
+  return { num1: moduleState.num1 + 1 };
+}
+
+class Counter extends React.Component {
+  // note wo don't define any state in constructor, only if you want to add anther key in your ref state, 
+  // or your sharedStateKeys setting is not whole of the cc module state
+  /**
+      constructor(props, context) {
+      super(props, context);
+      this.state = {
+          // as we declare sharedStateKeys as '*', this value will rewrited by cc store's num1, so you don't need declare it here
+          // but if we declare sharedStateKeys as ['num2'], it means this cc component only share key num2's state changing,
+          // and then the num1 will be current instance's private state key..
+          num1:200,
+          my_key1:33,
+          my_key2:66,
+      }
+
+      // because we declare sharedStateKeys as '*', so the final merged state is
+      {num1:0, num2:0, my_key1:33, my_key2:66}
+  }
+   */
+  $$computed() {
+    return {
+      num1(num1) {
+        return num1 * 100;
+      }
+    }
+  }
+  incNum1ByClassicalSetState = () => {
+    this.setState({ num1: this.state.num1 + 1 });
+  }
+  incNum1ByDispatch = () => {
+    this.$$dispatch('incNum1');
+  }
+  incNum1ByCustomFunction1 = () => {
+    this.$$effect('counter', incNum1, this.state.num1 + 1);
+    // or you can write like this:
+    // this.$$effect(this.cc.ccState.module,incNum1, this.state.num1+1);
+  }
+  incNum1ByCustomFunction2 = () => {
+    this.$$xeffect('counter', incNum2, `xffect will use custom function's first param to inject executionContext `);
+  }
+  incNum1ByInvoke = () => {
+    // $$effect must user input first param as module
+    //if you can make sure that you want to change the state of current instance's module, use $$invoke
+    this.$$invoke(incNum1, this.state.num1 + 1);
+  }
+  render() {
+    const { num1, num2 } = this.state;
+    const { num1: scaledNum1 } = this.$$refComputed;
+    return (
+      <div>
+        <span>scaledNum1 is {scaledNum1}</span>
+        <hr />
+        <span>num1 is {num1}</span>
+        <hr />
+        <span>num2 is {num2}</span>
+        <hr />
+        <button onClick={this.incNum1ByClassicalSetState}>inc num1 by classical setState</button>
+        <button onClick={this.incNum1ByDispatch}>inc num1 by dispatch</button>
+        <button data-cct="incNum1" onClick={this.$$domDispatch}>inc num1 by domDispatch</button>
+        <button onClick={this.incNum1ByCustomFunction1}>inc num1 by custom function 1</button>
+        <button onClick={this.incNum1ByCustomFunction2}>inc num1 by custom function 2</button>
+        <button onClick={this.incNum1ByInvoke}>inc num1 by custom function 2</button>
+        {/* 
+      here we use $$domDispatch, 
+      data-cct means action type,
+      data-ccrm means reducer module name, if we don't specify it, 
+      cc will use current instance's module name to be reducer module name,
+      and current instance belong to counter module, but we haven't defined a function named incNum1AndNum2 in counter reducer,
+      so we have to write data-ccrm="foo",
+      by the way, data-ccm means module,
+      and we needn't write data-ccm="counter", because current instance belong to counter module, only if we want to change other
+      module's state we have to write a module name in data-ccm
+    */}
+        <button data-cct="incNum1AndNum2" data-ccrm="foo" onClick={this.$$domDispatch}>inc num1 and num2 both</button>
+        <button data-cct="incNum1AndNum2Wow" data-ccrm="foo" onClick={this.$$domDispatch}>inc num1 and num2 both in another way</button>
+        {/*
+                  all cc insntance can communicate with emit&on or emitIdentity&onIdentity
+              */}
+        <button onClick={() => this.$$emit('hi', 'param1', 'param2')}>emitToApp</button>
+        <button onClick={() => this.$$emitIdentity('hi2', 'identity', 'Iparam1', 'Iparam2')}>emitIdentityToApp</button>
+      </div>
+    );
+  }
+}
+const CcCounter = cc.register('Counter', { module: 'counter', sharedStateKeys: '*' })(Counter);
+
+class App extends React.Component {
+  constructor(props, context) {
+    super(props, context);
+    this.state = { showCounter: true };
+  }
+  componentDidMount() {
+    this.$$on('hi', (p1, p2) => alert(`p1${p1} p2${p2}`));
+    this.$$onIdentity('hi2', 'identity', (p1, p2) => alert(`p1${p1} p2${p2}`))
+  }
+  render() {
+    return (
+      <div>
+        {/* let Counter unmount and mount again, to show their state will been recovered by cc from cc store */}
+        <button onClick={() => this.setState({ showCounter: !this.state.showCounter })}>toggle counter view</button>
+        {/* initialize 3 CcCounter, to show their state will sync from each other by cc */}
+        {
+          this.state.showCounter ?
+            <React.Fragment>
+              <CcCounter />
+              <CcCounter />
+              <CcCounter />
+            </React.Fragment> :
+            ''
+        }
+      </div>
+    );
+  }
+}
+//just register App as a cc component, here wo don't define module, cc will let it belong to cc's built-in module $$default.
+const CcApp = cc.register('App')(App);
+
+// start the app，`render` is an enhanced `ReactDOM.render`
+ReactDOM.render(<CcApp />, document.getElementById('app'))
+
+```
+
 ## simple introduction
 - using cc requires only two steps: `startup` and `register`, `startup` must been written in your app's entry file first line to make sure your `cc class` works well.
 - you can set store、reducer、init、computed in `startup` method, but all of them is optional, so you can calling `startup` directly, that means cc run in non-module mode, and then cc only own two built-in modules:`$$default` and `$$global`.
