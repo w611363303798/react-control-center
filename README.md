@@ -102,8 +102,8 @@ cc.startup(
           // if this method is called by counter module's instance, the default state module in dispatch handler will be counter, so we can write like this: dispatch('/foo/incNum1');
 
           /** dispatch return a promise, so we can also write like below
-           * await dispatch('counter/foo/incNum1');
-           * await dispatch('counter/foo/incNum2');
+           * await dispatch('counter/incNum1');
+           * await dispatch('counter/incNum2');
            */
         }
       }
