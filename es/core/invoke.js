@@ -2,8 +2,6 @@ import ccContext from '../cc-context';
 import util from '../support/util';
 import { ERR } from '../support/constant';
 var vbi = util.verboseInfo;
-var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
-    ccKey_ref_ = ccContext.ccKey_ref_;
 /**
  * @description
  * @author zzk
@@ -18,6 +16,8 @@ var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
 export default function (ccClassKey, ccInstanceKey, method) {
   var _ref$method;
 
+  var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
+      ccKey_ref_ = ccContext.ccKey_ref_;
   var classContext = ccClassKey_ccClassContext_[ccClassKey];
 
   if (!classContext) {

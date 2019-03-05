@@ -3,9 +3,8 @@ import invoke from './invoke';
 import util from '../support/util';
 import { ERR } from '../support/constant';
 var vbi = util.verboseInfo;
-var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
-    ccKey_ref_ = ccContext.ccKey_ref_;
 export default function (ccClassKey, method) {
+  var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
   var classContext = ccClassKey_ccClassContext_[ccClassKey];
 
   if (!classContext.isSingle) {

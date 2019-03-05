@@ -3,7 +3,6 @@ import util from '../support/util';
 import { ERR } from '../support/constant';
 
 const vbi = util.verboseInfo;
-const { ccClassKey_ccClassContext_, ccKey_ref_ } = ccContext;
 
 /**
  * @description
@@ -16,6 +15,7 @@ const { ccClassKey_ccClassContext_, ccKey_ref_ } = ccContext;
  * @returns
  */
 export default function (ccClassKey, ccInstanceKey, method, ...args) {
+  const { ccClassKey_ccClassContext_, ccKey_ref_ } = ccContext;
   const classContext = ccClassKey_ccClassContext_[ccClassKey];
   if (!classContext) {
     const err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi(` ccClassKey:${ccClassKey}`));

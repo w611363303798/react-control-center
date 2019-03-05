@@ -1,8 +1,18 @@
 
 import { ERR_MESSAGE, MODULE_GLOBAL, MODULE_CC } from './constant';
+import ccContext from '../cc-context';
 
 export function isHotReloadMode() {
-  return window && window.webpackHotUpdate;
+  if (ccContext.isHot) return true;
+  
+  let result = false;
+  if (window) {
+    console.log(`%c[[isHotReloadMode]] window.name:${window.name}`, 'color:green;border:1px solid green');
+    if (window.webpackHotUpdate || window.name === 'previewFrame') {
+      result = true;
+    }
+  }
+  return result;
 }
 
 export function bindThis(_this, methods) {
@@ -64,6 +74,23 @@ export function makeError(code, extraMessage) {
   const error = new Error(message);
   error.code = code;
   return error;
+}
+
+export function hotReloadWarning(err){
+  const message = err.message || err;
+  const st = 'color:green;border:1px solid green';
+  console.log(`%c error detected ${message}, cc found app is maybe running in hot reload mode, so cc will silent this error...`, st);
+  console.log(`%c but if this is not as your expectation ,maybe you can reload your whole app to avoid this error message`, st);
+}
+
+/**
+ * these error may caused by hmr
+ * @param {*} err 
+ */
+export function throwCcHmrError(err){
+  if(isHotReloadMode()){
+    hotReloadWarning(err);
+  }else throw err;
 }
 
 export function makeCcClassContext(module, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys) {
@@ -269,8 +296,15 @@ export function randomNumber(lessThan = 52) {
   return parseInt(seed * lessThan);
 }
 
+export function clearObject(object) {
+  Object.keys(object).forEach(key => delete object[key]);
+}
+
 export default {
+  clearObject,
   makeError,
+  throwCcHmrError,
+  hotReloadWarning,
   isHotReloadMode,
   makeCcClassContext,
   makeStateMail,

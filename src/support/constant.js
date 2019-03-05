@@ -76,7 +76,7 @@ export const ERR = {
 }
 
 export const ERR_MESSAGE = {
-  [ERR.CC_ALREADY_STARTUP]: 'react-controller-center startup method con only be invoked one time by user! ',
+  [ERR.CC_ALREADY_STARTUP]: 'react-controller-center startup method con only be invoked one time by user, if cc is under hot reload mode, you can ignore this message ',
   [ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE]: 'you are trying register a module class but cc startup with non module mode! ',
   [ERR.CC_MODULE_NAME_DUPLICATE]: 'module name duplicate!',
   [ERR.CC_REGISTER_A_CC_CLASS]: 'registering a cc class is prohibited! ',

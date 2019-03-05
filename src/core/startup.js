@@ -1,4 +1,4 @@
-import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
+import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject, clearObject } from '../support/util';
 import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT } from '../support/constant';
 import * as helper from './helper';
 import ccContext from '../cc-context';
@@ -304,6 +304,7 @@ export default function ({
   isStrict = false,//consider every error will be throwed by cc? it is dangerous for a running react app
   isDebug = false,
   errorHandler = null,
+  isHot = false,
 } = {}) {
   try{
     if (window) {
@@ -312,7 +313,15 @@ export default function ({
     }
   
     if (ccContext.isCcAlreadyStartup) {
-      throw util.makeError(ERR.CC_ALREADY_STARTUP);
+      const err =  util.makeError(ERR.CC_ALREADY_STARTUP);
+      if(util.isHotReloadMode()){
+        clearObject(ccContext.reducer._reducer);
+        clearObject(ccContext.store._state);
+        clearObject(ccContext.computed._computedFn);
+        clearObject(ccContext.computed._computedValue);
+        util.hotReloadWarning(err);
+      }
+      else throw err;
     }
     ccContext.isModuleMode = isModuleMode;
     ccContext.isStrict = isStrict;
@@ -335,6 +344,7 @@ export default function ({
     }
   
     ccContext.isCcAlreadyStartup = true;
+    ccContext.isHot = isHot;
     ccContext.errorHandler = errorHandler;
   }catch(err){
     if(errorHandler)errorHandler(err);

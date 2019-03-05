@@ -1,4 +1,4 @@
-import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject } from '../support/util';
+import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject, clearObject } from '../support/util';
 import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT } from '../support/constant';
 import * as helper from './helper';
 import ccContext from '../cc-context';
@@ -344,7 +344,9 @@ export default function (_temp) {
       _ref$isDebug = _ref.isDebug,
       isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
       _ref$errorHandler = _ref.errorHandler,
-      errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler;
+      errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler,
+      _ref$isHot = _ref.isHot,
+      isHot = _ref$isHot === void 0 ? false : _ref$isHot;
 
   try {
     if (window) {
@@ -353,7 +355,15 @@ export default function (_temp) {
     }
 
     if (ccContext.isCcAlreadyStartup) {
-      throw util.makeError(ERR.CC_ALREADY_STARTUP);
+      var err = util.makeError(ERR.CC_ALREADY_STARTUP);
+
+      if (util.isHotReloadMode()) {
+        clearObject(ccContext.reducer._reducer);
+        clearObject(ccContext.store._state);
+        clearObject(ccContext.computed._computedFn);
+        clearObject(ccContext.computed._computedValue);
+        util.hotReloadWarning(err);
+      } else throw err;
     }
 
     ccContext.isModuleMode = isModuleMode;
@@ -378,6 +388,7 @@ export default function (_temp) {
     }
 
     ccContext.isCcAlreadyStartup = true;
+    ccContext.isHot = isHot;
     ccContext.errorHandler = errorHandler;
   } catch (err) {
     if (errorHandler) errorHandler(err);else throw err;

@@ -1,6 +1,18 @@
 import { ERR_MESSAGE, MODULE_GLOBAL, MODULE_CC } from './constant';
+import ccContext from '../cc-context';
 export function isHotReloadMode() {
-  return window && window.webpackHotUpdate;
+  if (ccContext.isHot) return true;
+  var result = false;
+
+  if (window) {
+    console.log("%c[[isHotReloadMode]] window.name:" + window.name, 'color:green;border:1px solid green');
+
+    if (window.webpackHotUpdate || window.name === 'previewFrame') {
+      result = true;
+    }
+  }
+
+  return result;
 }
 export function bindThis(_this, methods) {
   methods.forEach(function (method) {
@@ -53,12 +65,31 @@ export function isActionTypeValid(type) {
   }
 }
 export function makeError(code, extraMessage) {
-  var message = ERR_MESSAGE[code] || '';
+  var message = '';
+  if (typeof code === 'string') message = code;else {
+    message = ERR_MESSAGE[code] || '';
+  }
   if (extraMessage) message += extraMessage;
   if (!message) message = "undefined message for code:" + code;
   var error = new Error(message);
   error.code = code;
   return error;
+}
+export function hotReloadWarning(err) {
+  var message = err.message || err;
+  var st = 'color:green;border:1px solid green';
+  console.log("%c error detected " + message + ", cc found app is maybe running in hot reload mode, so cc will silent this error...", st);
+  console.log("%c but if this is not as your expectation ,maybe you can reload your whole app to avoid this error message", st);
+}
+/**
+ * these error may caused by hmr
+ * @param {*} err 
+ */
+
+export function throwCcHmrError(err) {
+  if (isHotReloadMode()) {
+    hotReloadWarning(err);
+  } else throw err;
 }
 export function makeCcClassContext(module, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys) {
   return {
@@ -318,8 +349,16 @@ export function randomNumber(lessThan) {
   var seed = Math.random();
   return parseInt(seed * lessThan);
 }
+export function clearObject(object) {
+  Object.keys(object).forEach(function (key) {
+    return delete object[key];
+  });
+}
 export default {
+  clearObject: clearObject,
   makeError: makeError,
+  throwCcHmrError: throwCcHmrError,
+  hotReloadWarning: hotReloadWarning,
   isHotReloadMode: isHotReloadMode,
   makeCcClassContext: makeCcClassContext,
   makeStateMail: makeStateMail,

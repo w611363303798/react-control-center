@@ -20,7 +20,7 @@ import co from 'co';
 import * as helper from './helper';
 
 const { extractStateByKeys, getAndStoreValidGlobalState } = helper;
-const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning } = util;
+const { verifyKeys, ccClassDisplayName, styleStr, color, verboseInfo, makeError, justWarning, throwCcHmrError } = util;
 const {
   store: { _state, getState, setState: ccStoreSetState, setStateByModuleAndKey },
   reducer: { _reducer }, refStore, globalMappingKey_sharedKey_,
@@ -373,118 +373,118 @@ function _setPropState(propState, propKey, propValue, isPropStateModuleMode, mod
 function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, originalSharedStateKeys, originalGlobalStateKeys, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
   const contextMap = ccContext.ccClassKey_ccClassContext_;
   if (contextMap[ccClassKey] !== undefined) {
-    throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
-  } else {
-    const ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys);
-    if (stateToPropMapping != undefined) {
-      const propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
-      const stateKey_propKeyDescriptor_ = ccClassContext.stateKey_propKeyDescriptor_;
-      const propState = ccClassContext.propState;
+    throwCcHmrError(me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`))
+  } 
+  const ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys);
+  if (stateToPropMapping != undefined) {
+    const propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
+    const stateKey_propKeyDescriptor_ = ccClassContext.stateKey_propKeyDescriptor_;
+    const propState = ccClassContext.propState;
 
-      if (typeof stateToPropMapping !== 'object') {
-        throw me(ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID, `ccClassKey:${ccClassKey}`);
-      }
-
-      const module_mapAllStateToProp_ = {};
-      const module_staredKey_ = {};
-      const module_prefixedKeys_ = {};
-      const prefixedKeys = Object.keys(stateToPropMapping);
-      const len = prefixedKeys.length;
-      for (let i = 0; i < len; i++) {
-        const prefixedKey = prefixedKeys[i];
-        if (!util.isPrefixedKeyValid(prefixedKey)) {
-          throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, `ccClassKey:${ccClassKey}, key:${prefixedKey}`);
-        }
-        const [targetModule, targetKey] = prefixedKey.split('/');
-        if (module_mapAllStateToProp_[targetModule] === true) {
-          // ignore other keys...
-        } else {
-          if (targetKey === '*') {
-            module_mapAllStateToProp_[targetModule] = true;
-            module_staredKey_[targetModule] = prefixedKey;
-          } else {
-            const modulePrefixedKeys = util.safeGetArrayFromObject(module_prefixedKeys_, targetModule);
-            modulePrefixedKeys.push(prefixedKey);
-            module_mapAllStateToProp_[targetModule] = false;
-          }
-        }
-      }
-
-      const targetModules = Object.keys(module_mapAllStateToProp_);
-      const propKey_appeared_ = {};//help cc to judge propKey is duplicated or not
-      targetModules.forEach(module => {
-        const moduleState = _state[module];
-        if (moduleState === undefined) {
-          throw me(ERR.CC_MODULE_NOT_FOUND, vbi(`module:${module}, check your stateToPropMapping config!`))
-        }
-
-        let isPropStateSet = false;
-
-        if (module_mapAllStateToProp_[module] === true) {
-          const moduleStateKeys = Object.keys(moduleState);
-          moduleStateKeys.forEach(msKey => {
-            // now prop key equal state key if user declare key like m1/* in stateToPropMapping;
-            const { moduledPropKey, originalPropKey } = _getPropKeyPair(isPropStateModuleMode, module, msKey);
-            const appeared = propKey_appeared_[moduledPropKey];
-
-            if (appeared === true) {
-              _throwPropDuplicateError(module_staredKey_[module], module);
-            } else {
-              propKey_appeared_[moduledPropKey] = true;
-              // moduledPropKey and moduledStateKey is equal
-              propKey_stateKeyDescriptor_[moduledPropKey] = { module, originalStateKey: msKey, moduledStateKey: moduledPropKey };
-              stateKey_propKeyDescriptor_[moduledPropKey] = { module, moduledPropKey, originalPropKey };
-
-              _setPropState(propState, msKey, moduleState[msKey], isPropStateModuleMode, module);
-              isPropStateSet = true;
-            }
-          });
-        } else {
-          const prefixedKeys = module_prefixedKeys_[module];
-          prefixedKeys.forEach(prefixedKey => {
-            const [stateModule, stateKey] = prefixedKey.split('/');
-            const propKey = stateToPropMapping[prefixedKey];
-            const { moduledPropKey, originalPropKey } = _getPropKeyPair(isPropStateModuleMode, module, propKey);
-
-            const appeared = propKey_appeared_[moduledPropKey];
-            if (appeared === true) {
-              _throwPropDuplicateError(prefixedKey, module);
-            } else {
-              propKey_appeared_[moduledPropKey] = true;
-              const { moduledStateKey } = _getStateKeyPair( module, stateKey);
-              propKey_stateKeyDescriptor_[moduledPropKey] = { module: stateModule, originalStateKey: stateKey, moduledStateKey };
-              stateKey_propKeyDescriptor_[moduledStateKey] = { module: stateModule, moduledPropKey, originalPropKey, originalStateKey: stateKey };
-
-              _setPropState(propState, propKey, moduleState[stateKey], isPropStateModuleMode, module);
-              isPropStateSet = true;
-            }
-          });
-        }
-
-        if (isPropStateSet === true) {
-          const pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
-          if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
-        }
-      });
-
-      ccClassContext.stateToPropMapping = stateToPropMapping;
-      ccClassContext.isPropStateModuleMode = isPropStateModuleMode;
+    if (typeof stateToPropMapping !== 'object') {
+      throw me(ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID, `ccClassKey:${ccClassKey}`);
     }
 
-    contextMap[ccClassKey] = ccClassContext;
+    const module_mapAllStateToProp_ = {};
+    const module_staredKey_ = {};
+    const module_prefixedKeys_ = {};
+    const prefixedKeys = Object.keys(stateToPropMapping);
+    const len = prefixedKeys.length;
+    for (let i = 0; i < len; i++) {
+      const prefixedKey = prefixedKeys[i];
+      if (!util.isPrefixedKeyValid(prefixedKey)) {
+        throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, `ccClassKey:${ccClassKey}, key:${prefixedKey}`);
+      }
+      const [targetModule, targetKey] = prefixedKey.split('/');
+      if (module_mapAllStateToProp_[targetModule] === true) {
+        // ignore other keys...
+      } else {
+        if (targetKey === '*') {
+          module_mapAllStateToProp_[targetModule] = true;
+          module_staredKey_[targetModule] = prefixedKey;
+        } else {
+          const modulePrefixedKeys = util.safeGetArrayFromObject(module_prefixedKeys_, targetModule);
+          modulePrefixedKeys.push(prefixedKey);
+          module_mapAllStateToProp_[targetModule] = false;
+        }
+      }
+    }
+
+    const targetModules = Object.keys(module_mapAllStateToProp_);
+    const propKey_appeared_ = {};//help cc to judge propKey is duplicated or not
+    targetModules.forEach(module => {
+      const moduleState = _state[module];
+      if (moduleState === undefined) {
+        throw me(ERR.CC_MODULE_NOT_FOUND, vbi(`module:${module}, check your stateToPropMapping config!`))
+      }
+
+      let isPropStateSet = false;
+
+      if (module_mapAllStateToProp_[module] === true) {
+        const moduleStateKeys = Object.keys(moduleState);
+        moduleStateKeys.forEach(msKey => {
+          // now prop key equal state key if user declare key like m1/* in stateToPropMapping;
+          const { moduledPropKey, originalPropKey } = _getPropKeyPair(isPropStateModuleMode, module, msKey);
+          const appeared = propKey_appeared_[moduledPropKey];
+
+          if (appeared === true) {
+            _throwPropDuplicateError(module_staredKey_[module], module);
+          } else {
+            propKey_appeared_[moduledPropKey] = true;
+            // moduledPropKey and moduledStateKey is equal
+            propKey_stateKeyDescriptor_[moduledPropKey] = { module, originalStateKey: msKey, moduledStateKey: moduledPropKey };
+            stateKey_propKeyDescriptor_[moduledPropKey] = { module, moduledPropKey, originalPropKey };
+
+            _setPropState(propState, msKey, moduleState[msKey], isPropStateModuleMode, module);
+            isPropStateSet = true;
+          }
+        });
+      } else {
+        const prefixedKeys = module_prefixedKeys_[module];
+        prefixedKeys.forEach(prefixedKey => {
+          const [stateModule, stateKey] = prefixedKey.split('/');
+          const propKey = stateToPropMapping[prefixedKey];
+          const { moduledPropKey, originalPropKey } = _getPropKeyPair(isPropStateModuleMode, module, propKey);
+
+          const appeared = propKey_appeared_[moduledPropKey];
+          if (appeared === true) {
+            _throwPropDuplicateError(prefixedKey, module);
+          } else {
+            propKey_appeared_[moduledPropKey] = true;
+            const { moduledStateKey } = _getStateKeyPair( module, stateKey);
+            propKey_stateKeyDescriptor_[moduledPropKey] = { module: stateModule, originalStateKey: stateKey, moduledStateKey };
+            stateKey_propKeyDescriptor_[moduledStateKey] = { module: stateModule, moduledPropKey, originalPropKey, originalStateKey: stateKey };
+
+            _setPropState(propState, propKey, moduleState[stateKey], isPropStateModuleMode, module);
+            isPropStateSet = true;
+          }
+        });
+      }
+
+      if (isPropStateSet === true) {
+        const pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
+        if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
+      }
+    });
+
+    ccClassContext.stateToPropMapping = stateToPropMapping;
+    ccClassContext.isPropStateModuleMode = isPropStateModuleMode;
   }
+
+  contextMap[ccClassKey] = ccClassContext;
 }
 
 function mapModuleAndCcClassKeys(moduleName, ccClassKey) {
   const ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
   if (ccClassKeys.includes(ccClassKey)) {
-    throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
+    throwCcHmrError(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
   }
   const moduleSingleClass = ccContext.moduleSingleClass;
   if (moduleSingleClass[moduleName] === true && ccClassKeys.length >= 1) {
     throw me(ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE, vbi(`module ${moduleName}, ccClassKey ${ccClassKey}`));
   }
-  ccClassKeys.push(ccClassKey);
+  // to avoid ccClassKeys include duplicate key in hmr mode
+  if(!ccClassKeys.includes(ccClassKey))ccClassKeys.push(ccClassKey);
 }
 
 /****
@@ -527,6 +527,7 @@ function _throwForExtendInputClassAsFalseCheck(ccClassKey) {
 function mapModuleAssociateDataToCcContext(extendInputClass, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
   if (extendInputClass === false) {
     if (sharedStateKeys.length > 0 || globalStateKeys.length > 0) {
+      //??? maybe can use this.props.state?
       _throwForExtendInputClassAsFalseCheck(ccClassKey);
     }
   }
