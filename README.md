@@ -24,6 +24,9 @@
 
 ## [cc-quick-start](https://github.com/fantasticsoul/rcc-simple-demo)
     https://github.com/fantasticsoul/rcc-simple-demo    
+    
+## [cc-ant-design-pro](https://github.com/fantasticsoul/rcc-antd-pro)
+    https://github.com/fantasticsoul/rcc-antd-pro
 
 ## compatibility
     react 15+
@@ -105,8 +108,8 @@ cc.startup(
           // if this method is called by counter module's instance, the default state module in dispatch handler will be counter, so we can write like this: dispatch('/foo/incNum1');
 
           /** dispatch return a promise, so we can also write like below
-           * await dispatch('counter/foo/incNum1');
-           * await dispatch('counter/foo/incNum2');
+           * await dispatch('counter/incNum1');
+           * await dispatch('counter/incNum2');
            */
         }
       }
@@ -165,7 +168,7 @@ class Counter extends React.Component {
     this.$$xeffect('counter', incNum2, `xffect will use custom function's first param to inject executionContext `);
   }
   incNum1ByInvoke = () => {
-    // $$effect must user input first param as module
+    // $$effect let user custom function's first param must be module
     //if you can make sure that you want to change the state of current instance's module, use $$invoke
     this.$$invoke(incNum1, this.state.num1 + 1);
   }
