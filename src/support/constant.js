@@ -4,6 +4,9 @@ export const MODULE_GLOBAL = '$$global';
 export const MODULE_DEFAULT = '$$default';
 export const MODULE_CC = '$$cc';
 
+export const CC_FRAGMENT_PREFIX = '$$Fragment';
+export const CC_DISPATCHER = '$$Dispatcher';
+
 export const CHANGE_BY_SELF = 100;
 export const CHANGE_BY_BROADCASTED_GLOBAL_STATE = 101;
 export const CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE = 102;
@@ -37,6 +40,7 @@ export const ERR = {
   CC_MODULE_NOT_FOUND: 1012,
   CC_DISPATCH_STRING_INVALID: 1013,
   CC_DISPATCH_PARAM_INVALID: 1014,
+  CC_NO_DISPATCHER_FOUND: 1015,
 
   CC_CLASS_KEY_DUPLICATE: 1100,
   CC_CLASS_NOT_FOUND: 1101,
@@ -47,6 +51,7 @@ export const ERR = {
   CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE:1106,
   CC_CLASS_STATE_TO_PROP_MAPPING_INVALID:1107,
   CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID:1108,
+  CC_CLASS_KEY_FRAGMENT_NOT_ALLOWED:1109,
 
   CC_CLASS_INSTANCE_KEY_DUPLICATE: 1200,
   CC_CLASS_INSTANCE_OPTION_INVALID: 1201,
@@ -91,6 +96,19 @@ export const ERR_MESSAGE = {
   [ERR.CC_MODULE_NOT_FOUND]: `module not found!`,
   [ERR.CC_DISPATCH_STRING_INVALID]: `dispatch param writing is invalid when its type is string, only these 3 is valid: (functionName)、(moduleName)/(functionName)、(moduleName)/(reducerModuleName)/(functionName)`,
   [ERR.CC_DISPATCH_PARAM_INVALID]: `dispatch param type is invalid, it must be string or object`,
+  [ERR.CC_NO_DISPATCHER_FOUND]: `
+    if you want CcFragment works well anywhere and anytime, you must initialize a Dispatcher, 
+    ant put it to a place that the Dispatcher will never been mount, so I suggest write it like:
+    <App>
+      <CcDispatcher />
+      {/* another jsx */}
+    </App>
+    or
+    <CcDispatcher>
+      <App />
+    </CcDispatcher>
+    you can export Dispatcher component from cc package, or you just register a cc component which classKey named ${CC_DISPATCHER}
+  `,
 
   [ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE]: `ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   `,
   [ERR.CC_CLASS_INSTANCE_OPTION_INVALID]: 'ccOption must be a plain json object! ',
@@ -110,6 +128,7 @@ export const ERR_MESSAGE = {
   [ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE]: 'you are trying register a react class to a single class module, but cc found the target module has been registered!',
   [ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID]: 'stateToPropMapping is invalid, must be a plain json object, check it in your register method or connect method!',
   [ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID]: 'key of stateToPropMapping is invalid, correct one may like $g/m, must and only include one slash, check it in your register method or connect method!',
+  [ERR.CC_CLASS_KEY_FRAGMENT_NOT_ALLOWED]: '$$fragment is cc built-in class key prefix, your class key can not start with it!',
 
   [ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY]: 'storedStateKeys or sharedStateKeys is not an Array!',
   [ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT]: 'storedStateKeys or sharedStateKeys include non string element',

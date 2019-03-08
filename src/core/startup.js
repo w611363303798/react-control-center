@@ -322,6 +322,7 @@ export default function ({
         clearObject(ccContext.event_handlers_);
         clearObject(ccContext.ccUniqueKey_handlerKeys_);
         clearObject(ccContext.handlerKey_handler_);
+        clearObject(ccContext.ccKey_ref_);
         util.hotReloadWarning(err);
       }
       else throw err;

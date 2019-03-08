@@ -16,8 +16,13 @@ function genNonceStr(length) {
   return ret;
 }
 
-export default function () {
+export default function (forFragment) {
+  if (forFragment === void 0) {
+    forFragment = false;
+  }
+
+  var prefix = forFragment === true ? 'CCF' : 'CC';
   _currentIndex++;
   var nonceStr = genNonceStr();
-  return "CC_" + Date.now() + "_" + nonceStr + "_" + _currentIndex + "_";
+  return prefix + "_" + Date.now() + "_" + nonceStr + "_" + _currentIndex + "_";
 }

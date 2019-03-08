@@ -187,6 +187,11 @@ const ccContext = {
   info: {
     startupTime: Date.now(),
   },
+  // fragment association
+  fragmentNameCount: 0,
+  fragmentFeature_classKey_: {
+
+  },
   errorHandler: null,
   middlewares:[],
 }

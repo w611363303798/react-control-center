@@ -1,19 +1,21 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@babel/runtime/helpers/esm/extends'), require('@babel/runtime/helpers/esm/inheritsLoose'), require('@babel/runtime/helpers/esm/assertThisInitialized'), require('react')) :
-  typeof define === 'function' && define.amd ? define(['@babel/runtime/helpers/esm/extends', '@babel/runtime/helpers/esm/inheritsLoose', '@babel/runtime/helpers/esm/assertThisInitialized', 'react'], factory) :
-  (global.ReactControlCenter = factory(global._extends,global._inheritsLoose,global._assertThisInitialized,global.React));
-}(this, (function (_extends,_inheritsLoose,_assertThisInitialized,React) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@babel/runtime/helpers/esm/extends'), require('@babel/runtime/helpers/esm/inheritsLoose'), require('@babel/runtime/helpers/esm/assertThisInitialized'), require('react')) :
+  typeof define === 'function' && define.amd ? define(['exports', '@babel/runtime/helpers/esm/extends', '@babel/runtime/helpers/esm/inheritsLoose', '@babel/runtime/helpers/esm/assertThisInitialized', 'react'], factory) :
+  (factory((global.ReactControlCenter = {}),global._extends,global._inheritsLoose,global._assertThisInitialized,global.React));
+}(this, (function (exports,_extends,_inheritsLoose,_assertThisInitialized,React) { 'use strict';
 
   _extends = _extends && _extends.hasOwnProperty('default') ? _extends['default'] : _extends;
   _inheritsLoose = _inheritsLoose && _inheritsLoose.hasOwnProperty('default') ? _inheritsLoose['default'] : _inheritsLoose;
   _assertThisInitialized = _assertThisInitialized && _assertThisInitialized.hasOwnProperty('default') ? _assertThisInitialized['default'] : _assertThisInitialized;
-  React = React && React.hasOwnProperty('default') ? React['default'] : React;
+  var React__default = 'default' in React ? React['default'] : React;
 
   var _ERR_MESSAGE;
 
   var MODULE_GLOBAL = '$$global';
   var MODULE_DEFAULT = '$$default';
   var MODULE_CC = '$$cc';
+  var CC_FRAGMENT_PREFIX = '$$Fragment';
+  var CC_DISPATCHER = '$$Dispatcher';
   var CHANGE_BY_SELF = 100;
   var CHANGE_BY_BROADCASTED_GLOBAL_STATE = 101;
   var CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE = 102;
@@ -44,6 +46,7 @@
     CC_MODULE_NOT_FOUND: 1012,
     CC_DISPATCH_STRING_INVALID: 1013,
     CC_DISPATCH_PARAM_INVALID: 1014,
+    CC_NO_DISPATCHER_FOUND: 1015,
     CC_CLASS_KEY_DUPLICATE: 1100,
     CC_CLASS_NOT_FOUND: 1101,
     CC_CLASS_STORE_MODULE_INVALID: 1102,
@@ -53,6 +56,7 @@
     CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE: 1106,
     CC_CLASS_STATE_TO_PROP_MAPPING_INVALID: 1107,
     CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID: 1108,
+    CC_CLASS_KEY_FRAGMENT_NOT_ALLOWED: 1109,
     CC_CLASS_INSTANCE_KEY_DUPLICATE: 1200,
     CC_CLASS_INSTANCE_OPTION_INVALID: 1201,
     CC_CLASS_INSTANCE_NOT_FOUND: 1202,
@@ -76,7 +80,7 @@
     CC_REDUCER_MODULE_NAME_DUPLICATE: 1511 // REDUCER_KEY_NOT_EXIST_IN_STORE_MODULE: 1203,
 
   };
-  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user, if cc is under hot reload mode, you can ignore this message ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also), maybe you can use moduleReducer to config the reducer for this module!", _ERR_MESSAGE[ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION] = "one of the computed keys is not a valid module name in store!", _ERR_MESSAGE[ERR.CC_MODULE_NOT_FOUND] = "module not found!", _ERR_MESSAGE[ERR.CC_DISPATCH_STRING_INVALID] = "dispatch param writing is invalid when its type is string, only these 3 is valid: (functionName)\u3001(moduleName)/(functionName)\u3001(moduleName)/(reducerModuleName)/(functionName)", _ERR_MESSAGE[ERR.CC_DISPATCH_PARAM_INVALID] = "dispatch param type is invalid, it must be string or object", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE] = 'you are trying register a react class to a single class module, but cc found the target module has been registered!', _ERR_MESSAGE[ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID] = 'stateToPropMapping is invalid, must be a plain json object, check it in your register method or connect method!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID] = 'key of stateToPropMapping is invalid, correct one may like $g/m, must and only include one slash, check it in your register method or connect method!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = "globalStateKeys or sharedStateKeys is not an Array! if you want to watch all state keys of a module state or all state keys of global state, you can set sharedStateKeys='*' and globalStateKeys='*'", _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY] = 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it ', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE] = 'found key in globalStateKeys is not included in global state, check your globalStateKeys', _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE] = "reducer action type duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_NOT_A_FUNCTION] = "reducer must be a function!", _ERR_MESSAGE);
+  var ERR_MESSAGE = (_ERR_MESSAGE = {}, _ERR_MESSAGE[ERR.CC_ALREADY_STARTUP] = 'react-controller-center startup method con only be invoked one time by user, if cc is under hot reload mode, you can ignore this message ', _ERR_MESSAGE[ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE] = 'you are trying register a module class but cc startup with non module mode! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_DUPLICATE] = 'module name duplicate!', _ERR_MESSAGE[ERR.CC_REGISTER_A_CC_CLASS] = 'registering a cc class is prohibited! ', _ERR_MESSAGE[ERR.CC_MODULE_KEY_CC_FOUND] = 'key:"$$cc" is a built-in module name for react-controller-center,you can not configure it or the name like it in you store or reducer! ', _ERR_MESSAGE[ERR.CC_MODULE_NAME_INVALID] = "module name is invalid, /^[$#&a-zA-Z0-9_-]+$/.test() is false. ", _ERR_MESSAGE[ERR.CC_STORE_STATE_INVALID] = "module state of store must be a plain json object! ", _ERR_MESSAGE[ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE] = "sharedToGlobalMapping is not allowed to supply to startup's options in non module. ", _ERR_MESSAGE[ERR.CC_MODULE_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument moduleReducer is invalid, must be a function!", _ERR_MESSAGE[ERR.CC_REDUCER_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer is invalid, must be a plain json object(not an array also)!", _ERR_MESSAGE[ERR.CC_REDUCER_VALUE_IN_CC_CONFIGURE_OPTION_IS_INVALID] = "argument reducer's value is invalid, must be a plain json object(not an array also), maybe you can use moduleReducer to config the reducer for this module!", _ERR_MESSAGE[ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION] = "one of the computed keys is not a valid module name in store!", _ERR_MESSAGE[ERR.CC_MODULE_NOT_FOUND] = "module not found!", _ERR_MESSAGE[ERR.CC_DISPATCH_STRING_INVALID] = "dispatch param writing is invalid when its type is string, only these 3 is valid: (functionName)\u3001(moduleName)/(functionName)\u3001(moduleName)/(reducerModuleName)/(functionName)", _ERR_MESSAGE[ERR.CC_DISPATCH_PARAM_INVALID] = "dispatch param type is invalid, it must be string or object", _ERR_MESSAGE[ERR.CC_NO_DISPATCHER_FOUND] = "\n    if you want CcFragment works well anywhere and anytime, you must initialize a Dispatcher, \n    ant put it to a place that the Dispatcher will never been mount, so I suggest write it like:\n    <App>\n      <CcDispatcher />\n      {/* another jsx */}\n    </App>\n    you can export Dispatcher component from cc package, or you just register a cc component which classKey named " + CC_DISPATCHER + "\n  ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE] = "ccKey duplicate while new a CCComponent, try rename it or delete the ccKey prop, cc will generate one automatically for the CCComponent! if you are sure the key is different, maybe the CCComponent's father Component is also a CCComponent, then you can prefix your ccKey with the father Component's ccKey!   ", _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_OPTION_INVALID] = 'ccOption must be a plain json object! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NOT_FOUND] = 'ccClass instance not found, it may has been unmounted or the ccKey is incorrect! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND] = 'ccClass instance method not found, make sure the instance include the method! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID] = 'ccClass instance invoke callWith method with invalid args! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE] = 'ccClass is declared as singleton, now cc found you are trying new another one instance! ', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS] = 'some of your storedStateKeys has been declared in CCClass sharedStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS] = 'you must explicitly specify a ccKey for ccInstance if you want to use storeStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_DUPLICATE] = 'ccClassKey duplicate while you register a react class!  ', _ERR_MESSAGE[ERR.CC_CLASS_NOT_FOUND] = 'ccClass not found, make sure your ccClassKey been registered to react-control-center before you use the ccClass!  ', _ERR_MESSAGE[ERR.CC_CLASS_STORE_MODULE_INVALID] = 'ccClass ccOption module value is invalid, can not match it in store! ', _ERR_MESSAGE[ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED] = "$$global is cc's build-in module name, all ccClass is watching $$global's state implicitly, user can not assign $$global to module prop!", _ERR_MESSAGE[ERR.CC_CLASS_REDUCER_MODULE_INVALID] = 'ccClass ccOption reducerModule value is invalid, can not match it in reducer! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE] = 'ccClass is declared as singleton, now cc found you are trying execute cc.invokeSingle, you can call cc.invoke instead, it does not care whether your ccClass is singleton or not! ', _ERR_MESSAGE[ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE] = 'you are trying register a react class to a single class module, but cc found the target module has been registered!', _ERR_MESSAGE[ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID] = 'stateToPropMapping is invalid, must be a plain json object, check it in your register method or connect method!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID] = 'key of stateToPropMapping is invalid, correct one may like $g/m, must and only include one slash, check it in your register method or connect method!', _ERR_MESSAGE[ERR.CC_CLASS_KEY_FRAGMENT_NOT_ALLOWED] = '$$fragment is cc built-in class key prefix, your class key can not start with it!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY] = 'storedStateKeys or sharedStateKeys is not an Array!', _ERR_MESSAGE[ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'storedStateKeys or sharedStateKeys include non string element', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS] = 'some of your sharedStateKeys has been declared in CCClass globalStateKeys!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY] = "globalStateKeys or sharedStateKeys is not an Array! if you want to watch all state keys of a module state or all state keys of global state, you can set sharedStateKeys='*' and globalStateKeys='*'", _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT] = 'globalStateKeys or sharedStateKeys include non string element!', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_CONFIGURE_GLOBAL_STATE] = 'some keys of configured global state have been included in store.globalState', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY] = 'found key is sharedToGlobalMapping key in globalStateKeys, you should delete it ', _ERR_MESSAGE[ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE] = 'found key in globalStateKeys is not included in global state, check your globalStateKeys', _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NAMING_INVALID] = "action type's naming is invalid, correct one may like: fooModule/fooType. ", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_NO_MODULE] = "action type's module name is invalid, cause cc may not under module mode when you startup, or the store don't include the module name you defined in action type!", _ERR_MESSAGE[ERR.CC_REDUCER_MODULE_NAME_DUPLICATE] = "reducer module name duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_ACTION_TYPE_DUPLICATE] = "reducer action type duplicate!", _ERR_MESSAGE[ERR.CC_REDUCER_NOT_A_FUNCTION] = "reducer must be a function!", _ERR_MESSAGE);
 
   var _state2, _reducer;
   var refs = {};
@@ -217,6 +221,9 @@
     info: {
       startupTime: Date.now()
     },
+    // fragment association
+    fragmentNameCount: 0,
+    fragmentFeature_classKey_: {},
     errorHandler: null,
     middlewares: []
   };
@@ -872,410 +879,333 @@
     return ret;
   }
 
-  function uuid () {
+  function uuid (forFragment) {
+    if (forFragment === void 0) {
+      forFragment = false;
+    }
+
+    var prefix = forFragment === true ? 'CCF' : 'CC';
     _currentIndex++;
     var nonceStr = genNonceStr();
-    return "CC_" + Date.now() + "_" + nonceStr + "_" + _currentIndex + "_";
+    return prefix + "_" + Date.now() + "_" + nonceStr + "_" + _currentIndex + "_";
   }
 
   var catchCcError = (function (err) {
     if (ccContext.errorHandler) ccContext.errorHandler(err);else throw err;
   });
 
-  var vbi = verboseInfo;
-  var ss = styleStr;
-  var cl = color;
-
-  function keysWarning(keyWord) {
-    justWarning("now cc is startup with non module mode, cc only allow you define " + keyWord + " like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
+  function _setPropState (propState, propKey, propValue, isPropStateModuleMode, module) {
+    if (isPropStateModuleMode) {
+      var modulePropState = util.safeGetObjectFromObject(propState, module);
+      modulePropState[propKey] = propValue;
+    } else {
+      propState[propKey] = propValue;
+    }
   }
 
-  function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
-    if (!isPlainJsonObject(store)) {
-      throw new Error("the store is not a plain json object!");
+  var me$1 = util.makeError,
+      vbi$1 = util.verboseInfo,
+      throwCcHmrError$1 = util.throwCcHmrError;
+
+  function _throwPropDuplicateError(prefixedKey, module) {
+    throw me$1("cc found different module has same key, you need give the key a alias explicitly! or you can set isPropStateModuleMode=true to avoid this error", vbi$1("the prefixedKey is " + prefixedKey + ", module is:" + module));
+  }
+
+  function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
+    if (isPropStateModuleMode === true) {
+      return {
+        moduledPropKey: module + "/" + propKey,
+        originalPropKey: propKey
+      };
+    } else {
+      return {
+        moduledPropKey: propKey,
+        originalPropKey: propKey
+      };
+    }
+  }
+
+  function buildCcClassContext (ccClassKey, moduleName, originalSharedStateKeys, originalGlobalStateKeys, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode, forCcFragment) {
+    if (forCcFragment === void 0) {
+      forCcFragment = false;
     }
 
-    if (!isPlainJsonObject(sharedToGlobalMapping)) {
-      throw new Error("the sharedToGlobalMapping is not a plain json object!");
-    }
+    var contextMap = ccContext.ccClassKey_ccClassContext_;
+    var ccClassContext = contextMap[ccClassKey];
 
-    ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
-    var globalStateKeys = ccContext.globalStateKeys;
-    var pureGlobalStateKeys = ccContext.pureGlobalStateKeys;
-    var _state = ccContext.store._state;
-    var globalState = store[MODULE_GLOBAL];
-    _state[MODULE_CC] = {};
-
-    if (isModuleMode) {
-      var moduleNames = Object.keys(store);
-
-      if (globalState) {
-        if (!util.isModuleStateValid(globalState)) {
-          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi("moduleName:" + MODULE_GLOBAL + "'s state is invalid!"));
-        } else {
-          console.log(ss('$$global module state found while startup cc!'), cl());
-          Object.keys(globalState).forEach(function (key) {
-            globalStateKeys.push(key);
-          });
-        }
-      } else {
-        console.log(ss('$$global module state not found, cc will generate one for user automatically!'), cl());
-        globalState = {};
+    if (forCcFragment === true) {
+      //if this is called fro CcFragment, just reuse  ccClassContext;
+      if (ccClassContext === undefined) {
+        ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys);
+      }
+    } else {
+      if (ccClassContext !== undefined) {
+        throwCcHmrError$1(me$1(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate"));
       }
 
-      _state[MODULE_GLOBAL] = globalState;
-      var len = moduleNames.length;
-      var isDefaultModuleExist = false;
+      ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys);
+    }
+
+    var _state = ccContext.store._state;
+    var propModuleName_ccClassKeys_ = ccContext.propModuleName_ccClassKeys_;
+
+    if (stateToPropMapping != undefined) {
+      var propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
+      var stateKey_propKeyDescriptor_ = ccClassContext.stateKey_propKeyDescriptor_;
+      var propState = ccClassContext.propState;
+
+      if (typeof stateToPropMapping !== 'object') {
+        throw me$1(ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey);
+      }
+
+      var module_mapAllStateToProp_ = {};
+      var module_sharedKey_ = {};
+      var module_prefixedKeys_ = {};
+      var prefixedKeys = Object.keys(stateToPropMapping);
+      var len = prefixedKeys.length;
 
       for (var i = 0; i < len; i++) {
-        var moduleName = moduleNames[i];
+        var prefixedKey = prefixedKeys[i];
 
-        if (moduleName !== MODULE_GLOBAL) {
-          checkModuleName(moduleName);
-          var moduleState = store[moduleName];
-          checkModuleState(moduleState, moduleName);
+        if (!util.isPrefixedKeyValid(prefixedKey)) {
+          throw me$1(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey + ", key:" + prefixedKey);
+        }
 
-          if (moduleName === MODULE_DEFAULT) {
-            isDefaultModuleExist = true;
-            console.log(ss('$$default module state found while startup cc!'), cl());
-          }
+        var _prefixedKey$split = prefixedKey.split('/'),
+            targetModule = _prefixedKey$split[0],
+            targetKey = _prefixedKey$split[1];
 
-          _state[moduleName] = moduleState;
-          var sharedKey_globalKey_ = sharedToGlobalMapping[moduleName];
-
-          if (sharedKey_globalKey_) {
-            handleModuleSharedToGlobalMapping(moduleName, sharedKey_globalKey_);
+        if (module_mapAllStateToProp_[targetModule] === true) ; else {
+          if (targetKey === '*') {
+            module_mapAllStateToProp_[targetModule] = true;
+            module_sharedKey_[targetModule] = prefixedKey;
+          } else {
+            var modulePrefixedKeys = util.safeGetArrayFromObject(module_prefixedKeys_, targetModule);
+            modulePrefixedKeys.push(prefixedKey);
+            module_mapAllStateToProp_[targetModule] = false;
           }
         }
       }
 
-      if (!isDefaultModuleExist) {
-        _state[MODULE_DEFAULT] = {};
-        console.log(ss('$$default module state not found,cc will generate one for user automatically!'), cl());
-      }
-    } else {
-      // non module mode
-      if (sharedToGlobalMapping && util.isObjectNotNull(sharedToGlobalMapping)) {
-        throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
-      }
+      var targetModules = Object.keys(module_mapAllStateToProp_);
+      var propKey_appeared_ = {}; //help cc to judge propKey is duplicated or not
 
-      var includeDefaultModule = store.hasOwnProperty(MODULE_DEFAULT);
-      var includeGlobalModule = store.hasOwnProperty(MODULE_GLOBAL);
-      var invalidKeyCount = 0;
+      targetModules.forEach(function (module) {
+        var moduleState = _state[module];
 
-      if (includeDefaultModule || includeGlobalModule) {
-        if (includeDefaultModule) {
-          if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
-            throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(" moduleName:" + MODULE_DEFAULT + "'s state is invalid!"));
-          }
-
-          _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
-          invalidKeyCount += 1;
-          console.log(ss('$$default module state found while startup cc with non module mode!'), cl());
-        } else {
-          _state[MODULE_DEFAULT] = {};
+        if (moduleState === undefined) {
+          throw me$1(ERR.CC_MODULE_NOT_FOUND, vbi$1("module:" + module + ", check your stateToPropMapping config!"));
         }
 
-        if (includeGlobalModule) {
-          if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
-            throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(" moduleName:" + MODULE_GLOBAL + "'s state is invalid!"));
-          }
+        var isPropStateSet = false;
 
-          globalState = store[MODULE_GLOBAL];
-          Object.keys(globalState).forEach(function (key) {
-            return globalStateKeys.push(key);
+        if (module_mapAllStateToProp_[module] === true) {
+          var moduleStateKeys = Object.keys(moduleState);
+          moduleStateKeys.forEach(function (msKey) {
+            // now prop key equal state key if user declare key like m1/* in stateToPropMapping;
+            var _getPropKeyPair2 = _getPropKeyPair(isPropStateModuleMode, module, msKey),
+                moduledPropKey = _getPropKeyPair2.moduledPropKey,
+                originalPropKey = _getPropKeyPair2.originalPropKey;
+
+            var appeared = propKey_appeared_[moduledPropKey];
+
+            if (appeared === true) {
+              _throwPropDuplicateError(module_sharedKey_[module], module);
+            } else {
+              propKey_appeared_[moduledPropKey] = true; // moduledPropKey and moduledStateKey is equal
+
+              propKey_stateKeyDescriptor_[moduledPropKey] = {
+                module: module,
+                originalStateKey: msKey,
+                moduledStateKey: moduledPropKey
+              };
+              stateKey_propKeyDescriptor_[moduledPropKey] = {
+                module: module,
+                moduledPropKey: moduledPropKey,
+                originalPropKey: originalPropKey
+              };
+
+              _setPropState(propState, msKey, moduleState[msKey], isPropStateModuleMode, module);
+
+              isPropStateSet = true;
+            }
           });
-          invalidKeyCount += 1;
-          console.log(ss('$$global module state found while startup cc with non module mode!'), cl());
-          _state[MODULE_GLOBAL] = globalState;
         } else {
-          _state[MODULE_GLOBAL] = {};
+          var _prefixedKeys = module_prefixedKeys_[module];
+
+          _prefixedKeys.forEach(function (prefixedKey) {
+            var _prefixedKey$split2 = prefixedKey.split('/'),
+                stateModule = _prefixedKey$split2[0],
+                stateKey = _prefixedKey$split2[1];
+
+            var propKey = stateToPropMapping[prefixedKey];
+
+            var _getPropKeyPair3 = _getPropKeyPair(isPropStateModuleMode, module, propKey),
+                moduledPropKey = _getPropKeyPair3.moduledPropKey,
+                originalPropKey = _getPropKeyPair3.originalPropKey;
+
+            var appeared = propKey_appeared_[moduledPropKey];
+
+            if (appeared === true) {
+              _throwPropDuplicateError(prefixedKey, module);
+            } else {
+              propKey_appeared_[moduledPropKey] = true;
+              var moduledStateKey = module + "/" + stateKey; // stateKey_propKeyDescriptor_ map's key must be moduledStateKey like 'foo/key', cause different module may include the same state key
+
+              propKey_stateKeyDescriptor_[moduledPropKey] = {
+                module: stateModule,
+                originalStateKey: stateKey,
+                moduledStateKey: moduledStateKey
+              };
+              stateKey_propKeyDescriptor_[moduledStateKey] = {
+                module: stateModule,
+                moduledPropKey: moduledPropKey,
+                originalPropKey: originalPropKey,
+                originalStateKey: stateKey
+              };
+
+              _setPropState(propState, propKey, moduleState[stateKey], isPropStateModuleMode, module);
+
+              isPropStateSet = true;
+            }
+          });
         }
 
-        if (Object.keys(store).length > invalidKeyCount) {
-          keysWarning('store');
-        }
-      } else {
-        // treat store as $$default module store
-        if (!util.isModuleStateValid(store)) {
-          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi(" moduleName:" + MODULE_DEFAULT + "'s state  is invalid!"));
-        }
-
-        _state[MODULE_DEFAULT] = store;
-      }
-    }
-
-    var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
-    globalStateKeys.reduce(function (pKeys, gKey) {
-      if (!globalMappingKey_sharedKey_[gKey]) pKeys.push(gKey);
-      return pKeys;
-    }, pureGlobalStateKeys);
-  }
-  /**
-   * @description
-   * @author zzk
-   * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
-   */
-
-
-  function bindReducerToCcContext(reducer) {
-    var _reducer = ccContext.reducer._reducer;
-    var moduleNames = Object.keys(reducer);
-    var len = moduleNames.length;
-    var isDefaultReducerExist = false,
-        isGlobalReducerExist = false;
-
-    for (var i = 0; i < len; i++) {
-      var moduleName = moduleNames[i];
-      checkModuleName(moduleName, true);
-      _reducer[moduleName] = reducer[moduleName];
-      if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
-      if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
-    }
-
-    if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
-    if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
-  }
-
-  function bindComputedToCcContext(computed, isModuleMode) {
-    if (!isPlainJsonObject(computed)) {
-      throw new Error("the computed value of ccStartUpOption is not a plain json object!");
-    }
-
-    function mapComputed(m, moduleComputed) {
-      var moduleState = _state[m];
-
-      if (!moduleState) {
-        throw util.makeError(ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION, vbi(" moduleName in computed: " + m));
-      }
-
-      if (!isPlainJsonObject(moduleComputed)) {
-        throw new Error("the value of one key of the computed object is not a plain json object!");
-      }
-
-      var keys = Object.keys(moduleComputed);
-      keys.forEach(function (key) {
-        var originalValue = moduleState[key];
-
-        if (originalValue !== undefined) {
-          var moduleComputedFn = util.safeGetObjectFromObject(_computedFn, m);
-          var fn = moduleComputed[key];
-          moduleComputedFn[key] = fn;
-          var computedValue = fn(originalValue, moduleState);
-          var moduleComputedValue = util.safeGetObjectFromObject(_computedValue, m);
-          moduleComputedValue[key] = computedValue;
-        } else {
-          justWarning("key:" + key + " of module:" + m + " of computed object is not declared in module:" + m + " of store!");
+        if (isPropStateSet === true) {
+          var pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
+          if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
         }
       });
+      ccClassContext.stateToPropMapping = stateToPropMapping;
+      ccClassContext.isPropStateModuleMode = isPropStateModuleMode;
     }
 
-    var _ccContext$computed = ccContext.computed,
-        _computedFn = _ccContext$computed._computedFn,
-        _computedValue = _ccContext$computed._computedValue;
-    var _state = ccContext.store._state;
+    contextMap[ccClassKey] = ccClassContext;
+  }
 
-    if (isModuleMode) {
-      var moduleNames = Object.keys(computed);
-      moduleNames.forEach(function (m) {
-        mapComputed(m, computed[m]);
-      });
+  var me$2 = util.makeError,
+      vbi$2 = util.verboseInfo,
+      ss = util.styleStr,
+      cl = util.color;
+  var ccKey_insCount = {};
+
+  function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
+    function setRef() {
+      ccContext.ccKey_ref_[ccUniqueKey] = ref;
+      ccKeys.push(ccUniqueKey);
+      ccContext.ccKey_option_[ccUniqueKey] = option;
+    }
+
+    incCcKeyInsCount(ccUniqueKey);
+
+    if (delayMs) {
+      setTimeout(setRef, delayMs);
     } else {
-      var includeDefaultKey = computed.hasOwnProperty(MODULE_DEFAULT);
-      var includeGlobalKey = computed.hasOwnProperty(MODULE_GLOBAL);
-
-      if (includeDefaultKey || includeGlobalKey) {
-        var invalidKeyCount = 0;
-
-        if (includeDefaultKey) {
-          invalidKeyCount++;
-          mapComputed(MODULE_DEFAULT, computed[MODULE_DEFAULT]);
-        }
-
-        if (includeGlobalKey) {
-          invalidKeyCount++;
-          mapComputed(MODULE_GLOBAL, computed[MODULE_GLOBAL]);
-        }
-
-        if (Object.keys(computed).length > invalidKeyCount) {
-          keysWarning('computed');
-        }
-      } else {
-        mapComputed(MODULE_DEFAULT, computed);
-      }
+      setRef();
     }
   }
 
-  function executeInitializer(isModuleMode, store, init) {
-    var stateHandler = getStateHandlerForInit;
-    if (init === undefined) return;
+  function incCcKeyInsCount(ccUniqueKey) {
+    if (ccKey_insCount[ccUniqueKey] === undefined) ccKey_insCount[ccUniqueKey] = 1;else ccKey_insCount[ccUniqueKey] += 1;
+  }
+  function decCcKeyInsCount(ccUniqueKey) {
+    if (ccKey_insCount[ccUniqueKey] === undefined) ccKey_insCount[ccUniqueKey] = 0;else ccKey_insCount[ccUniqueKey] -= 1;
+  }
+  function getCcKeyInsCount(ccUniqueKey) {
+    if (ccKey_insCount[ccUniqueKey] === undefined) return 0;else return ccKey_insCount[ccUniqueKey];
+  }
+  function setRef (ref, isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
+    var classContext = ccContext.ccClassKey_ccClassContext_[ccClassKey];
+    var ccKeys = classContext.ccKeys;
 
-    if (!isModuleMode) {
-      if (isPlainJsonObject(init)) {
-        var includeDefaultModule = init.hasOwnProperty(MODULE_DEFAULT);
-        var includeGlobalModule = init.hasOwnProperty(MODULE_GLOBAL);
+    if (ccContext.isDebug) {
+      console.log(ss("register ccKey " + ccUniqueKey + " to CC_CONTEXT"), cl());
+    }
 
-        if (includeDefaultModule || includeGlobalModule) {
-          if (includeDefaultModule) {
-            var defaultInit = init[MODULE_DEFAULT];
+    if (!util.isCcOptionValid(ccOption)) {
+      throw me$2(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi$2("a standard default ccOption may like: {\"syncSharedState\": true, \"asyncLifecycleHook\":false, \"storedStateKeys\": []}"));
+    }
 
-            if (defaultInit) {
-              if (typeof defaultInit !== 'function') {
-                throw new Error('init.$$default value must be a function when cc startup in nonModuleMode!');
-              } else {
-                defaultInit(stateHandler(MODULE_DEFAULT));
-              }
-            }
-          }
+    if (ccKeys.includes(ccUniqueKey)) {
+      if (util.isHotReloadMode()) {
+        var insCount = getCcKeyInsCount(ccUniqueKey);
+        if (isSingle && insCount > 1) throw me$2(ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE, vbi$2("ccClass:" + ccClassKey));
 
-          if (includeGlobalModule) {
-            var globalInit = init[MODULE_GLOBAL];
+        if (insCount > 2) {
+          // now cc can make sure the ccKey duplicate
+          throw me$2(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi$2("ccClass:" + ccClassKey + ",ccKey:" + ccUniqueKey));
+        } // just warning
 
-            if (globalInit) {
-              if (typeof globalInit !== 'function') {
-                throw new Error('init.$$global value must be a function when cc startup in nonModuleMode!');
-              } else {
-                globalInit(stateHandler(MODULE_GLOBAL));
-              }
-            }
-          }
-        } else {
-          throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
-        }
+
+        util.justWarning("\n        found ccKey " + ccKey + " may duplicate, but now is in hot reload mode, cc can't throw the error, please make sure your ccKey is unique manually,\n        " + vbi$2("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " ccUniqueKey:" + ccUniqueKey) + "\n      "); // in webpack hot reload mode, cc works not very well,
+        // cc can't set ref immediately, because the ccInstance of ccKey will ummount right now, in unmount func, 
+        // cc call unsetCcInstanceRef will lost the right ref in CC_CONTEXT.refs
+        // so cc set ref later
+
+        setCcInstanceRef(ccUniqueKey, ref, ccKeys, ccOption, 600);
       } else {
-        if (typeof init !== 'function') {
-          throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
-        }
-
-        init(stateHandler(MODULE_DEFAULT));
+        throw me$2(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi$2("ccClass:" + ccClassKey + ",ccKey:" + ccUniqueKey));
       }
     } else {
-      if (!isPlainJsonObject(init)) {
-        throw new Error('init value must be a object like { ${moduleName}:Function } when cc startup in moduleMode!');
-      }
+      setCcInstanceRef(ccUniqueKey, ref, ccKeys, ccOption);
+    }
 
-      var moduleNames = Object.keys(init);
-      moduleNames.forEach(function (moduleName) {
-        if (!store[moduleName]) {
-          throw new Error("module " + moduleName + " not found, check your ccStartupOption.init object keys");
-        }
+    return classContext;
+  }
 
-        var initFn = init[moduleName];
+  var ccKey_ref_ = ccContext.ccKey_ref_,
+      ccKey_option_ = ccContext.ccKey_option_,
+      ccUniqueKey_handlerKeys_ = ccContext.ccUniqueKey_handlerKeys_,
+      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
+  function unsetRef (ccClassKey, ccUniqueKey) {
+    if (ccContext.isDebug) {
+      console.log(styleStr(ccUniqueKey + " unset ref"), color('purple'));
+    } // ccContext.ccKey_ref_[ccUniqueKey] = null;
 
-        if (initFn) {
-          initFn(stateHandler(moduleName));
-        }
+
+    delete ccKey_ref_[ccUniqueKey];
+    delete ccKey_option_[ccUniqueKey];
+    var classContext = ccClassKey_ccClassContext_[ccClassKey];
+    var ccKeys = classContext.ccKeys;
+    var ccKeyIdx = ccKeys.indexOf(ccUniqueKey);
+    if (ccKeyIdx >= 0) ccKeys.splice(ccKeyIdx, 1);
+    decCcKeyInsCount(ccUniqueKey);
+    var handlerKeys = ccUniqueKey_handlerKeys_[ccUniqueKey];
+
+    if (handlerKeys) {
+      handlerKeys.forEach(function (hKey) {
+        delete handlerKey_handler_[hKey]; // ccUniqueKey maybe generated randomly, so delete the key instead of set null
+        // handlerKey_handler_[hKey] = null;
       });
     }
   }
-  /* 
-  store in CC_CONTEXT may like:
-   {
-    $$global:{
-   
-    },
-    module1:{
-      books:[],
-      user:{},
-      color:'red',
-      readCount:5,
-    },
-    module2:{
-      books:[],
-      colors:[],
-      followCount:15,
+
+  function computeCcUniqueKey (isClassSingle, ccClassKey, ccKey, forFragment) {
+    if (forFragment === void 0) {
+      forFragment = false;
     }
-  }
-  reducer = {
-    [moduleName1]:{
-      [actionType1]:callback(setState, {type:'',payload:''})
-      [actionType2]:callback(setState, {type:'',payload:''})
-    },
-    [moduleName2]:{
-      [actionType1]:callback(setState, {type:'',payload:''})
+
+    var ccUniqueKey;
+    var isCcUniqueKeyAutoGenerated = false;
+
+    if (isClassSingle) {
+      if (ccKey) util.justWarning("now the ccClass is singleton, you needn't supply ccKey to instance props, cc will ignore the ccKey:" + ccKey);
+      ccUniqueKey = ccClassKey;
+    } else {
+      if (ccKey) {
+        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
+      } else {
+        // const uuidStr = uuid().replace(/-/g, '_');
+        var uuidStr = uuid(forFragment);
+        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, uuidStr);
+        isCcUniqueKeyAutoGenerated = true;
+      }
     }
-  }
-  init = {
-    global:(setState)=>{}
-  }
-  */
 
-
-  function startup (_temp) {
-    var _ref = _temp === void 0 ? {} : _temp,
-        _ref$isModuleMode = _ref.isModuleMode,
-        isModuleMode = _ref$isModuleMode === void 0 ? false : _ref$isModuleMode,
-        _ref$store = _ref.store,
-        store = _ref$store === void 0 ? {} : _ref$store,
-        _ref$reducer = _ref.reducer,
-        reducer = _ref$reducer === void 0 ? {} : _ref$reducer,
-        _ref$init = _ref.init,
-        init = _ref$init === void 0 ? null : _ref$init,
-        _ref$computed = _ref.computed,
-        computed = _ref$computed === void 0 ? {} : _ref$computed,
-        _ref$sharedToGlobalMa = _ref.sharedToGlobalMapping,
-        sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa,
-        _ref$moduleSingleClas = _ref.moduleSingleClass,
-        moduleSingleClass = _ref$moduleSingleClas === void 0 ? {} : _ref$moduleSingleClas,
-        _ref$middlewares = _ref.middlewares,
-        middlewares = _ref$middlewares === void 0 ? [] : _ref$middlewares,
-        _ref$isStrict = _ref.isStrict,
-        isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict,
-        _ref$isDebug = _ref.isDebug,
-        isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
-        _ref$errorHandler = _ref.errorHandler,
-        errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler,
-        _ref$isHot = _ref.isHot,
-        isHot = _ref$isHot === void 0 ? false : _ref$isHot;
-
-    try {
-      if (window) {
-        window.CC_CONTEXT = ccContext;
-        window.ccc = ccContext;
-      }
-
-      if (ccContext.isCcAlreadyStartup) {
-        var err = util.makeError(ERR.CC_ALREADY_STARTUP);
-
-        if (util.isHotReloadMode()) {
-          clearObject(ccContext.reducer._reducer);
-          clearObject(ccContext.store._state);
-          clearObject(ccContext.computed._computedFn);
-          clearObject(ccContext.computed._computedValue);
-          clearObject(ccContext.event_handlers_);
-          clearObject(ccContext.ccUniqueKey_handlerKeys_);
-          clearObject(ccContext.handlerKey_handler_);
-          util.hotReloadWarning(err);
-        } else throw err;
-      }
-
-      ccContext.isModuleMode = isModuleMode;
-      ccContext.isStrict = isStrict;
-      ccContext.isDebug = isDebug;
-      util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
-      util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
-      bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
-      bindReducerToCcContext(reducer);
-      bindComputedToCcContext(computed, isModuleMode);
-
-      if (init) {
-        var computedStore = ccContext.store._state;
-        executeInitializer(isModuleMode, computedStore, init);
-      }
-
-      if (middlewares.length > 0) {
-        var ccMiddlewares = ccContext.middlewares;
-        middlewares.forEach(function (m) {
-          return ccMiddlewares.push(m);
-        });
-      }
-
-      ccContext.isCcAlreadyStartup = true;
-      ccContext.isHot = isHot;
-      ccContext.errorHandler = errorHandler;
-    } catch (err) {
-      if (errorHandler) errorHandler(err);else throw err;
-    }
+    return {
+      ccUniqueKey: ccUniqueKey,
+      isCcUniqueKeyAutoGenerated: isCcUniqueKeyAutoGenerated
+    };
   }
 
   /**
@@ -1524,7 +1454,7 @@
       verboseInfo$1 = util.verboseInfo,
       makeError$1 = util.makeError,
       justWarning$1 = util.justWarning,
-      throwCcHmrError$1 = util.throwCcHmrError;
+      throwCcHmrError$2 = util.throwCcHmrError;
   var _ccContext$store = ccContext.store,
       _state = _ccContext$store._state,
       getState = _ccContext$store.getState,
@@ -1535,16 +1465,16 @@
       globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_,
       _computedValue = ccContext.computed._computedValue,
       event_handlers_ = ccContext.event_handlers_,
-      handlerKey_handler_ = ccContext.handlerKey_handler_,
-      ccUniqueKey_handlerKeys_ = ccContext.ccUniqueKey_handlerKeys_,
+      handlerKey_handler_$1 = ccContext.handlerKey_handler_,
+      ccUniqueKey_handlerKeys_$1 = ccContext.ccUniqueKey_handlerKeys_,
       propModuleName_ccClassKeys_ = ccContext.propModuleName_ccClassKeys_,
       moduleName_sharedStateKeys_ = ccContext.moduleName_sharedStateKeys_,
       moduleName_globalStateKeys_ = ccContext.moduleName_globalStateKeys_,
-      ccKey_ref_ = ccContext.ccKey_ref_,
-      ccKey_option_ = ccContext.ccKey_option_,
+      ccKey_ref_$1 = ccContext.ccKey_ref_,
+      ccKey_option_$1 = ccContext.ccKey_option_,
       globalCcClassKeys = ccContext.globalCcClassKeys,
       moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
-      ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
+      ccClassKey_ccClassContext_$1 = ccContext.ccClassKey_ccClassContext_,
       globalMappingKey_toModules_ = ccContext.globalMappingKey_toModules_,
       globalMappingKey_fromModule_ = ccContext.globalMappingKey_fromModule_,
       globalKey_toModules_ = ccContext.globalKey_toModules_,
@@ -1552,8 +1482,8 @@
       middlewares = ccContext.middlewares;
   var cl$1 = color$1;
   var ss$1 = styleStr$1;
-  var me = makeError$1;
-  var vbi$1 = verboseInfo$1;
+  var me$3 = makeError$1;
+  var vbi$3 = verboseInfo$1;
   var DISPATCH = 'dispatch';
   var SET_STATE = 'setState';
   var SET_GLOBAL_STATE = 'setGlobalState';
@@ -1568,19 +1498,6 @@
   var CALL_THUNK_WITH = 'callThunkWith';
   var COMMIT = 'commit';
   var COMMIT_WITH = 'commitWith';
-  var ccKey_insCount = {};
-
-  function incCcKeyInsCount(ccUniqueKey) {
-    if (ccKey_insCount[ccUniqueKey] === undefined) ccKey_insCount[ccUniqueKey] = 1;else ccKey_insCount[ccUniqueKey] += 1;
-  }
-
-  function decCcKeyInsCount(ccUniqueKey) {
-    if (ccKey_insCount[ccUniqueKey] === undefined) ccKey_insCount[ccUniqueKey] = 0;else ccKey_insCount[ccUniqueKey] -= 1;
-  }
-
-  function getCcKeyInsCount(ccUniqueKey) {
-    if (ccKey_insCount[ccUniqueKey] === undefined) return 0;else return ccKey_insCount[ccUniqueKey];
-  }
 
   function paramCallBackShouldNotSupply(module, currentModule) {
     return "if you pass param reactCallback, param module must equal current CCInstance's module, module: " + module + ", CCInstance's module:" + currentModule + ", now the cb will never been triggered! ";
@@ -1607,17 +1524,17 @@
 
     if (!ccContext.isModuleMode) {
       if (module !== MODULE_DEFAULT) {
-        handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, vbi$1("module:" + module)), throwError);
+        handleError(me$3(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, vbi$3("module:" + module)), throwError);
         return false;
       } else return true;
     } else {
       if (checkGlobalModule && module === MODULE_GLOBAL) {
-        handleError(me(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED), throwError);
+        handleError(me$3(ERR.CC_CLASS_MODULE_GLOBAL_DECLARE_NOT_ALLOWED), throwError);
         return false;
       }
 
       if (!_state[module]) {
-        handleError(me(ERR.CC_CLASS_STORE_MODULE_INVALID, vbi$1("module:" + module + " is not configured in cc's store")), throwError);
+        handleError(me$3(ERR.CC_CLASS_STORE_MODULE_INVALID, vbi$3("module:" + module + " is not configured in cc's store")), throwError);
         return false;
       } else return true;
     }
@@ -1630,45 +1547,8 @@
 
     if (!ccContext.isModuleMode) {
       if (reducerModule != MODULE_DEFAULT) {
-        handleError(me(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "reducerModule:" + reducerModule), throwError);
+        handleError(me$3(ERR.CC_REGISTER_A_MODULE_CLASS_IN_NONE_MODULE_MODE, "reducerModule:" + reducerModule), throwError);
       }
-    }
-  }
-
-  function unsetCcInstanceRef(ccKeys, ccUniqueKey) {
-    if (ccContext.isDebug) {
-      console.log(ss$1(ccUniqueKey + " unset ref"), cl$1('red'));
-    } // ccContext.ccKey_ref_[ccUniqueKey] = null;
-
-
-    delete ccContext.ccKey_ref_[ccUniqueKey];
-    delete ccContext.ccKey_option_[ccUniqueKey];
-    var ccKeyIdx = ccKeys.indexOf(ccUniqueKey);
-    if (ccKeyIdx >= 0) ccKeys.splice(ccKeyIdx, 1);
-    decCcKeyInsCount(ccUniqueKey);
-    var handlerKeys = ccUniqueKey_handlerKeys_[ccUniqueKey];
-
-    if (handlerKeys) {
-      handlerKeys.forEach(function (hKey) {
-        delete handlerKey_handler_[hKey]; // ccUniqueKey maybe generated randomly, so delete the key instead of set null
-        // handlerKey_handler_[hKey] = null;
-      });
-    }
-  }
-
-  function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
-    function setRef() {
-      ccContext.ccKey_ref_[ccUniqueKey] = ref;
-      ccKeys.push(ccUniqueKey);
-      ccContext.ccKey_option_[ccUniqueKey] = option;
-    }
-
-    incCcKeyInsCount(ccUniqueKey);
-
-    if (delayMs) {
-      setTimeout(setRef, delayMs);
-    } else {
-      setRef();
     }
   } // any error in this function will not been throwed, cc just warning, 
 
@@ -1679,7 +1559,7 @@
     if (checkStoreModule(inputModule, false, false)) {
       if (inputModule != currentModule) {
         if (reactCallback) {
-          justWarning$1(me(ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID, vbi$1(paramCallBackShouldNotSupply(inputModule, currentModule))));
+          justWarning$1(me$3(ERR.CC_CLASS_INSTANCE_CALL_WITH_ARGS_INVALID, vbi$3(paramCallBackShouldNotSupply(inputModule, currentModule))));
           targetCb = null; //let user's reactCallback has no change to be triggered
         }
       }
@@ -1688,30 +1568,6 @@
     } else {
       cb(new Error("inputModule:" + inputModule + " invalid"), null);
     }
-  }
-
-  function computeCcUniqueKey(isClassSingle, ccClassKey, ccKey) {
-    var ccUniqueKey;
-    var isCcUniqueKeyAutoGenerated = false;
-
-    if (isClassSingle) {
-      if (ccKey) justWarning$1("now the ccClass is singleton, you needn't supply ccKey to instance props, cc will ignore the ccKey:" + ccKey);
-      ccUniqueKey = ccClassKey;
-    } else {
-      if (ccKey) {
-        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, ccKey);
-      } else {
-        // const uuidStr = uuid().replace(/-/g, '_');
-        var uuidStr = uuid();
-        ccUniqueKey = util.makeUniqueCcKey(ccClassKey, uuidStr);
-        isCcUniqueKeyAutoGenerated = true;
-      }
-    }
-
-    return {
-      ccUniqueKey: ccUniqueKey,
-      isCcUniqueKeyAutoGenerated: isCcUniqueKeyAutoGenerated
-    };
   }
 
   function getSharedKeysAndGlobalKeys(module, ccClassKey, inputSharedStateKeys, inputGlobalStateKeys) {
@@ -1732,15 +1588,15 @@
         keyElementNotString = _verifyKeys.keyElementNotString;
 
     if (notArray) {
-      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY, vbi$1("ccClassKey:" + ccClassKey));
+      throw me$3(ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_NOT_ARRAY, vbi$3("ccClassKey:" + ccClassKey));
     }
 
     if (keyElementNotString) {
-      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT, vbi$1("ccClassKey:" + ccClassKey));
+      throw me$3(ERR.CC_CLASS_GLOBAL_STATE_KEYS_OR_SHARED_STATE_KEYS_INCLUDE_NON_STRING_ELEMENT, vbi$3("ccClassKey:" + ccClassKey));
     }
 
     if (duplicate) {
-      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS, vbi$1("ccClassKey:" + ccClassKey + " globalStateKeys:" + globalStateKeys + " sharedStateKeys:" + sharedStateKeys));
+      throw me$3(ERR.CC_CLASS_GLOBAL_STATE_KEYS_DUPLICATE_WITH_SHARED_STATE_KEYS, vbi$3("ccClassKey:" + ccClassKey + " globalStateKeys:" + globalStateKeys + " sharedStateKeys:" + sharedStateKeys));
     }
 
     var globalState = getState(MODULE_GLOBAL);
@@ -1752,7 +1608,7 @@
       var gKey = globalStateKeys[i];
 
       if (globalState[gKey] === undefined) {
-        throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE, vbi$1("ccClassKey:" + ccClassKey + ", invalid key in globalStateKeys is [" + gKey + "]"));
+        throw me$3(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_KEY_NOT_DECLARED_IN_GLOBAL_STATE, vbi$3("ccClassKey:" + ccClassKey + ", invalid key in globalStateKeys is [" + gKey + "]"));
       }
 
       var sharedKey = globalMappingKey_sharedKey_[gKey];
@@ -1770,7 +1626,7 @@
 
 
     if (hasGlobalMappingKeyInSharedStateKeys) {
-      throw me(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY, vbi$1("ccClassKey [" + ccClassKey + "], invalid global key [" + matchedGlobalKey + "], matched state key [" + matchedSharedKey + "]"));
+      throw me$3(ERR.CC_CLASS_GLOBAL_STATE_KEYS_INCLUDE_SHARED_TO_GLOBAL_MAPPING_KEY, vbi$3("ccClassKey [" + ccClassKey + "], invalid global key [" + matchedGlobalKey + "], matched state key [" + matchedSharedKey + "]"));
     }
 
     return {
@@ -1903,209 +1759,23 @@
     partialGlobalStateKeys.forEach(function (gKey) {
       if (!globalStateKeysOfModule.includes(gKey)) globalStateKeysOfModule.push(gKey);
     });
-  }
-
-  function _throwPropDuplicateError(prefixedKey, module) {
-    throw me("cc found different module has same key, you need give the key a alias explicitly! or you can set isPropStateModuleMode=true to avoid this error", vbi$1("the prefixedKey is " + prefixedKey + ", module is:" + module));
-  }
-
-  function _getPropKeyPair(isPropStateModuleMode, module, propKey) {
-    if (isPropStateModuleMode === true) {
-      return {
-        moduledPropKey: module + "/" + propKey,
-        originalPropKey: propKey
-      };
-    } else {
-      return {
-        moduledPropKey: propKey,
-        originalPropKey: propKey
-      };
-    }
-  } // stateKey_propKeyDescriptor_ map's key must be moduledStateKey like 'foo/key'
-  // cause different module may include the same state key
-
-
-  function _getStateKeyPair(module, stateKey) {
-    return {
-      moduledStateKey: module + "/" + stateKey,
-      originalStateKey: stateKey
-    }; // if (isPropStateModuleMode === true) {
-    //   return { moduledStateKey: `${module}/${stateKey}`, originalStateKey: stateKey };
-    // } else {
-    //   return { moduledStateKey: stateKey, originalStateKey: stateKey };
-    // }
-  }
-
-  function _setPropState(propState, propKey, propValue, isPropStateModuleMode, module) {
-    if (isPropStateModuleMode) {
-      var modulePropState = util.safeGetObjectFromObject(propState, module);
-      modulePropState[propKey] = propValue;
-    } else {
-      propState[propKey] = propValue;
-    }
   } //tell cc this ccClass is watching some sharedStateKeys of a module state, some globalStateKeys of global state
 
 
   function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, originalSharedStateKeys, originalGlobalStateKeys, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
+    var fragmentPrefixLen = CC_FRAGMENT_PREFIX.length;
+
+    if (ccClassKey.toLowerCase().substring(0, fragmentPrefixLen) === CC_FRAGMENT_PREFIX) {
+      throw me$3(ERR.CC_CLASS_KEY_FRAGMENT_NOT_ALLOWED);
+    }
+
     var contextMap = ccContext.ccClassKey_ccClassContext_;
 
     if (contextMap[ccClassKey] !== undefined) {
-      throwCcHmrError$1(me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate"));
+      throwCcHmrError$2(me$3(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate"));
     }
 
-    var ccClassContext = util.makeCcClassContext(moduleName, sharedStateKeys, globalStateKeys, originalSharedStateKeys, originalGlobalStateKeys);
-
-    if (stateToPropMapping != undefined) {
-      var propKey_stateKeyDescriptor_ = ccClassContext.propKey_stateKeyDescriptor_;
-      var stateKey_propKeyDescriptor_ = ccClassContext.stateKey_propKeyDescriptor_;
-      var propState = ccClassContext.propState;
-
-      if (typeof stateToPropMapping !== 'object') {
-        throw me(ERR.CC_CLASS_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey);
-      }
-
-      var module_mapAllStateToProp_ = {};
-      var module_staredKey_ = {};
-      var module_prefixedKeys_ = {};
-      var prefixedKeys = Object.keys(stateToPropMapping);
-      var len = prefixedKeys.length;
-
-      for (var i = 0; i < len; i++) {
-        var prefixedKey = prefixedKeys[i];
-
-        if (!util.isPrefixedKeyValid(prefixedKey)) {
-          throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, "ccClassKey:" + ccClassKey + ", key:" + prefixedKey);
-        }
-
-        var _prefixedKey$split = prefixedKey.split('/'),
-            targetModule = _prefixedKey$split[0],
-            targetKey = _prefixedKey$split[1];
-
-        if (module_mapAllStateToProp_[targetModule] === true) ; else {
-          if (targetKey === '*') {
-            module_mapAllStateToProp_[targetModule] = true;
-            module_staredKey_[targetModule] = prefixedKey;
-          } else {
-            var modulePrefixedKeys = util.safeGetArrayFromObject(module_prefixedKeys_, targetModule);
-            modulePrefixedKeys.push(prefixedKey);
-            module_mapAllStateToProp_[targetModule] = false;
-          }
-        }
-      }
-
-      var targetModules = Object.keys(module_mapAllStateToProp_);
-      var propKey_appeared_ = {}; //help cc to judge propKey is duplicated or not
-
-      targetModules.forEach(function (module) {
-        var moduleState = _state[module];
-
-        if (moduleState === undefined) {
-          throw me(ERR.CC_MODULE_NOT_FOUND, vbi$1("module:" + module + ", check your stateToPropMapping config!"));
-        }
-
-        var isPropStateSet = false;
-
-        if (module_mapAllStateToProp_[module] === true) {
-          var moduleStateKeys = Object.keys(moduleState);
-          moduleStateKeys.forEach(function (msKey) {
-            // now prop key equal state key if user declare key like m1/* in stateToPropMapping;
-            var _getPropKeyPair2 = _getPropKeyPair(isPropStateModuleMode, module, msKey),
-                moduledPropKey = _getPropKeyPair2.moduledPropKey,
-                originalPropKey = _getPropKeyPair2.originalPropKey;
-
-            var appeared = propKey_appeared_[moduledPropKey];
-
-            if (appeared === true) {
-              _throwPropDuplicateError(module_staredKey_[module], module);
-            } else {
-              propKey_appeared_[moduledPropKey] = true; // moduledPropKey and moduledStateKey is equal
-
-              propKey_stateKeyDescriptor_[moduledPropKey] = {
-                module: module,
-                originalStateKey: msKey,
-                moduledStateKey: moduledPropKey
-              };
-              stateKey_propKeyDescriptor_[moduledPropKey] = {
-                module: module,
-                moduledPropKey: moduledPropKey,
-                originalPropKey: originalPropKey
-              };
-
-              _setPropState(propState, msKey, moduleState[msKey], isPropStateModuleMode, module);
-
-              isPropStateSet = true;
-            }
-          });
-        } else {
-          var _prefixedKeys = module_prefixedKeys_[module];
-
-          _prefixedKeys.forEach(function (prefixedKey) {
-            var _prefixedKey$split2 = prefixedKey.split('/'),
-                stateModule = _prefixedKey$split2[0],
-                stateKey = _prefixedKey$split2[1];
-
-            var propKey = stateToPropMapping[prefixedKey];
-
-            var _getPropKeyPair3 = _getPropKeyPair(isPropStateModuleMode, module, propKey),
-                moduledPropKey = _getPropKeyPair3.moduledPropKey,
-                originalPropKey = _getPropKeyPair3.originalPropKey;
-
-            var appeared = propKey_appeared_[moduledPropKey];
-
-            if (appeared === true) {
-              _throwPropDuplicateError(prefixedKey, module);
-            } else {
-              propKey_appeared_[moduledPropKey] = true;
-
-              var _getStateKeyPair2 = _getStateKeyPair(module, stateKey),
-                  moduledStateKey = _getStateKeyPair2.moduledStateKey;
-
-              propKey_stateKeyDescriptor_[moduledPropKey] = {
-                module: stateModule,
-                originalStateKey: stateKey,
-                moduledStateKey: moduledStateKey
-              };
-              stateKey_propKeyDescriptor_[moduledStateKey] = {
-                module: stateModule,
-                moduledPropKey: moduledPropKey,
-                originalPropKey: originalPropKey,
-                originalStateKey: stateKey
-              };
-
-              _setPropState(propState, propKey, moduleState[stateKey], isPropStateModuleMode, module);
-
-              isPropStateSet = true;
-            }
-          });
-        }
-
-        if (isPropStateSet === true) {
-          var pCcClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
-          if (!pCcClassKeys.includes(ccClassKey)) pCcClassKeys.push(ccClassKey);
-        }
-      });
-      ccClassContext.stateToPropMapping = stateToPropMapping;
-      ccClassContext.isPropStateModuleMode = isPropStateModuleMode;
-    }
-
-    contextMap[ccClassKey] = ccClassContext;
-  }
-
-  function mapModuleAndCcClassKeys(moduleName, ccClassKey) {
-    var ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
-
-    if (ccClassKeys.includes(ccClassKey)) {
-      throwCcHmrError$1(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
-    }
-
-    var moduleSingleClass = ccContext.moduleSingleClass;
-
-    if (moduleSingleClass[moduleName] === true && ccClassKeys.length >= 1) {
-      throw me(ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE, vbi$1("module " + moduleName + ", ccClassKey " + ccClassKey));
-    } // to avoid ccClassKeys include duplicate key in hmr mode
-
-
-    if (!ccClassKeys.includes(ccClassKey)) ccClassKeys.push(ccClassKey);
+    buildCcClassContext(ccClassKey, moduleName, originalSharedStateKeys, originalGlobalStateKeys, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode);
   }
   /****
    * it is very important for cc to know how to extract committed state for the following broadcast operation with stateFor value
@@ -2144,7 +1814,7 @@
   }
 
   function _throwForExtendInputClassAsFalseCheck(ccClassKey) {
-    throw me("cc found that you set sharedStateKeys\u3001globalStateKeys or storedStateKeys, but you set extendInputClass as false at the same time\n    while you register a ccClass:" + ccClassKey + ", this is not allowed, extendInputClass=false means cc will give you\n    a props proxy component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys\n    is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!\n  ");
+    throw me$3("cc found that you set sharedStateKeys\u3001globalStateKeys or storedStateKeys, but you set extendInputClass as false at the same time\n    while you register a ccClass:" + ccClassKey + ", this is not allowed, extendInputClass=false means cc will give you\n    a props proxy component, in this situation, cc is unable to take over your component state, so set sharedStateKeys or globalStateKeys\n    is strictly prohibited, but you can still set stateToPropMapping to let cc control your component render timing!\n  ");
   }
 
   function mapModuleAssociateDataToCcContext(extendInputClass, ccClassKey, stateModule, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode) {
@@ -2199,7 +1869,7 @@
     var targetHandler = handlers.find(function (v) {
       return v.ccKey === ccUniqueKey && v.identity === identity;
     });
-    var handlerKeys = util.safeGetArrayFromObject(ccUniqueKey_handlerKeys_, ccUniqueKey);
+    var handlerKeys = util.safeGetArrayFromObject(ccUniqueKey_handlerKeys_$1, ccUniqueKey);
     var handlerKey = makeHandlerKey(ccUniqueKey, event); //  that means the component of ccUniqueKey mounted again 
     //  or user call $$on for a same event in a same instance more than once
 
@@ -2217,7 +1887,7 @@
       handlerKeys.push(handlerKey);
     }
 
-    handlerKey_handler_[handlerKey] = handler;
+    handlerKey_handler_$1[handlerKey] = handler;
   }
 
   function _findEventHandlers(event, module, ccClassKey, identity) {
@@ -2257,9 +1927,9 @@
       var ccKey = _ref2.ccKey,
           handlerKey = _ref2.handlerKey;
 
-      if (ccKey_ref_[ccKey] && handlerKey) {
+      if (ccKey_ref_$1[ccKey] && handlerKey) {
         //  confirm the instance is mounted and handler is not been offed
-        var handlerFn = handlerKey_handler_[handlerKey];
+        var handlerFn = handlerKey_handler_$1[handlerKey];
         if (handlerFn) handlerFn.apply(void 0, args);
       }
     });
@@ -2273,7 +1943,7 @@
     var handlers = _findEventHandlers(event, module, ccClassKey, identity);
 
     handlers.forEach(function (item) {
-      handlerKey_handler_[item.handler] = null;
+      handlerKey_handler_$1[item.handler] = null;
       item.handler = null;
     });
   }
@@ -2288,9 +1958,7 @@
       Object.keys(state).forEach(function (sKey) {
         // use input stateModuleName to compute moduledStateKey for current stateKey
         // to see if the propState should be updated
-        var _getStateKeyPair3 = _getStateKeyPair(stateModuleName, sKey),
-            moduledStateKey = _getStateKeyPair3.moduledStateKey;
-
+        var moduledStateKey = stateModuleName + "/" + sKey;
         var moduledPropKeyDescriptor = stateKey_propKeyDescriptor_[moduledStateKey];
 
         if (moduledPropKeyDescriptor) {
@@ -2303,9 +1971,7 @@
           }
 
           var stateValue = state[sKey];
-
           _setPropState(propState, originalPropKey, stateValue, isPropStateModuleMode, stateModuleName);
-
           setStateByModuleAndKey$1(stateModuleName, sKey, stateValue);
         }
       });
@@ -2320,7 +1986,7 @@
     Object.keys(moduleName_ccClassKeys_).forEach(function (moduleName) {
       var ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
       ccClassKeys.forEach(function (ccClassKey) {
-        var ccClassContext = ccClassKey_ccClassContext_[ccClassKey];
+        var ccClassContext = ccClassKey_ccClassContext_$1[ccClassKey];
         updateModulePropState(module_isPropStateChanged, changedPropStateList, ccClassContext, commitState, module);
       });
     });
@@ -2328,10 +1994,10 @@
       //  this module has stateToPropMapping and propState has been changed!!!
       var ccClassKeys = util.safeGetArrayFromObject(propModuleName_ccClassKeys_, module);
       ccClassKeys.forEach(function (ccClassKey) {
-        var classContext = ccClassKey_ccClassContext_[ccClassKey];
+        var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
         var ccKeys = classContext.ccKeys;
         ccKeys.forEach(function (ccKey) {
-          var ref = ccKey_ref_[ccKey];
+          var ref = ccKey_ref_$1[ccKey];
 
           if (ref) {
             ref.cc.reactForceUpdate();
@@ -2373,127 +2039,8 @@
       }
     }
   }
-  /****
-   * @param {string} ccClassKey a cc class's name, you can register a same react class to cc with different ccClassKey,
-   * but you can not register multi react class with a same ccClassKey!
-   * @param {object} registerOption
-   * @param {string} [registerOption.module] declare which module current cc class belong to, default is '$$default'
-   * @param {Array<string>|string} [registerOption.sharedStateKeys] 
-   * declare which state keys's state changing will shared to current cc class's module,
-   * default is empty array, that means any state key's value changing will not effect it's module state,
-   * if you define it like ['foo', 'bar'], when current cc instance change foo and bar, 
-   * it will effect other cc instance only if any of them whose sharedStateKeys include any key of foo and bar,
-   * and other cc instance change foo and bar will effect current cc instance also,
-   * your can also define it as '*', it means current cc class will watch its module whole state,
-   * note! the keys must have been declared in module state.
-   * @param {Array<string>|string} [registerOption.globalStateKeys] 
-   * declare which global keys's state changing the current class care about,
-   * default is empty array, that means any state key's value changing will not effect global state,
-   * note! the keys must have been declared in global state,
-   * assume your global state like {gColor:'red', gWidth:200},
-   * and you define globalStateKeys like ['gColor']，
-   * when you current cc instance send a state to cc like {gColor:'blue', otherKey:'whatever'},
-   * global state's gColor will been changed and any other cc instance if their globalStateKeys include gColor
-   * will read the latest gColor value and render new view.
-   * your can also define it as '*', it means current cc class will watch global module whole state,
-   * ============   !!!!!!  ============
-   * and pay attention key naming duplicate, because a cc instance's state is merged from global state、module state and self state,
-   * so cc don't allow sharedStateKeys and globalStateKeys has duplicate element
-   * 
-   * @param {object} [registerOption.stateToPropMapping] { (moduleName/keyName)/(alias), ...}
-   * if you don't like module state merge to cc instance state property, 
-   * you can define stateToPropMapping, that means you can get module from this.$$propState in cc instance method,
-   * for example, if you define it like: {'moudleA/foo':'foo', 'moudleB/bar':'bar'}
-   * now your can get value of foo and bar from these two module,
-   * ```
-   *    const {foo, bar} = this.$$propState;
-   * ```
-   * ============   !!!!!!  ============
-   * note that, any state changing of key for foo and bar will effect current cc class instance to render new view,
-   * that means you can use this feature to achieve purpose of watching multi module state changing ^_^
-   * 
-   * if moudleA and moudleB has a duplicate key naming, you can define stateToPropMapping like:
-   * {'moudleA/foo':'foo', 'moudleA/bar':'moudleA_bar','moudleB/bar':'bar'}
-   * now your can get value of foo and bar from these two module like below,
-   * ```
-   *    const {foo, moudleA_bar, bar} = this.$$propState;
-   * ```
-   * if you want to want to watch moudleA and moudleB whole state changing 
-   * and you can make sure they don't have key naming duplicate problem!
-   * you can define stateToPropMapping like: {'moudleA/*':'', 'moudleB/*':''}
-   * now your can get any key state from this.$$propState,
-   * 
-   * ============   !!!!!!  ============
-   * a better way to avoid key naming duplicate problem is set registerOption.isPropStateModuleMode as true,
-   * now your can these two moudle state like below, you can get every state from specified module^_^
-   * ```
-   *    const {moudleA, moudleB} = this.$$propState;
-   * ```
-   * 
-   * @param {object} [registerOption.isPropStateModuleMode] default is false, see above know how to use it
-   * @param {string} [registerOption.reducerModule] default is equal as module if you don't declare it
-   * if you call cc instance api $$dispatch without module and reducerMoudle like below
-   * ```
-   *    this.$$dispatch({type:'doStaff', payload:{foo:1, bar:2}});
-   *    // or 
-   *    this.$$dispatch('doStaff', {foo:1, bar:2});
-   * ```
-   * cc will find current cc class's reducerModule function named doStaff to execute 
-   * and will change current cc class's moudle state,
-   * so you don't have to write code like below if current cc class module is M1 
-   * and you always want to use R1 reducer function to generate new state
-   * ```
-   *    this.$$dispatch({module:'M1', reducerModule:'R1', type:'doStaff', payload:{foo:1, bar:2}});
-   *    // or 
-   *    this.$$dispatch('M1/R1/doStaff', {foo:1, bar:2});
-   * ```
-   * 
-   * ============   !!!!!!  ============
-   * note if you really want to change other module's state and use other reducer function, you must input module and reducerModule
-   * in your $$dispatch method, or they will been replaced by current cc class's default module and default reducerModule
-   * ```
-   *    this.$$dispatch({module:'M2', reducerModule:'R2', type:'doStaff', payload:{foo:1, bar:2}});
-   * ```
-   * @param {string} [registerOption.extendInputClass] default is true
-   * cc alway use strategy of reverse inheritance to wrap your react class, that meas you can call cc instance method from `this` directly
-   * but if you meet multi decorator in your legacy project and want to change it to cc, to make it still works well in cc mode,
-   * you can set extendInputClass as false, then cc will use strategy of prop proxy to wrap your react class, in this situation, 
-   * all the cc instance method and property you can only get them from `this.props`, for example
-   * ```
-   *    @cc.register('BasicForms',{
-   *      stateToPropMapping: {'form/regularFormSubmitting': 'submitting'},
-   *      extendInputClass: false 
-   *    })
-   *    @Form.create()
-   *    export default class BasicForms extends PureComponent {
-   *      componentDidMount()=>{
-   *        this.props.$$dispatch('form/getInitData');
-   *      }
-   *      render(){
-   *        const {submitting} = this.props.$$propState;
-   *      }
-   *    }
-   * ```
-   * more details you can see https://github.com/fantasticsoul/rcc-antd-pro/blob/master/src/routes/Forms/BasicForm.js
-   * @param {string} [registerOption.isSingle] default is false
-   * if you only allow current cc class only initialize one time, 
-   * that means there is only one cc instance can be existed for current cc class at most,
-   * you can define registerOption.isSingle as true, it just like singleton mode in java coding^_^
-   * @param {string} [registerOption.asyncLifecycleHook] default is true
-   * we can define cc class lifecycle method $$beforeSetState、$$afterSetState、$$beforeBroadcastState,
-   * but they are synchronous by default,
-   * if you define registerOption.isSingle as true, these three method's second param will be next handler
-   *  * ============   !!!!!!  ============
-   *  you must call next, if you don't want to block any of next operation in cc core
-   * ```
-   * $$beforeSetState(executeContext, next){
-   *  // here if you don't call next(), it will block reactSetState, broadcastState and etc operations ~_~
-   * }
-   * ```
-   */
 
-
-  function register(ccClassKey, _temp) {
+  function register$$1(ccClassKey, _temp) {
     var _ref4 = _temp === void 0 ? {} : _temp,
         _ref4$module = _ref4.module,
         module = _ref4$module === void 0 ? MODULE_DEFAULT : _ref4$module,
@@ -2510,10 +2057,12 @@
         _ref4$isSingle = _ref4.isSingle,
         isSingle = _ref4$isSingle === void 0 ? false : _ref4$isSingle,
         _ref4$asyncLifecycleH = _ref4.asyncLifecycleHook,
-        asyncLifecycleHook = _ref4$asyncLifecycleH === void 0 ? true : _ref4$asyncLifecycleH;
+        asyncLifecycleHook = _ref4$asyncLifecycleH === void 0 ? true : _ref4$asyncLifecycleH,
+        _ref4$checkStartUp = _ref4.checkStartUp,
+        checkStartUp = _ref4$checkStartUp === void 0 ? true : _ref4$checkStartUp;
 
     try {
-      checkCcStartupOrNot();
+      if (checkStartUp === true) checkCcStartupOrNot();
       var _curStateModule = module;
       var _asyncLifecycleHook = asyncLifecycleHook;
 
@@ -2531,10 +2080,10 @@
           globalStateKeys = gKeys;
       return function (ReactClass) {
         if (ReactClass.prototype.$$changeState && ReactClass.prototype.__$$mapCcToInstance) {
-          throw me(ERR.CC_REGISTER_A_CC_CLASS, vbi$1("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CcClass!"));
+          throw me$3(ERR.CC_REGISTER_A_CC_CLASS, vbi$3("if you want to register " + ccClassKey + " to cc successfully, the ReactClass can not be a CcClass!"));
         }
 
-        var TargetClass = extendInputClass ? ReactClass : React.Component;
+        var TargetClass = extendInputClass ? ReactClass : React__default.Component;
 
         var CcClass =
         /*#__PURE__*/
@@ -2550,7 +2099,7 @@
               var ccKey = props.ccKey,
                   _props$ccOption = props.ccOption,
                   ccOption = _props$ccOption === void 0 ? {} : _props$ccOption;
-              util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$bindDataToCcClassContext', '__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler', '$$domDispatch']);
+              util.bindThis(_assertThisInitialized(_assertThisInitialized(_this)), ['__$$mapCcToInstance', '__$$getChangeStateHandler', '$$changeState', '__$$recoverState', '__$$getDispatchHandler', '$$domDispatch']);
               if (!ccOption.storedStateKeys) ccOption.storedStateKeys = []; // if you flag syncSharedState false, that means this ccInstance's state changing will not effect other ccInstance and not effected by other ccInstance's state changing
 
               if (ccOption.syncSharedState === undefined) ccOption.syncSharedState = true; // if you flag syncGlobalState false, that means this ccInstance's globalState changing will not effect cc's globalState and not effected by cc's globalState changing
@@ -2560,16 +2109,17 @@
               var _asyncLifecycleHook2 = ccOption.asyncLifecycleHook,
                   storedStateKeys = ccOption.storedStateKeys;
 
-              var _computeCcUniqueKey = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
-                  ccUniqueKey = _computeCcUniqueKey.ccUniqueKey,
-                  isCcUniqueKeyAutoGenerated = _computeCcUniqueKey.isCcUniqueKeyAutoGenerated;
+              var _helper$computeCcUniq = computeCcUniqueKey(isSingle, ccClassKey, ccKey),
+                  ccUniqueKey = _helper$computeCcUniq.ccUniqueKey,
+                  isCcUniqueKeyAutoGenerated = _helper$computeCcUniq.isCcUniqueKeyAutoGenerated;
 
-              var ccClassContext = _this.__$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption);
+              var ccClassContext = ccClassKey_ccClassContext_$1[ccClassKey];
+              setRef(_assertThisInitialized(_assertThisInitialized(_this)), isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption);
 
               _this.__$$mapCcToInstance(isSingle, _asyncLifecycleHook2, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, _curStateModule, _reducerModule, sharedStateKeys, globalStateKeys); // bind propState to $$propState
 
 
-              _this.$$propState = ccClassKey_ccClassContext_[ccClassKey].propState || {};
+              _this.$$propState = ccClassKey_ccClassContext_$1[ccClassKey].propState || {};
 
               _this.__$$recoverState(ccClassKey);
             } catch (err) {
@@ -2623,46 +2173,6 @@
             computeValueForRef(this.$$computed, this.$$refComputed, entireState);
           };
 
-          _proto.__$$bindDataToCcClassContext = function __$$bindDataToCcClassContext(isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
-            var classContext = ccContext.ccClassKey_ccClassContext_[ccClassKey];
-            var ccKeys = classContext.ccKeys;
-
-            if (ccContext.isDebug) {
-              console.log(ss$1("register ccKey " + ccUniqueKey + " to CC_CONTEXT"), cl$1());
-            }
-
-            if (!util.isCcOptionValid(ccOption)) {
-              throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi$1("a standard default ccOption may like: {\"syncSharedState\": true, \"asyncLifecycleHook\":false, \"storedStateKeys\": []}"));
-            }
-
-            if (ccKeys.includes(ccUniqueKey)) {
-              if (util.isHotReloadMode()) {
-                var insCount = getCcKeyInsCount(ccUniqueKey);
-                if (isSingle && insCount > 1) throw me(ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE, vbi$1("ccClass:" + ccClassKey));
-
-                if (insCount > 2) {
-                  // now cc can make sure the ccKey duplicate
-                  throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi$1("ccClass:" + ccClassKey + ",ccKey:" + ccUniqueKey));
-                } // just warning
-
-
-                console.error("found ccKey " + ccKey + " may duplicate, but now is in hot reload mode, cc can't throw the error, please make sure your ccKey is unique manually");
-                console.error(vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " ccUniqueKey:" + ccUniqueKey)); // in webpack hot reload mode, cc works not very well,
-                // cc can't set ref immediately, because the ccInstance of ccKey will ummount right now, in unmount func, 
-                // cc call unsetCcInstanceRef will lost the right ref in CC_CONTEXT.refs
-                // so cc set ref later
-
-                setCcInstanceRef(ccUniqueKey, this, ccKeys, ccOption, 600);
-              } else {
-                throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi$1("ccClass:" + ccClassKey + ",ccKey:" + ccUniqueKey));
-              }
-            } else {
-              setCcInstanceRef(ccUniqueKey, this, ccKeys, ccOption);
-            }
-
-            return classContext;
-          };
-
           _proto.__$$mapCcToInstance = function __$$mapCcToInstance(isSingle, asyncLifecycleHook, ccClassKey, ccKey, ccUniqueKey, isCcUniqueKeyAutoGenerated, storedStateKeys, ccOption, ccClassContext, currentModule, currentReducerModule, sharedStateKeys, globalStateKeys) {
             var _this2 = this,
                 _this$cc;
@@ -2692,19 +2202,19 @@
                 keyElementNotString = _verifyKeys2.keyElementNotString;
 
             if (notArray) {
-              throw me(ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY, vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey));
+              throw me$3(ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_NOT_ARRAY, vbi$3("ccClassKey:" + ccClassKey + " ccKey:" + ccKey));
             }
 
             if (keyElementNotString) {
-              throw me(ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT, vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey));
+              throw me$3(ERR.CC_STORED_STATE_KEYS_OR_SHARED_KEYS_INCLUDE_NON_STRING_ELEMENT, vbi$3("ccClassKey:" + ccClassKey + " ccKey:" + ccKey));
             }
 
             if (duplicate) {
-              throw me(ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS, vbi$1("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " sharedStateKeys:" + sharedStateKeys + " storedStateKeys:" + storedStateKeys));
+              throw me$3(ERR.CC_CLASS_INSTANCE_STORED_STATE_KEYS_DUPLICATE_WITH_SHARED_KEYS, vbi$3("ccClassKey:" + ccClassKey + " ccKey:" + ccKey + " sharedStateKeys:" + sharedStateKeys + " storedStateKeys:" + storedStateKeys));
             }
 
             if (storedStateKeys.length > 0 && isCcUniqueKeyAutoGenerated) {
-              throw me(ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS, vbi$1("ccClassKey:" + ccClassKey));
+              throw me$3(ERR.CC_CLASS_INSTANCE_NO_CC_KEY_SPECIFIED_WHEN_USE_STORED_STATE_KEYS, vbi$3("ccClassKey:" + ccClassKey));
             }
 
             this.cc = (_this$cc = {
@@ -3381,7 +2891,7 @@
               if (ccClassKeys) {
                 //  these ccClass are watching the same module's state
                 ccClassKeys.forEach(function (ccClassKey) {
-                  var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                  var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
                   var ccKeys = classContext.ccKeys,
                       sharedStateKeys = classContext.sharedStateKeys,
                       globalStateKeys = classContext.globalStateKeys;
@@ -3406,10 +2916,10 @@
 
                   ccKeys.forEach(function (ccKey) {
                     if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
-                    var ref = ccKey_ref_[ccKey];
+                    var ref = ccKey_ref_$1[ccKey];
 
                     if (ref) {
-                      var option = ccKey_option_[ccKey];
+                      var option = ccKey_option_$1[ccKey];
                       var toSet = null,
                           changedBy = -1;
 
@@ -3442,7 +2952,7 @@
                   var partialGlobalState = module_globalState_[mName];
                   var ccClassKeys = moduleName_ccClassKeys_[mName];
                   ccClassKeys.forEach(function (ccClassKey) {
-                    var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                    var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
                     var ccKeys = classContext.ccKeys,
                         globalStateKeys = classContext.globalStateKeys;
                     if (ccKeys.length === 0) return;
@@ -3454,10 +2964,10 @@
 
                     if (isPartialGlobalStateEmpty) return;
                     ccKeys.forEach(function (ccKey) {
-                      var ref = ccKey_ref_[ccKey];
+                      var ref = ccKey_ref_$1[ccKey];
 
                       if (ref) {
-                        var option = ccKey_option_[ccKey];
+                        var option = ccKey_option_$1[ccKey];
 
                         if (option.syncGlobalState) {
                           if (ccContext.isDebug) {
@@ -3475,7 +2985,7 @@
               broadcastPropState(moduleName, originalState);
             }, _this$cc.broadcastGlobalState = function broadcastGlobalState(globalSate) {
               globalCcClassKeys.forEach(function (ccClassKey) {
-                var classContext = ccClassKey_ccClassContext_[ccClassKey];
+                var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
                 var globalStateKeys = classContext.globalStateKeys,
                     ccKeys = classContext.ccKeys;
 
@@ -3485,10 +2995,10 @@
 
                 if (!isStateEmpty) {
                   ccKeys.forEach(function (ccKey) {
-                    var ref = ccKey_ref_[ccKey];
+                    var ref = ccKey_ref_$1[ccKey];
 
                     if (ref) {
-                      var option = ccKey_option_[ccKey];
+                      var option = ccKey_option_$1[ccKey];
 
                       if (option.syncGlobalState === true) {
                         ref.cc.prepareReactSetState(CHANGE_BY_BROADCASTED_GLOBAL_STATE, partialState);
@@ -3638,7 +3148,7 @@
                     }
                   }, reactCallback);
                 } else {
-                  if (forceSync) justWarning$1("you are trying change another module's state, forceSync=true in not allowed, cc will ignore it!" + vbi$1("module:" + module + " currentModule" + currentModule));
+                  if (forceSync) justWarning$1("you are trying change another module's state, forceSync=true in not allowed, cc will ignore it!" + vbi$3("module:" + module + " currentModule" + currentModule));
                   if (reactCallback) justWarning$1("callback for react.setState will be ignore");
 
                   _this3.cc.prepareBroadcastState(stateFor, broadcastTriggeredBy || BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, module, state, true, lazyMs);
@@ -3761,10 +3271,10 @@
                   _reducerModule = _reducerModule3;
                   _type = _type3;
                 } else {
-                  return Promise.reject(me(ERR.CC_DISPATCH_STRING_INVALID, vbi$1(paramObj)));
+                  return Promise.reject(me$3(ERR.CC_DISPATCH_STRING_INVALID, vbi$3(paramObj)));
                 }
               } else {
-                return Promise.reject(me(ERR.CC_DISPATCH_PARAM_INVALID));
+                return Promise.reject(me$3(ERR.CC_DISPATCH_PARAM_INVALID));
               } // pick user input reducerModule firstly
 
 
@@ -3813,8 +3323,8 @@
           _proto.componentWillUnmount = function componentWillUnmount() {
             var _this$cc$ccState2 = this.cc.ccState,
                 ccUniqueKey = _this$cc$ccState2.ccUniqueKey,
-                ccKeys = _this$cc$ccState2.ccClassContext.ccKeys;
-            unsetCcInstanceRef(ccKeys, ccUniqueKey); //if father component implement componentWillUnmount，call it again
+                ccClassKey = _this$cc$ccState2.ccClassKey;
+            unsetRef(ccClassKey, ccUniqueKey); //if father component implement componentWillUnmount，call it again
 
             if (_TargetClass.prototype.componentWillUnmount) _TargetClass.prototype.componentWillUnmount.call(this);
           };
@@ -3829,19 +3339,556 @@
               return _TargetClass.prototype.render.call(this);
             } else {
               // now cc class extends ReactComponent, render user inputted ReactClass
-              return React.createElement(ReactClass, _extends({}, this, this.props));
+              return React__default.createElement(ReactClass, _extends({}, this, this.props));
             }
           };
 
           return CcClass;
         }(TargetClass);
 
-        CcClass.displayName = ccClassDisplayName$1(ccClassKey);
+        if (ccClassKey === CC_DISPATCHER) CcClass.displayName = 'CcDispatcher';else CcClass.displayName = ccClassDisplayName$1(ccClassKey);
         return CcClass;
       };
     } catch (err) {
       catchCcError(err);
     }
+  }
+
+  function mapModuleAndCcClassKeys (moduleName, ccClassKey) {
+    var moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_,
+        moduleSingleClass = ccContext.moduleSingleClass;
+    var ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, moduleName);
+
+    if (ccClassKeys.includes(ccClassKey)) {
+      util.throwCcHmrError(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
+    }
+
+    if (moduleSingleClass[moduleName] === true && ccClassKeys.length >= 1) {
+      throw me(ERR.CC_CLASS_IS_NOT_ALLOWED_REGISTER_TO_A_SINGLE_CLASS_MODULE, vbi("module " + moduleName + ", ccClassKey " + ccClassKey));
+    } // to avoid ccClassKeys include duplicate key in hmr mode
+
+
+    if (!ccClassKeys.includes(ccClassKey)) ccClassKeys.push(ccClassKey);
+  }
+
+  var vbi$4 = verboseInfo;
+  var ss$2 = styleStr;
+  var cl$2 = color;
+
+  function keysWarning(keyWord) {
+    justWarning("now cc is startup with non module mode, cc only allow you define " + keyWord + " like {\"$$default\":{}, \"$$global\":{}}, cc will ignore other module keys");
+  }
+
+  function bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode) {
+    if (!isPlainJsonObject(store)) {
+      throw new Error("the store is not a plain json object!");
+    }
+
+    if (!isPlainJsonObject(sharedToGlobalMapping)) {
+      throw new Error("the sharedToGlobalMapping is not a plain json object!");
+    }
+
+    ccContext.sharedToGlobalMapping = sharedToGlobalMapping;
+    var globalStateKeys = ccContext.globalStateKeys;
+    var pureGlobalStateKeys = ccContext.pureGlobalStateKeys;
+    var _state = ccContext.store._state;
+    var globalState = store[MODULE_GLOBAL];
+    _state[MODULE_CC] = {};
+
+    if (isModuleMode) {
+      var moduleNames = Object.keys(store);
+
+      if (globalState) {
+        if (!util.isModuleStateValid(globalState)) {
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi$4("moduleName:" + MODULE_GLOBAL + "'s state is invalid!"));
+        } else {
+          console.log(ss$2('$$global module state found while startup cc!'), cl$2());
+          Object.keys(globalState).forEach(function (key) {
+            globalStateKeys.push(key);
+          });
+        }
+      } else {
+        console.log(ss$2('$$global module state not found, cc will generate one for user automatically!'), cl$2());
+        globalState = {};
+      }
+
+      _state[MODULE_GLOBAL] = globalState;
+      var len = moduleNames.length;
+      var isDefaultModuleExist = false;
+
+      for (var i = 0; i < len; i++) {
+        var moduleName = moduleNames[i];
+
+        if (moduleName !== MODULE_GLOBAL) {
+          checkModuleName(moduleName);
+          var moduleState = store[moduleName];
+          checkModuleState(moduleState, moduleName);
+
+          if (moduleName === MODULE_DEFAULT) {
+            isDefaultModuleExist = true;
+            console.log(ss$2('$$default module state found while startup cc!'), cl$2());
+          }
+
+          _state[moduleName] = moduleState;
+          var sharedKey_globalKey_ = sharedToGlobalMapping[moduleName];
+
+          if (sharedKey_globalKey_) {
+            handleModuleSharedToGlobalMapping(moduleName, sharedKey_globalKey_);
+          }
+        }
+      }
+
+      if (!isDefaultModuleExist) {
+        _state[MODULE_DEFAULT] = {};
+        console.log(ss$2('$$default module state not found,cc will generate one for user automatically!'), cl$2());
+      }
+    } else {
+      // non module mode
+      if (sharedToGlobalMapping && util.isObjectNotNull(sharedToGlobalMapping)) {
+        throw util.makeError(ERR.CC_STORE_MAPPING_IS_NOT_ALLOWED_IN_NON_MODULE);
+      }
+
+      var includeDefaultModule = store.hasOwnProperty(MODULE_DEFAULT);
+      var includeGlobalModule = store.hasOwnProperty(MODULE_GLOBAL);
+      var invalidKeyCount = 0;
+
+      if (includeDefaultModule || includeGlobalModule) {
+        if (includeDefaultModule) {
+          if (!util.isModuleStateValid(store[MODULE_DEFAULT])) {
+            throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi$4(" moduleName:" + MODULE_DEFAULT + "'s state is invalid!"));
+          }
+
+          _state[MODULE_DEFAULT] = store[MODULE_DEFAULT];
+          invalidKeyCount += 1;
+          console.log(ss$2('$$default module state found while startup cc with non module mode!'), cl$2());
+        } else {
+          _state[MODULE_DEFAULT] = {};
+        }
+
+        if (includeGlobalModule) {
+          if (!util.isModuleStateValid(store[MODULE_GLOBAL])) {
+            throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi$4(" moduleName:" + MODULE_GLOBAL + "'s state is invalid!"));
+          }
+
+          globalState = store[MODULE_GLOBAL];
+          Object.keys(globalState).forEach(function (key) {
+            return globalStateKeys.push(key);
+          });
+          invalidKeyCount += 1;
+          console.log(ss$2('$$global module state found while startup cc with non module mode!'), cl$2());
+          _state[MODULE_GLOBAL] = globalState;
+        } else {
+          _state[MODULE_GLOBAL] = {};
+        }
+
+        if (Object.keys(store).length > invalidKeyCount) {
+          keysWarning('store');
+        }
+      } else {
+        // treat store as $$default module store
+        if (!util.isModuleStateValid(store)) {
+          throw util.makeError(ERR.CC_STORE_STATE_INVALID, vbi$4(" moduleName:" + MODULE_DEFAULT + "'s state  is invalid!"));
+        }
+
+        _state[MODULE_DEFAULT] = store;
+      }
+    }
+
+    var globalMappingKey_sharedKey_ = ccContext.globalMappingKey_sharedKey_;
+    globalStateKeys.reduce(function (pKeys, gKey) {
+      if (!globalMappingKey_sharedKey_[gKey]) pKeys.push(gKey);
+      return pKeys;
+    }, pureGlobalStateKeys);
+  }
+  /**
+   * @description
+   * @author zzk
+   * @param {*} reducer may like: {user:{getUser:()=>{}, setUser:()=>{}}, product:{...}}
+   */
+
+
+  function bindReducerToCcContext(reducer) {
+    var _reducer = ccContext.reducer._reducer;
+    var moduleNames = Object.keys(reducer);
+    var len = moduleNames.length;
+    var isDefaultReducerExist = false,
+        isGlobalReducerExist = false;
+
+    for (var i = 0; i < len; i++) {
+      var moduleName = moduleNames[i];
+      checkModuleName(moduleName, true);
+      _reducer[moduleName] = reducer[moduleName];
+      if (moduleName === MODULE_DEFAULT) isDefaultReducerExist = true;
+      if (moduleName === MODULE_GLOBAL) isGlobalReducerExist = true;
+    }
+
+    if (!isDefaultReducerExist) _reducer[MODULE_DEFAULT] = {};
+    if (!isGlobalReducerExist) _reducer[MODULE_GLOBAL] = {};
+  }
+
+  function bindComputedToCcContext(computed, isModuleMode) {
+    if (!isPlainJsonObject(computed)) {
+      throw new Error("the computed value of ccStartUpOption is not a plain json object!");
+    }
+
+    function mapComputed(m, moduleComputed) {
+      var moduleState = _state[m];
+
+      if (!moduleState) {
+        throw util.makeError(ERR.CC_COMPUTED_MODULE_INVALID_IN_STARTUP_OPTION, vbi$4(" moduleName in computed: " + m));
+      }
+
+      if (!isPlainJsonObject(moduleComputed)) {
+        throw new Error("the value of one key of the computed object is not a plain json object!");
+      }
+
+      var keys = Object.keys(moduleComputed);
+      keys.forEach(function (key) {
+        var originalValue = moduleState[key];
+
+        if (originalValue !== undefined) {
+          var moduleComputedFn = util.safeGetObjectFromObject(_computedFn, m);
+          var fn = moduleComputed[key];
+          moduleComputedFn[key] = fn;
+          var computedValue = fn(originalValue, moduleState);
+          var moduleComputedValue = util.safeGetObjectFromObject(_computedValue, m);
+          moduleComputedValue[key] = computedValue;
+        } else {
+          justWarning("key:" + key + " of module:" + m + " of computed object is not declared in module:" + m + " of store!");
+        }
+      });
+    }
+
+    var _ccContext$computed = ccContext.computed,
+        _computedFn = _ccContext$computed._computedFn,
+        _computedValue = _ccContext$computed._computedValue;
+    var _state = ccContext.store._state;
+
+    if (isModuleMode) {
+      var moduleNames = Object.keys(computed);
+      moduleNames.forEach(function (m) {
+        mapComputed(m, computed[m]);
+      });
+    } else {
+      var includeDefaultKey = computed.hasOwnProperty(MODULE_DEFAULT);
+      var includeGlobalKey = computed.hasOwnProperty(MODULE_GLOBAL);
+
+      if (includeDefaultKey || includeGlobalKey) {
+        var invalidKeyCount = 0;
+
+        if (includeDefaultKey) {
+          invalidKeyCount++;
+          mapComputed(MODULE_DEFAULT, computed[MODULE_DEFAULT]);
+        }
+
+        if (includeGlobalKey) {
+          invalidKeyCount++;
+          mapComputed(MODULE_GLOBAL, computed[MODULE_GLOBAL]);
+        }
+
+        if (Object.keys(computed).length > invalidKeyCount) {
+          keysWarning('computed');
+        }
+      } else {
+        mapComputed(MODULE_DEFAULT, computed);
+      }
+    }
+  }
+
+  function executeInitializer(isModuleMode, store, init) {
+    var stateHandler = getStateHandlerForInit;
+    if (init === undefined) return;
+
+    if (!isModuleMode) {
+      if (isPlainJsonObject(init)) {
+        var includeDefaultModule = init.hasOwnProperty(MODULE_DEFAULT);
+        var includeGlobalModule = init.hasOwnProperty(MODULE_GLOBAL);
+
+        if (includeDefaultModule || includeGlobalModule) {
+          if (includeDefaultModule) {
+            var defaultInit = init[MODULE_DEFAULT];
+
+            if (defaultInit) {
+              if (typeof defaultInit !== 'function') {
+                throw new Error('init.$$default value must be a function when cc startup in nonModuleMode!');
+              } else {
+                defaultInit(stateHandler(MODULE_DEFAULT));
+              }
+            }
+          }
+
+          if (includeGlobalModule) {
+            var globalInit = init[MODULE_GLOBAL];
+
+            if (globalInit) {
+              if (typeof globalInit !== 'function') {
+                throw new Error('init.$$global value must be a function when cc startup in nonModuleMode!');
+              } else {
+                globalInit(stateHandler(MODULE_GLOBAL));
+              }
+            }
+          }
+        } else {
+          throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
+        }
+      } else {
+        if (typeof init !== 'function') {
+          throw new Error('init value must be a function or a object like {$$default:Function, $$global:Function} when cc startup in nonModuleMode!');
+        }
+
+        init(stateHandler(MODULE_DEFAULT));
+      }
+    } else {
+      if (!isPlainJsonObject(init)) {
+        throw new Error('init value must be a object like { ${moduleName}:Function } when cc startup in moduleMode!');
+      }
+
+      var moduleNames = Object.keys(init);
+      moduleNames.forEach(function (moduleName) {
+        if (!store[moduleName]) {
+          throw new Error("module " + moduleName + " not found, check your ccStartupOption.init object keys");
+        }
+
+        var initFn = init[moduleName];
+
+        if (initFn) {
+          initFn(stateHandler(moduleName));
+        }
+      });
+    }
+  }
+  /* 
+  store in CC_CONTEXT may like:
+   {
+    $$global:{
+   
+    },
+    module1:{
+      books:[],
+      user:{},
+      color:'red',
+      readCount:5,
+    },
+    module2:{
+      books:[],
+      colors:[],
+      followCount:15,
+    }
+  }
+  reducer = {
+    [moduleName1]:{
+      [actionType1]:callback(setState, {type:'',payload:''})
+      [actionType2]:callback(setState, {type:'',payload:''})
+    },
+    [moduleName2]:{
+      [actionType1]:callback(setState, {type:'',payload:''})
+    }
+  }
+  init = {
+    global:(setState)=>{}
+  }
+  */
+
+
+  function _startup (_temp) {
+    var _ref = _temp === void 0 ? {} : _temp,
+        _ref$isModuleMode = _ref.isModuleMode,
+        isModuleMode = _ref$isModuleMode === void 0 ? false : _ref$isModuleMode,
+        _ref$store = _ref.store,
+        store = _ref$store === void 0 ? {} : _ref$store,
+        _ref$reducer = _ref.reducer,
+        reducer = _ref$reducer === void 0 ? {} : _ref$reducer,
+        _ref$init = _ref.init,
+        init = _ref$init === void 0 ? null : _ref$init,
+        _ref$computed = _ref.computed,
+        computed = _ref$computed === void 0 ? {} : _ref$computed,
+        _ref$sharedToGlobalMa = _ref.sharedToGlobalMapping,
+        sharedToGlobalMapping = _ref$sharedToGlobalMa === void 0 ? {} : _ref$sharedToGlobalMa,
+        _ref$moduleSingleClas = _ref.moduleSingleClass,
+        moduleSingleClass = _ref$moduleSingleClas === void 0 ? {} : _ref$moduleSingleClas,
+        _ref$middlewares = _ref.middlewares,
+        middlewares = _ref$middlewares === void 0 ? [] : _ref$middlewares,
+        _ref$isStrict = _ref.isStrict,
+        isStrict = _ref$isStrict === void 0 ? false : _ref$isStrict,
+        _ref$isDebug = _ref.isDebug,
+        isDebug = _ref$isDebug === void 0 ? false : _ref$isDebug,
+        _ref$errorHandler = _ref.errorHandler,
+        errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler,
+        _ref$isHot = _ref.isHot,
+        isHot = _ref$isHot === void 0 ? false : _ref$isHot;
+
+    try {
+      if (window) {
+        window.CC_CONTEXT = ccContext;
+        window.ccc = ccContext;
+      }
+
+      if (ccContext.isCcAlreadyStartup) {
+        var err = util.makeError(ERR.CC_ALREADY_STARTUP);
+
+        if (util.isHotReloadMode()) {
+          clearObject(ccContext.reducer._reducer);
+          clearObject(ccContext.store._state);
+          clearObject(ccContext.computed._computedFn);
+          clearObject(ccContext.computed._computedValue);
+          clearObject(ccContext.event_handlers_);
+          clearObject(ccContext.ccUniqueKey_handlerKeys_);
+          clearObject(ccContext.handlerKey_handler_);
+          clearObject(ccContext.ccKey_ref_);
+          util.hotReloadWarning(err);
+        } else throw err;
+      }
+
+      ccContext.isModuleMode = isModuleMode;
+      ccContext.isStrict = isStrict;
+      ccContext.isDebug = isDebug;
+      util.safeAssignObjectValue(ccContext.sharedToGlobalMapping, sharedToGlobalMapping);
+      util.safeAssignObjectValue(ccContext.moduleSingleClass, moduleSingleClass);
+      bindStoreToCcContext(store, sharedToGlobalMapping, isModuleMode);
+      bindReducerToCcContext(reducer);
+      bindComputedToCcContext(computed, isModuleMode);
+
+      if (init) {
+        var computedStore = ccContext.store._state;
+        executeInitializer(isModuleMode, computedStore, init);
+      }
+
+      if (middlewares.length > 0) {
+        var ccMiddlewares = ccContext.middlewares;
+        middlewares.forEach(function (m) {
+          return ccMiddlewares.push(m);
+        });
+      }
+
+      ccContext.isCcAlreadyStartup = true;
+      ccContext.isHot = isHot;
+      ccContext.errorHandler = errorHandler;
+    } catch (err) {
+      if (errorHandler) errorHandler(err);else throw err;
+    }
+  }
+
+  /****
+   * @param {string} ccClassKey a cc class's name, you can register a same react class to cc with different ccClassKey,
+   * but you can not register multi react class with a same ccClassKey!
+   * @param {object} registerOption
+   * @param {string} [registerOption.module] declare which module current cc class belong to, default is '$$default'
+   * @param {Array<string>|string} [registerOption.sharedStateKeys] 
+   * declare which state keys's state changing will shared to current cc class's module,
+   * default is empty array, that means any state key's value changing will not effect it's module state,
+   * if you define it like ['foo', 'bar'], when current cc instance change foo and bar, 
+   * it will effect other cc instance only if any of them whose sharedStateKeys include any key of foo and bar,
+   * and other cc instance change foo and bar will effect current cc instance also,
+   * your can also define it as '*', it means current cc class will watch its module whole state,
+   * note! the keys must have been declared in module state.
+   * @param {Array<string>|string} [registerOption.globalStateKeys] 
+   * declare which global keys's state changing the current class care about,
+   * default is empty array, that means any state key's value changing will not effect global state,
+   * note! the keys must have been declared in global state,
+   * assume your global state like {gColor:'red', gWidth:200},
+   * and you define globalStateKeys like ['gColor']，
+   * when you current cc instance send a state to cc like {gColor:'blue', otherKey:'whatever'},
+   * global state's gColor will been changed and any other cc instance if their globalStateKeys include gColor
+   * will read the latest gColor value and render new view.
+   * your can also define it as '*', it means current cc class will watch global module whole state,
+   * ============   !!!!!!  ============
+   * and pay attention key naming duplicate, because a cc instance's state is merged from global state、module state and self state,
+   * so cc don't allow sharedStateKeys and globalStateKeys has duplicate element
+   * 
+   * @param {object} [registerOption.stateToPropMapping] { (moduleName/keyName)/(alias), ...}
+   * if you don't like module state merge to cc instance state property, 
+   * you can define stateToPropMapping, that means you can get module from this.$$propState in cc instance method,
+   * for example, if you define it like: {'moudleA/foo':'foo', 'moudleB/bar':'bar'}
+   * now your can get value of foo and bar from these two module,
+   * ```
+   *    const {foo, bar} = this.$$propState;
+   * ```
+   * ============   !!!!!!  ============
+   * note that, any state changing of key for foo and bar will effect current cc class instance to render new view,
+   * that means you can use this feature to achieve purpose of watching multi module state changing ^_^
+   * 
+   * if moudleA and moudleB has a duplicate key naming, you can define stateToPropMapping like:
+   * {'moudleA/foo':'foo', 'moudleA/bar':'moudleA_bar','moudleB/bar':'bar'}
+   * now your can get value of foo and bar from these two module like below,
+   * ```
+   *    const {foo, moudleA_bar, bar} = this.$$propState;
+   * ```
+   * if you want to want to watch moudleA and moudleB whole state changing 
+   * and you can make sure they don't have key naming duplicate problem!
+   * you can define stateToPropMapping like: {'moudleA/*':'', 'moudleB/*':''}
+   * now your can get any key state from this.$$propState,
+   * 
+   * ============   !!!!!!  ============
+   * a better way to avoid key naming duplicate problem is set registerOption.isPropStateModuleMode as true,
+   * now your can these two moudle state like below, you can get every state from specified module^_^
+   * ```
+   *    const {moudleA, moudleB} = this.$$propState;
+   * ```
+   * 
+   * @param {object} [registerOption.isPropStateModuleMode] default is false, see above know how to use it
+   * @param {string} [registerOption.reducerModule] default is equal as module if you don't declare it
+   * if you call cc instance api $$dispatch without module and reducerMoudle like below
+   * ```
+   *    this.$$dispatch({type:'doStaff', payload:{foo:1, bar:2}});
+   *    // or 
+   *    this.$$dispatch('doStaff', {foo:1, bar:2});
+   * ```
+   * cc will find current cc class's reducerModule function named doStaff to execute 
+   * and will change current cc class's moudle state,
+   * so you don't have to write code like below if current cc class module is M1 
+   * and you always want to use R1 reducer function to generate new state
+   * ```
+   *    this.$$dispatch({module:'M1', reducerModule:'R1', type:'doStaff', payload:{foo:1, bar:2}});
+   *    // or 
+   *    this.$$dispatch('M1/R1/doStaff', {foo:1, bar:2});
+   * ```
+   * 
+   * ============   !!!!!!  ============
+   * note if you really want to change other module's state and use other reducer function, you must input module and reducerModule
+   * in your $$dispatch method, or they will been replaced by current cc class's default module and default reducerModule
+   * ```
+   *    this.$$dispatch({module:'M2', reducerModule:'R2', type:'doStaff', payload:{foo:1, bar:2}});
+   * ```
+   * @param {string} [registerOption.extendInputClass] default is true
+   * cc alway use strategy of reverse inheritance to wrap your react class, that meas you can call cc instance method from `this` directly
+   * but if you meet multi decorator in your legacy project and want to change it to cc, to make it still works well in cc mode,
+   * you can set extendInputClass as false, then cc will use strategy of prop proxy to wrap your react class, in this situation, 
+   * all the cc instance method and property you can only get them from `this.props`, for example
+   * ```
+   *    @cc.register('BasicForms',{
+   *      stateToPropMapping: {'form/regularFormSubmitting': 'submitting'},
+   *      extendInputClass: false 
+   *    })
+   *    @Form.create()
+   *    export default class BasicForms extends PureComponent {
+   *      componentDidMount()=>{
+   *        this.props.$$dispatch('form/getInitData');
+   *      }
+   *      render(){
+   *        const {submitting} = this.props.$$propState;
+   *      }
+   *    }
+   * ```
+   * more details you can see https://github.com/fantasticsoul/rcc-antd-pro/blob/master/src/routes/Forms/BasicForm.js
+   * @param {string} [registerOption.isSingle] default is false
+   * if you only allow current cc class only initialize one time, 
+   * that means there is only one cc instance can be existed for current cc class at most,
+   * you can define registerOption.isSingle as true, it just like singleton mode in java coding^_^
+   * @param {string} [registerOption.asyncLifecycleHook] default is true
+   * we can define cc class lifecycle method $$beforeSetState、$$afterSetState、$$beforeBroadcastState,
+   * but they are synchronous by default,
+   * if you define registerOption.isSingle as true, these three method's second param will be next handler
+   *  * ============   !!!!!!  ============
+   *  you must call next, if you don't want to block any of next operation in cc core
+   * ```
+   * $$beforeSetState(executeContext, next){
+   *  // here if you don't call next(), it will block reactSetState, broadcastState and etc operations ~_~
+   * }
+   * ```
+   */
+
+  function register$1 (ccClassKey, registerOption) {
+    return register$$1(ccClassKey, registerOption);
   }
 
   /****
@@ -3858,7 +3905,7 @@
    * option.extendInputClass is called ex for short 
    */
 
-  function r (ccClassKey, _temp) {
+  function _r (ccClassKey, _temp) {
     var _ref = _temp === void 0 ? {} : _temp,
         module = _ref.m,
         sharedStateKeys = _ref.s,
@@ -3870,7 +3917,7 @@
         reducerModule = _ref.re,
         extendInputClass = _ref.ex;
 
-    return register(ccClassKey, {
+    return register$1(ccClassKey, {
       extendInputClass: extendInputClass,
       module: module,
       sharedStateKeys: sharedStateKeys,
@@ -3883,17 +3930,17 @@
     });
   }
 
-  function registerToDefault (ccClassKey, option) {
+  function _registerToDefault (ccClassKey, option) {
     if (option === void 0) {
       option = {};
     }
 
     if (!option.sharedStateKeys) option.sharedStateKeys = '*';
     option.module = MODULE_DEFAULT;
-    return register(ccClassKey, option);
+    return register$1(ccClassKey, option);
   }
 
-  function registerSingleClassToDefault (ccClassKey, option) {
+  function _registerSingleClassToDefault (ccClassKey, option) {
     if (option === void 0) {
       option = {};
     }
@@ -3901,7 +3948,7 @@
     if (!option.sharedStateKeys) option.sharedStateKeys = '*';
     option.module = MODULE_DEFAULT;
     option.isSingle = true;
-    return register(ccClassKey, option);
+    return register$1(ccClassKey, option);
   }
 
   var ccGlobalStateKeys$1 = ccContext.globalStateKeys;
@@ -3921,7 +3968,7 @@
    * @param {Object} [option.middlewares]
    */
 
-  function configure (module, state, _temp) {
+  function _configure (module, state, _temp) {
     var _ref = _temp === void 0 ? {} : _temp,
         singleClass = _ref.singleClass,
         moduleReducer = _ref.moduleReducer,
@@ -4034,7 +4081,7 @@
     }
   }
 
-  var vbi$2 = util.verboseInfo;
+  var vbi$5 = util.verboseInfo;
   /**
    * @description
    * @author zzk
@@ -4054,7 +4101,7 @@
     var classContext = ccClassKey_ccClassContext_[ccClassKey];
 
     if (!classContext) {
-      var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey));
+      var err = util.makeError(ERR.CC_CLASS_NOT_FOUND, vbi$5(" ccClassKey:" + ccClassKey));
       if (ccContext.isStrict) throw err;else return console.error(err);
     }
 
@@ -4069,7 +4116,7 @@
     }
 
     if (!ref) {
-      var _err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi$2(" ccClassKey:" + ccClassKey + " ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!
+      var _err = util.makeError(ERR.CC_CLASS_INSTANCE_NOT_FOUND, vbi$5(" ccClassKey:" + ccClassKey + " ccKey:" + ccInstanceKey)); // only error, the target instance may has been unmounted really!
 
 
       return console.error(_err.message);
@@ -4078,7 +4125,7 @@
     var fn = ref[method];
 
     if (!fn) {
-      var _err2 = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi$2(" method:" + method)); // only error
+      var _err2 = util.makeError(ERR.CC_CLASS_INSTANCE_METHOD_NOT_FOUND, vbi$5(" method:" + method)); // only error
 
 
       return console.error(_err2.message);
@@ -4091,13 +4138,13 @@
     (_ref$method = ref[method]).call.apply(_ref$method, [ref].concat(args));
   }
 
-  var vbi$3 = util.verboseInfo;
-  function invokeSingle (ccClassKey, method) {
+  var vbi$6 = util.verboseInfo;
+  function _invokeSingle (ccClassKey, method) {
     var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
     var classContext = ccClassKey_ccClassContext_[ccClassKey];
 
     if (!classContext.isSingle) {
-      var err = util.makeError(ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE, vbi$3("ccClassKey:" + ccClassKey)); // only error, the target instance may has been unmounted really!
+      var err = util.makeError(ERR.CC_CLASS_IS_NOT_SINGLE_BUT_YOU_CALL_INVOKE_SINGLE, vbi$6("ccClassKey:" + ccClassKey)); // only error, the target instance may has been unmounted really!
 
       return console.error(err.message);
     }
@@ -4125,7 +4172,7 @@
     }
   }
 
-  function emitWith (event, option) {
+  function _emitWith (event, option) {
     try {
       var ref = pickOneRef();
 
@@ -4139,7 +4186,7 @@
     }
   }
 
-  function off (event, option) {
+  function _off (event, option) {
     try {
       var ref = pickOneRef();
       ref.$$off(event, option);
@@ -4162,7 +4209,7 @@
    * @param {Array<string>} [option.globalStateKeys]
    */
 
-  function connect (ccClassKey, stateToPropMapping, option) {
+  function _connect (ccClassKey, stateToPropMapping, option) {
     if (option === void 0) {
       option = {};
     }
@@ -4171,7 +4218,7 @@
       stateToPropMapping: stateToPropMapping
     });
 
-    return register(ccClassKey, mergedOption);
+    return register$1(ccClassKey, mergedOption);
   }
 
   function dispatch (action, payLoadWhenActionIsString, _temp) {
@@ -4199,30 +4246,259 @@
     }
   }
 
+  var _CcDispatcher = register$$1(CC_DISPATCHER, {
+    isSingle: true,
+    checkStartUp: false
+  })(
+  /*#__PURE__*/
+  function (_React$Component) {
+    _inheritsLoose(_class, _React$Component);
+
+    function _class(props, context) {
+      return _React$Component.call(this, props, context) || this;
+    }
+
+    var _proto = _class.prototype;
+
+    _proto.render = function render() {
+      return this.props.children || '';
+    };
+
+    return _class;
+  }(React__default.Component));
+
+  var ccClassKey_ccClassContext_$2 = ccContext.ccClassKey_ccClassContext_,
+      fragmentFeature_classKey_ = ccContext.fragmentFeature_classKey_,
+      ccKey_ref_$2 = ccContext.ccKey_ref_;
+
+  function getFeatureStr(stateToPropMapping) {
+    var prefixedPropKeys = Object.keys(stateToPropMapping);
+    var module_mapAllStateToProp_ = {};
+    var index_targetModule_ = {};
+    prefixedPropKeys.sort();
+    prefixedPropKeys.forEach(function (prefixedKey, index) {
+      if (!util.isPrefixedKeyValid(prefixedKey)) {
+        throw me(ERR.CC_CLASS_KEY_OF_STATE_TO_PROP_MAPPING_INVALID, "error occurred in cc fragment");
+      }
+
+      var _prefixedKey$split = prefixedKey.split('/'),
+          targetModule = _prefixedKey$split[0],
+          targetKey = _prefixedKey$split[1];
+
+      index_targetModule_[index] = {
+        targetModule: targetModule,
+        targetKey: targetKey
+      };
+
+      if (targetKey === '*') {
+        module_mapAllStateToProp_[targetModule] = true;
+      }
+    });
+    var strArr = [];
+    prefixedPropKeys.forEach(function (prefixedKey, index) {
+      var targetModule = index_targetModule_[index];
+
+      if (module_mapAllStateToProp_[targetModule] === true) {
+        var str = targetModule + "/*";
+
+        if (!strArr.includes(str)) {
+          strArr.push(str);
+        } else {
+          util.justWarning("prefixedKey:" + prefixedKey + " will be ignored in stateToPropMapping because of existing prefixedKey:" + str);
+        }
+      } else {
+        strArr.push(prefixedKey);
+      }
+    });
+    return strArr.join(',');
+  }
+
+  function getFragmentClassKey(stateToPropMapping) {
+    var featureStr = getFeatureStr(stateToPropMapping);
+    var targetClassKey = fragmentFeature_classKey_[featureStr];
+
+    if (targetClassKey) {
+      return targetClassKey;
+    } else {
+      var oldFragmentNameCount = ccContext.fragmentNameCount;
+      var fragmentNameCount = oldFragmentNameCount + 1;
+      ccContext.fragmentNameCount = fragmentNameCount;
+      targetClassKey = CC_FRAGMENT_PREFIX + "_" + fragmentNameCount;
+      fragmentFeature_classKey_[featureStr] = targetClassKey;
+      return targetClassKey;
+    }
+  }
+
+  var CcFragment =
+  /*#__PURE__*/
+  function (_Component) {
+    _inheritsLoose(CcFragment, _Component);
+
+    function CcFragment(props, context) {
+      var _this;
+
+      _this = _Component.call(this, props, context) || this;
+
+      if (!ccKey_ref_$2[CC_DISPATCHER]) {
+        throw util.makeError(ERR.CC_NO_DISPATCHER_FOUND);
+      }
+
+      var stateToPropMapping = props.stateToPropMapping,
+          pm = props.pm,
+          isPropStateModuleMode = props.isPropStateModuleMode,
+          mm = props.mm,
+          ccKey = props.ccKey,
+          connect = props.connect;
+
+      var _stateToPropMapping = stateToPropMapping || pm;
+
+      var _isPropStateModuleMode = isPropStateModuleMode || mm;
+
+      if (_stateToPropMapping === undefined) _stateToPropMapping = {};
+      if (_isPropStateModuleMode === undefined) _isPropStateModuleMode = false; //allow use connect replace stateToPropMapping, and when use connect, isPropStateModuleMode is always true
+
+      if (connect) {
+        _stateToPropMapping = connect;
+        _isPropStateModuleMode = true;
+      }
+
+      var ccClassKey = getFragmentClassKey(_stateToPropMapping);
+
+      var _helper$computeCcUniq = computeCcUniqueKey(false, ccClassKey, ccKey, true),
+          ccUniqueKey = _helper$computeCcUniq.ccUniqueKey,
+          isCcUniqueKeyAutoGenerated = _helper$computeCcUniq.isCcUniqueKeyAutoGenerated;
+
+      buildCcClassContext(ccClassKey, MODULE_DEFAULT, [], [], [], [], _stateToPropMapping, _isPropStateModuleMode, true);
+      setRef(_assertThisInitialized(_assertThisInitialized(_this)), false, ccClassKey, ccKey, ccUniqueKey, {}); // for CcFragment, just put ccClassKey to module's cc class keys
+
+      var moduleName_ccClassKeys_ = ccContext.moduleName_ccClassKeys_;
+      var ccClassKeys = util.safeGetArrayFromObject(moduleName_ccClassKeys_, MODULE_DEFAULT);
+      if (!ccClassKeys.includes(ccClassKey)) ccClassKeys.push(ccClassKey);
+      _this.$$propState = ccClassKey_ccClassContext_$2[ccClassKey].propState || {}; // only bind reactForceUpdateRef for CcFragment
+
+      var reactForceUpdateRef = _this.forceUpdate.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+
+      var ccState = {
+        module: MODULE_DEFAULT,
+        ccClassKey: ccClassKey,
+        ccKey: ccKey,
+        ccUniqueKey: ccUniqueKey,
+        isCcUniqueKeyAutoGenerated: isCcUniqueKeyAutoGenerated,
+        stateToPropMapping: _stateToPropMapping,
+        renderCount: 0
+      };
+      _this.cc = {
+        ccState: ccState,
+        reactForceUpdate: function reactForceUpdate(state, cb) {
+          ccState.renderCount += 1;
+          reactForceUpdateRef(state, cb);
+        }
+      };
+      _this.state = {
+        fragmentParams: {
+          propState: _this.$$propState,
+          dispatch: dispatch,
+          emit: emit,
+          setState: setState,
+          setGlobalState: setGlobalState
+        }
+      };
+      return _this;
+    }
+
+    var _proto = CcFragment.prototype;
+
+    _proto.shouldComponentUpdate = function shouldComponentUpdate() {
+      return false;
+    };
+
+    _proto.componentWillUnmount = function componentWillUnmount() {
+      var _this$cc$ccState = this.cc.ccState,
+          ccUniqueKey = _this$cc$ccState.ccUniqueKey,
+          ccClassKey = _this$cc$ccState.ccClassKey;
+      unsetRef(ccClassKey, ccUniqueKey);
+      if (_Component.prototype.componentWillUnmount) _Component.prototype.componentWillUnmount.call(this);
+    };
+
+    _proto.render = function render() {
+      var children = this.props.children;
+
+      if (typeof children === 'function') {
+        return children(this.state.fragmentParams) || React__default.createElement(React.Fragment, null);
+      } else {
+        return children;
+      }
+    };
+
+    return CcFragment;
+  }(React.Component);
+
+  var startup = _startup;
+  var register$2 = register$1;
+  var r = _r;
+  var registerToDefault = _registerToDefault;
+  var registerSingleClassToDefault = _registerSingleClassToDefault;
+  var configure = _configure;
+  var invoke$1 = invoke;
+  var invokeSingle = _invokeSingle;
+  var setGlobalState$1 = setGlobalState;
+  var setState$1 = setState;
+  var getState$2 = getState$1;
+  var emit$1 = emit;
+  var emitWith = _emitWith;
+  var off = _off;
+  var connect = _connect;
+  var dispatch$1 = dispatch;
+  var ccContext$1 = ccContext;
+  var CcDispatcher = _CcDispatcher;
+  var CcFragment$1 = CcFragment;
   var defaultExport = {
     emit: emit,
-    emitWith: emitWith,
-    off: off,
-    connect: connect,
+    emitWith: _emitWith,
+    off: _off,
+    connect: _connect,
     dispatch: dispatch,
-    startup: startup,
-    register: register,
-    r: r,
-    registerToDefault: registerToDefault,
-    registerSingleClassToDefault: registerSingleClassToDefault,
-    configure: configure,
+    startup: _startup,
+    register: register$1,
+    r: _r,
+    registerToDefault: _registerToDefault,
+    registerSingleClassToDefault: _registerSingleClassToDefault,
+    configure: _configure,
     invoke: invoke,
-    invokeSingle: invokeSingle,
+    invokeSingle: _invokeSingle,
     setGlobalState: setGlobalState,
     setState: setState,
     getState: getState$1,
-    ccContext: ccContext
+    ccContext: ccContext,
+    CcDispatcher: _CcDispatcher,
+    CcFragment: CcFragment
   };
 
   if (window) {
     window.cc = defaultExport;
   }
 
-  return defaultExport;
+  exports.startup = startup;
+  exports.register = register$2;
+  exports.r = r;
+  exports.registerToDefault = registerToDefault;
+  exports.registerSingleClassToDefault = registerSingleClassToDefault;
+  exports.configure = configure;
+  exports.invoke = invoke$1;
+  exports.invokeSingle = invokeSingle;
+  exports.setGlobalState = setGlobalState$1;
+  exports.setState = setState$1;
+  exports.getState = getState$2;
+  exports.emit = emit$1;
+  exports.emitWith = emitWith;
+  exports.off = off;
+  exports.connect = connect;
+  exports.dispatch = dispatch$1;
+  exports.ccContext = ccContext$1;
+  exports.CcDispatcher = CcDispatcher;
+  exports.CcFragment = CcFragment$1;
+  exports.default = defaultExport;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
