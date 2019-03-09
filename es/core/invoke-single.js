@@ -4,6 +4,10 @@ import util from '../support/util';
 import { ERR } from '../support/constant';
 var vbi = util.verboseInfo;
 export default function (ccClassKey, method) {
+  if (ccClassKey === undefined) {
+    throw new Error("api doc: cc.invokeSingle(ccClassKey:String, method:String, ...args)");
+  }
+
   var ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
   var classContext = ccClassKey_ccClassContext_[ccClassKey];
 

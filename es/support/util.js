@@ -350,7 +350,7 @@ export function randomNumber(lessThan) {
   return parseInt(seed * lessThan);
 }
 export function clearObject(object) {
-  Object.keys(object).forEach(function (key) {
+  if (Array.isArray(object)) object.length = 0;else Object.keys(object).forEach(function (key) {
     return delete object[key];
   });
 }

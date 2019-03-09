@@ -15,7 +15,7 @@ import _off from './core/off';
 import _connect from './core/connect';
 import _dispatch from './core/dispatch';
 import _ccContext from './cc-context';
-import _CcDispatcher from './component/CcDispatcher';
+import _createDispatcher from './core/create-dispatcher';
 import _CcFragment from './component/CcFragment';
 export var startup = _startup;
 export var register = _register;
@@ -34,7 +34,7 @@ export var off = _off;
 export var connect = _connect;
 export var dispatch = _dispatch;
 export var ccContext = _ccContext;
-export var CcDispatcher = _CcDispatcher;
+export var createDispatcher = _createDispatcher;
 export var CcFragment = _CcFragment;
 var defaultExport = {
   emit: _emit,
@@ -54,7 +54,7 @@ var defaultExport = {
   setState: _setState,
   getState: _getState,
   ccContext: _ccContext,
-  CcDispatcher: _CcDispatcher,
+  createDispatcher: _createDispatcher,
   CcFragment: _CcFragment
 };
 

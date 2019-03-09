@@ -119,5 +119,10 @@ import register from './helper/register';
  */
 
 export default function (ccClassKey, registerOption) {
+  if (registerOption) {
+    delete registerOption.__checkStartUp;
+    delete registerOption.__calledBy;
+  }
+
   return register(ccClassKey, registerOption);
 }

@@ -6,6 +6,10 @@ import { ERR } from '../support/constant';
 const vbi = util.verboseInfo;
 
 export default function (ccClassKey, method, ...args) {
+  if (ccClassKey === undefined) {
+    throw new Error(`api doc: cc.invokeSingle(ccClassKey:String, method:String, ...args)`);
+  }
+
   const { ccClassKey_ccClassContext_ } = ccContext;
   const classContext = ccClassKey_ccClassContext_[ccClassKey];
   if (!classContext.isSingle) {

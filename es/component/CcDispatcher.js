@@ -1,4 +1,4 @@
-import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 import register from '../core/helper/register';
 import React from 'react';
 import { CC_DISPATCHER } from '../support/constant';

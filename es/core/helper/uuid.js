@@ -24,5 +24,5 @@ export default function (forFragment) {
   var prefix = forFragment === true ? 'CCF' : 'CC';
   _currentIndex++;
   var nonceStr = genNonceStr();
-  return prefix + "_" + Date.now() + "_" + nonceStr + "_" + _currentIndex + "_";
+  return prefix + "_" + Date.now() + "_" + nonceStr + "_" + _currentIndex;
 }

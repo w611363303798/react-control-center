@@ -7,6 +7,10 @@ export default function (action, payLoadWhenActionIsString, _temp) {
       ccKey = _ref[1],
       throwError = _ref[2];
 
+  if (action === undefined && payLoadWhenActionIsString === undefined) {
+    throw new Error("api doc: cc.dispatch(action:Action|String, payload?:any), when action is String, second param means payload");
+  }
+
   try {
     if (ccClassKey && ccKey) {
       var uKey = util.makeUniqueCcKey(ccClassKey, ccKey);

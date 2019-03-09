@@ -1,6 +1,10 @@
 import util from '../support/util';
 import pickOneRef from './helper/pick-one-ref';
 export default function (event, option) {
+  if (event === undefined) {
+    throw new Error("api doc: cc.emitWith(event:String, option:{module?:String, ccClassKey?:String, identity?:String} ...args)");
+  }
+
   try {
     var ref = pickOneRef();
 

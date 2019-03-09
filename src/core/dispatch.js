@@ -3,6 +3,10 @@ import ccContext from '../cc-context';
 import pickOneRef from './helper/pick-one-ref';
 
 export default function (action, payLoadWhenActionIsString, [ccClassKey, ccKey, throwError] = []) {
+  if (action === undefined && payLoadWhenActionIsString === undefined) {
+    throw new Error(`api doc: cc.dispatch(action:Action|String, payload?:any), when action is String, second param means payload`);
+  }
+  
   try {
     if (ccClassKey && ccKey) {
       const uKey = util.makeUniqueCcKey(ccClassKey, ccKey);

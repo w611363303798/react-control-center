@@ -19,5 +19,5 @@ export default function (forFragment = false) {
   const prefix = forFragment === true ? 'CCF' : 'CC';
   _currentIndex++;
   const nonceStr = genNonceStr();
-  return `${prefix}_${Date.now()}_${nonceStr}_${_currentIndex}_`;
+  return `${prefix}_${Date.now()}_${nonceStr}_${_currentIndex}`;
 }

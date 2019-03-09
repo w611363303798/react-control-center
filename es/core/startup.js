@@ -1,7 +1,10 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject, clearObject } from '../support/util';
-import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT } from '../support/constant';
+import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT, CC_DISPATCHER_BOX } from '../support/constant';
 import * as helper from './helper';
 import ccContext from '../cc-context';
+import createDispatcher from './create-dispatcher';
 var vbi = verboseInfo;
 var ss = styleStr;
 var cl = color;
@@ -346,9 +349,31 @@ export default function (_temp) {
       _ref$errorHandler = _ref.errorHandler,
       errorHandler = _ref$errorHandler === void 0 ? null : _ref$errorHandler,
       _ref$isHot = _ref.isHot,
-      isHot = _ref$isHot === void 0 ? false : _ref$isHot;
+      isHot = _ref$isHot === void 0 ? false : _ref$isHot,
+      _ref$autoCreateDispat = _ref.autoCreateDispatcher,
+      autoCreateDispatcher = _ref$autoCreateDispat === void 0 ? true : _ref$autoCreateDispat;
 
   try {
+    if (autoCreateDispatcher) {
+      var Dispatcher = createDispatcher();
+      var box = document.querySelector("#" + CC_DISPATCHER_BOX);
+
+      if (!box) {
+        box = document.createElement('div');
+        box.id = CC_DISPATCHER_BOX;
+        box.style.position = 'fixed';
+        box.style.left = 0;
+        box.style.top = 0;
+        box.style.display = 'none';
+        box.style.zIndex = -888666;
+        document.body.append(box);
+        ReactDOM.render(React.createElement(Dispatcher, null), box);
+        util.justTip("[[startUp]]: cc create a CcDispatcher automatically");
+      } else {
+        util.justTip("[[startUp]]: CcDispatcher existed already");
+      }
+    }
+
     if (window) {
       window.CC_CONTEXT = ccContext;
       window.ccc = ccContext;
@@ -366,6 +391,7 @@ export default function (_temp) {
         clearObject(ccContext.ccUniqueKey_handlerKeys_);
         clearObject(ccContext.handlerKey_handler_);
         clearObject(ccContext.ccKey_ref_);
+        clearObject(ccContext.fragmentCcKeys);
         util.hotReloadWarning(err);
       } else throw err;
     }

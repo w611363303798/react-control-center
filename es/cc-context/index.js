@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/esm/extends";
+import _extends from "@babel/runtime/helpers/extends";
 
 var _state2, _reducer;
 
@@ -139,11 +139,15 @@ var ccContext = {
   ccKey_option_: {},
   refs: refs,
   info: {
-    startupTime: Date.now()
+    startupTime: Date.now(),
+    version: '1.1.60',
+    author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
+    tag: 'promise land'
   },
   // fragment association
   fragmentNameCount: 0,
   fragmentFeature_classKey_: {},
+  fragmentCcKeys: [],
   errorHandler: null,
   middlewares: []
 };

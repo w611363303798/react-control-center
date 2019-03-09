@@ -297,7 +297,8 @@ export function randomNumber(lessThan = 52) {
 }
 
 export function clearObject(object) {
-  Object.keys(object).forEach(key => delete object[key]);
+  if (Array.isArray(object)) object.length = 0;
+  else Object.keys(object).forEach(key => delete object[key]);
 }
 
 export default {

@@ -2,7 +2,7 @@ import ccContext from '../../cc-context';
 import { ERR } from '../../support/constant'
 import util from '../../support/util'
 
-const { makeError: me, verboseInfo: vbi, styleStr:ss, color:cl } = util;
+const { makeError: me, verboseInfo: vbi, styleStr: ss, color: cl } = util;
 const ccKey_insCount = {};
 
 function setCcInstanceRef(ccUniqueKey, ref, ccKeys, option, delayMs) {
@@ -33,19 +33,33 @@ export function getCcKeyInsCount(ccUniqueKey) {
 }
 
 
-export default function(ref, isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
+export default function (ref, isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption, forCcFragment = false) {
   const classContext = ccContext.ccClassKey_ccClassContext_[ccClassKey];
   const ccKeys = classContext.ccKeys;
   if (ccContext.isDebug) {
     console.log(ss(`register ccKey ${ccUniqueKey} to CC_CONTEXT`), cl());
   }
-
   if (!util.isCcOptionValid(ccOption)) {
     throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi(`a standard default ccOption may like: {"syncSharedState": true, "asyncLifecycleHook":false, "storedStateKeys": []}`));
   }
 
+  const isHot = util.isHotReloadMode();
+  if (forCcFragment === true) {
+    const fragmentCcKeys = ccContext.fragmentCcKeys;
+    if (fragmentCcKeys.includes(ccKey)) {
+      throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi(`<CcFragment ccKey="${ccKey}" />`));
+      // if(isHot){
+      //   util.justWarning(`cc found you supply a duplicate ccKey:${ccKey} to CcFragment, but now cc is running in hot reload mode, so if this message is wrong, you can ignore it.`);
+      // }else{
+      //   throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi(`<CcFragment ccKey="${ccKey}" />`));
+      // }
+    } else {
+      fragmentCcKeys.push(ccKey);
+    }
+  }
+
   if (ccKeys.includes(ccUniqueKey)) {
-    if (util.isHotReloadMode()) {
+    if (isHot) {
       const insCount = getCcKeyInsCount(ccUniqueKey);
       if (isSingle && insCount > 1) throw me(ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE, vbi(`ccClass:${ccClassKey}`));
       if (insCount > 2) {// now cc can make sure the ccKey duplicate

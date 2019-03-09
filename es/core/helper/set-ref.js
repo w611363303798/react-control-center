@@ -32,7 +32,11 @@ export function decCcKeyInsCount(ccUniqueKey) {
 export function getCcKeyInsCount(ccUniqueKey) {
   if (ccKey_insCount[ccUniqueKey] === undefined) return 0;else return ccKey_insCount[ccUniqueKey];
 }
-export default function (ref, isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption) {
+export default function (ref, isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption, forCcFragment) {
+  if (forCcFragment === void 0) {
+    forCcFragment = false;
+  }
+
   var classContext = ccContext.ccClassKey_ccClassContext_[ccClassKey];
   var ccKeys = classContext.ccKeys;
 
@@ -44,8 +48,24 @@ export default function (ref, isSingle, ccClassKey, ccKey, ccUniqueKey, ccOption
     throw me(ERR.CC_CLASS_INSTANCE_OPTION_INVALID, vbi("a standard default ccOption may like: {\"syncSharedState\": true, \"asyncLifecycleHook\":false, \"storedStateKeys\": []}"));
   }
 
+  var isHot = util.isHotReloadMode();
+
+  if (forCcFragment === true) {
+    var fragmentCcKeys = ccContext.fragmentCcKeys;
+
+    if (fragmentCcKeys.includes(ccKey)) {
+      throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi("<CcFragment ccKey=\"" + ccKey + "\" />")); // if(isHot){
+      //   util.justWarning(`cc found you supply a duplicate ccKey:${ccKey} to CcFragment, but now cc is running in hot reload mode, so if this message is wrong, you can ignore it.`);
+      // }else{
+      //   throw me(ERR.CC_CLASS_INSTANCE_KEY_DUPLICATE, vbi(`<CcFragment ccKey="${ccKey}" />`));
+      // }
+    } else {
+      fragmentCcKeys.push(ccKey);
+    }
+  }
+
   if (ccKeys.includes(ccUniqueKey)) {
-    if (util.isHotReloadMode()) {
+    if (isHot) {
       var insCount = getCcKeyInsCount(ccUniqueKey);
       if (isSingle && insCount > 1) throw me(ERR.CC_CLASS_INSTANCE_MORE_THAN_ONE, vbi("ccClass:" + ccClassKey));
 

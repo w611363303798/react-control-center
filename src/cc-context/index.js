@@ -186,12 +186,16 @@ const ccContext = {
   refs,
   info: {
     startupTime: Date.now(),
+    version: '1.1.60',
+    author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
+    tag:'promise land',
   },
   // fragment association
   fragmentNameCount: 0,
   fragmentFeature_classKey_: {
 
   },
+  fragmentCcKeys:[],
   errorHandler: null,
   middlewares:[],
 }

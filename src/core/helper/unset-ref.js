@@ -2,7 +2,7 @@ import ccContext from '../../cc-context';
 import { decCcKeyInsCount } from './set-ref';
 import { styleStr, color } from '../../support/util';
 
-const { ccKey_ref_, ccKey_option_, ccUniqueKey_handlerKeys_, ccClassKey_ccClassContext_ } = ccContext;
+const { ccKey_ref_, ccKey_option_, ccUniqueKey_handlerKeys_, ccClassKey_ccClassContext_, handlerKey_handler_ } = ccContext;
 
 export default function (ccClassKey, ccUniqueKey) {
   if (ccContext.isDebug) {

@@ -4,7 +4,8 @@ import { styleStr, color } from '../../support/util';
 var ccKey_ref_ = ccContext.ccKey_ref_,
     ccKey_option_ = ccContext.ccKey_option_,
     ccUniqueKey_handlerKeys_ = ccContext.ccUniqueKey_handlerKeys_,
-    ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_;
+    ccClassKey_ccClassContext_ = ccContext.ccClassKey_ccClassContext_,
+    handlerKey_handler_ = ccContext.handlerKey_handler_;
 export default function (ccClassKey, ccUniqueKey) {
   if (ccContext.isDebug) {
     console.log(styleStr(ccUniqueKey + " unset ref"), color('purple'));

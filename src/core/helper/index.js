@@ -18,3 +18,4 @@ export { default as unsetRef } from './unset-ref';
 export { default as computeCcUniqueKey } from './compute-cc-unique-key';
 export { default as register } from './register';
 export { default as mapModuleAndCcClassKeys } from './map-module-and-cc-class-keys';
+export { default as getDispatcherRef } from './get-dispatcher-ref';
