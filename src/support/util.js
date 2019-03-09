@@ -296,9 +296,11 @@ export function randomNumber(lessThan = 52) {
   return parseInt(seed * lessThan);
 }
 
-export function clearObject(object) {
+export function clearObject(object, excludeKeys=[]) {
   if (Array.isArray(object)) object.length = 0;
-  else Object.keys(object).forEach(key => delete object[key]);
+  else Object.keys(object).forEach(key => {
+    if (!excludeKeys.includes(key)) delete object[key];
+  });
 }
 
 export default {

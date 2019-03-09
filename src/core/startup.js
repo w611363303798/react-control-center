@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import util, { verboseInfo, styleStr, color, justWarning, isPlainJsonObject, clearObject } from '../support/util';
-import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT, CC_DISPATCHER_BOX } from '../support/constant';
+import { ERR, MODULE_CC, MODULE_GLOBAL, MODULE_DEFAULT, CC_DISPATCHER_BOX, CC_DISPATCHER } from '../support/constant';
 import * as helper from './helper';
 import ccContext from '../cc-context';
 import createDispatcher from './create-dispatcher';
@@ -311,6 +311,7 @@ export default function ({
   autoCreateDispatcher = true,
 } = {}) {
   try{
+    util.justTip(`cc version ${ccContext.info.version}`);
     if(autoCreateDispatcher){
       const Dispatcher = createDispatcher();
       let box = document.querySelector(`#${CC_DISPATCHER_BOX}`);
@@ -323,10 +324,13 @@ export default function ({
         box.style.display = 'none';
         box.style.zIndex = -888666;
         document.body.append(box);
+      }
+
+      if (ccContext.refs[CC_DISPATCHER]) {
+        util.justTip(`[[startUp]]: CcDispatcher existed already`);
+      } else {
         ReactDOM.render(<Dispatcher />, box);
         util.justTip(`[[startUp]]: cc create a CcDispatcher automatically`);
-      }else{
-        util.justTip(`[[startUp]]: CcDispatcher existed already`);
       }
     }
 
@@ -345,7 +349,7 @@ export default function ({
         clearObject(ccContext.event_handlers_);
         clearObject(ccContext.ccUniqueKey_handlerKeys_);
         clearObject(ccContext.handlerKey_handler_);
-        clearObject(ccContext.ccKey_ref_);
+        clearObject(ccContext.ccKey_ref_, [CC_DISPATCHER]);
         clearObject(ccContext.fragmentCcKeys);
         util.hotReloadWarning(err);
       }

@@ -1,9 +1,10 @@
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import register from '../core/helper/register';
 import React from 'react';
 import { CC_DISPATCHER } from '../support/constant';
 import ccContext from '../cc-context';
+import util from '../support/util';
 export default function (fragmentHook, CustomizedComponent) {
   var DefaultComponent =
   /*#__PURE__*/
@@ -32,7 +33,11 @@ export default function (fragmentHook, CustomizedComponent) {
   }(React.Component);
 
   if (ccContext.refs[CC_DISPATCHER]) {
-    throw new Error("CcDispatcher can only be initialize one time");
+    if (util.isHotReloadMode()) {
+      util.justTip("hot reload mode, CC_DISPATCHER existed");
+    } else {
+      throw new Error("CcDispatcher can only be initialize one time");
+    }
   }
 
   var TargetComponent = CustomizedComponent || DefaultComponent;
