@@ -1,5 +1,37 @@
 
 # Change Log
+#### 2018-03-09 16：30
+* feature: now cc allow user to use CcFragment wrap any of your stateless component
+```
+import {CcFragment} from 'react-control-center';
+
+//in your cc class or react class render method, you write it like below
+
+  render() {
+    <div>
+      <span>another jsx content</span>
+      <hr/>
+      // if any state of foo changed ,cc will rerender this fragment
+      // if bar's a or b changed, cc will rerender this fragment
+      // and I recommend you implicitly set a ccKey for this CcFragment instead of cc generating one automatically.
+      // then in the middleware function we can know which CcFragment has changed the store.
+      <CcFragment ccKey="toKnowWhichFragmentChangeStore" connect={{ 'foo/*': '', 'bar/a': 'a', 'bar/b': 'alias_b' }}>
+        {
+          ({ propState, setState, dispatch, emit, effect, xeffect, lazyEffect, lazyXeffect }) => (
+            <div onClick={() => setState('foo', { name: 'cool, I can change foo module name' })}>
+              {/* use dispatch,emit ect as you like */}
+              {propState.foo.name}
+              {propState.bar.a}
+              {propState.bar.alias_b}
+            </div>
+          )
+        }
+      </CcFragment>
+    </div>
+  }
+
+```
+
 #### 2018-03-03 02：00
 * bug fix: helper/check-module-state miss moduleName
   

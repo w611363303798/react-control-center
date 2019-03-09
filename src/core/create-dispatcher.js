@@ -22,5 +22,5 @@ export default function (fragmentHook, CustomizedComponent) {
   }
 
   let TargetComponent = CustomizedComponent || DefaultComponent;
-  return register(CC_DISPATCHER, { isSingle: true, __checkStartUp: false, __calledBy:'cc' })(TargetComponent);
+  return register(CC_DISPATCHER, { isSingle: true, __checkStartUp: false, __calledBy: 'cc' })(TargetComponent);
 }
