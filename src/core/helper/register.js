@@ -287,8 +287,19 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, originalSharedSt
   }
 
   const contextMap = ccContext.ccClassKey_ccClassContext_;
-  if (contextMap[ccClassKey] !== undefined) {
-    throwCcHmrError(me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`))
+  const ct = contextMap[ccClassKey];
+  if (ct !== undefined) {// analyze is ccClassKey really duplicated
+    if (util.isHotReloadMode()) {
+      const str1 = ct.originalGlobalStateKeys.toString() + ct.originalSharedStateKeys.toString() + JSON.stringify(ct.stateToPropMapping);
+      const str2 = originalGlobalStateKeys.toString() + originalSharedStateKeys.toString() + JSON.stringify(stateToPropMapping);
+      if (str1 !== str2) {
+        throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
+      } else {
+        throwCcHmrError(me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`));
+      }
+    } else {
+      throw me(ERR.CC_CLASS_KEY_DUPLICATE, `ccClassKey:${ccClassKey} duplicate`);
+    }
   }
 
   buildCcClassContext(ccClassKey, moduleName, originalSharedStateKeys, originalGlobalStateKeys,
@@ -652,6 +663,9 @@ export default function register(ccClassKey, {
             setState: (state, cb, lazyMs = -1) => {
               this.$$changeState(state, { ccKey, module: currentModule, stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, cb, calledBy: SET_STATE, lazyMs });
             },
+            forceSyncState: (state, cb, lazyMs = -1) => {
+              this.$$changeState(state, { forceSync:true, ccKey, module: currentModule, stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, cb, calledBy: SET_STATE, lazyMs });
+            },
             setGlobalState: (partialGlobalState, lazyMs = -1, broadcastTriggeredBy = BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE) => {
               this.$$changeState(partialGlobalState, { ccKey, module: MODULE_GLOBAL, broadcastTriggeredBy, calledBy: SET_GLOBAL_STATE, lazyMs });
             },
@@ -696,6 +710,11 @@ export default function register(ccClassKey, {
             invoke: (userLogicFn, ...args) => {
               return this.cc.__promisifiedInvokeWith(userLogicFn, {
                 ccKey, stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule, calledBy: INVOKE, fnName: userLogicFn.name
+              }, ...args);
+            },
+            xinvoke: (userLogicFn, ...args) => {
+              return this.cc.__promisifiedInvokeWith(userLogicFn, {
+                context:true, ccKey, stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, module: currentModule, calledBy: INVOKE, fnName: userLogicFn.name
               }, ...args);
             },
             // advanced invoke, can change other module state, but user should put module to option
@@ -1100,6 +1119,7 @@ export default function register(ccClassKey, {
           this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, currentModule, null, null, null, -1, ccKey);
 
           this.$$invoke = thisCC.invoke;// commit state to cc directly, but userFn can be promise or generator both!
+          this.$$xinvoke = thisCC.xinvoke;// commit state to cc directly, but userFn can be promise or generator both!
           this.$$invokeWith = thisCC.invokeWith;
           this.$$call = thisCC.call;// commit state by setState handler
           this.$$callWith = thisCC.callWith;
@@ -1123,6 +1143,7 @@ export default function register(ccClassKey, {
           this.$$moduleComputed = _computedValue[currentModule] || {};
           this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};
 
+          this.$$forceSyncState = thisCC.forceSyncState;// add$$ prefix, to let user it is cc api
           this.setState = thisCC.setState;//let setState call cc.setState
           this.setGlobalState = thisCC.setGlobalState;//let setState call cc.setState
           this.forceUpdate = thisCC.forceUpdate;//let forceUpdate call cc.forceUpdate

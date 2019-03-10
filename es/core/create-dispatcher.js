@@ -1,5 +1,5 @@
-import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
 import register from '../core/helper/register';
 import React from 'react';
 import { CC_DISPATCHER } from '../support/constant';

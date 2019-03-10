@@ -1,6 +1,6 @@
-import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
-import _extends from "@babel/runtime/helpers/esm/extends";
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _extends from "@babel/runtime/helpers/extends";
 import React from 'react'; // import hoistNonReactStatic from 'hoist-non-react-statics';
 
 import { MODULE_DEFAULT, MODULE_GLOBAL, ERR, CC_FRAGMENT_PREFIX, CC_DISPATCHER, CHANGE_BY_SELF, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, CHANGE_BY_BROADCASTED_GLOBAL_STATE, CHANGE_BY_BROADCASTED_SHARED_STATE, CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_SET_GLOBAL_STATE, BROADCAST_TRIGGERED_BY_CC_INSTANCE_METHOD, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../../support/constant';
@@ -836,6 +836,21 @@ export default function register(ccClassKey, _temp) {
                 lazyMs: lazyMs
               });
             },
+            forceSyncState: function forceSyncState(state, cb, lazyMs) {
+              if (lazyMs === void 0) {
+                lazyMs = -1;
+              }
+
+              _this2.$$changeState(state, {
+                forceSync: true,
+                ccKey: ccKey,
+                module: currentModule,
+                stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
+                cb: cb,
+                calledBy: SET_STATE,
+                lazyMs: lazyMs
+              });
+            },
             setGlobalState: function setGlobalState(partialGlobalState, lazyMs, broadcastTriggeredBy) {
               if (lazyMs === void 0) {
                 lazyMs = -1;
@@ -971,10 +986,26 @@ export default function register(ccClassKey, _temp) {
                 fnName: userLogicFn.name
               }].concat(args));
             },
+            xinvoke: function xinvoke(userLogicFn) {
+              var _this2$cc7;
+
+              for (var _len12 = arguments.length, args = new Array(_len12 > 1 ? _len12 - 1 : 0), _key12 = 1; _key12 < _len12; _key12++) {
+                args[_key12 - 1] = arguments[_key12];
+              }
+
+              return (_this2$cc7 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc7, [userLogicFn, {
+                context: true,
+                ccKey: ccKey,
+                stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
+                module: currentModule,
+                calledBy: INVOKE,
+                fnName: userLogicFn.name
+              }].concat(args));
+            },
             // advanced invoke, can change other module state, but user should put module to option
             // and user can decide userLogicFn's first param is ExecutionContext if set context as true
             invokeWith: function invokeWith(userLogicFn, option) {
-              var _this2$cc7;
+              var _this2$cc8;
 
               var _option$module = option.module,
                   module = _option$module === void 0 ? currentModule : _option$module,
@@ -985,11 +1016,11 @@ export default function register(ccClassKey, _temp) {
                   cb = option.cb,
                   lazyMs = option.lazyMs;
 
-              for (var _len12 = arguments.length, args = new Array(_len12 > 2 ? _len12 - 2 : 0), _key12 = 2; _key12 < _len12; _key12++) {
-                args[_key12 - 2] = arguments[_key12];
+              for (var _len13 = arguments.length, args = new Array(_len13 > 2 ? _len13 - 2 : 0), _key13 = 2; _key13 < _len13; _key13++) {
+                args[_key13 - 2] = arguments[_key13];
               }
 
-              return (_this2$cc7 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc7, [userLogicFn, {
+              return (_this2$cc8 = _this2.cc).__promisifiedInvokeWith.apply(_this2$cc8, [userLogicFn, {
                 ccKey: ccKey,
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
@@ -1002,8 +1033,8 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             },
             __invokeWith: function __invokeWith(userLogicFn, executionContext) {
-              for (var _len13 = arguments.length, args = new Array(_len13 > 2 ? _len13 - 2 : 0), _key13 = 2; _key13 < _len13; _key13++) {
-                args[_key13 - 2] = arguments[_key13];
+              for (var _len14 = arguments.length, args = new Array(_len14 > 2 ? _len14 - 2 : 0), _key14 = 2; _key14 < _len14; _key14++) {
+                args[_key14 - 2] = arguments[_key14];
               }
 
               var ccKey = executionContext.ccKey,
@@ -1066,13 +1097,13 @@ export default function register(ccClassKey, _temp) {
               });
             },
             call: function call(userLogicFn) {
-              var _this2$cc8;
+              var _this2$cc9;
 
-              for (var _len14 = arguments.length, args = new Array(_len14 > 1 ? _len14 - 1 : 0), _key14 = 1; _key14 < _len14; _key14++) {
-                args[_key14 - 1] = arguments[_key14];
+              for (var _len15 = arguments.length, args = new Array(_len15 > 1 ? _len15 - 1 : 0), _key15 = 1; _key15 < _len15; _key15++) {
+                args[_key15 - 1] = arguments[_key15];
               }
 
-              return (_this2$cc8 = _this2.cc).__promisifiedCallWith.apply(_this2$cc8, [userLogicFn, {
+              return (_this2$cc9 = _this2.cc).__promisifiedCallWith.apply(_this2$cc9, [userLogicFn, {
                 stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
                 module: currentModule,
                 calledBy: CALL,
@@ -1080,7 +1111,7 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             },
             callWith: function callWith(userLogicFn, _temp2) {
-              var _this2$cc9;
+              var _this2$cc10;
 
               var _ref5 = _temp2 === void 0 ? {} : _temp2,
                   _ref5$module = _ref5.module,
@@ -1091,11 +1122,11 @@ export default function register(ccClassKey, _temp) {
                   _ref5$lazyMs = _ref5.lazyMs,
                   lazyMs = _ref5$lazyMs === void 0 ? -1 : _ref5$lazyMs;
 
-              for (var _len15 = arguments.length, args = new Array(_len15 > 2 ? _len15 - 2 : 0), _key15 = 2; _key15 < _len15; _key15++) {
-                args[_key15 - 2] = arguments[_key15];
+              for (var _len16 = arguments.length, args = new Array(_len16 > 2 ? _len16 - 2 : 0), _key16 = 2; _key16 < _len16; _key16++) {
+                args[_key16 - 2] = arguments[_key16];
               }
 
-              return (_this2$cc9 = _this2.cc).__promisifiedCallWith.apply(_this2$cc9, [userLogicFn, {
+              return (_this2$cc10 = _this2.cc).__promisifiedCallWith.apply(_this2$cc10, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
                 forceSync: forceSync,
@@ -1106,8 +1137,8 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             },
             __promisifiedCallWith: function __promisifiedCallWith(userLogicFn, executionContext) {
-              for (var _len16 = arguments.length, args = new Array(_len16 > 2 ? _len16 - 2 : 0), _key16 = 2; _key16 < _len16; _key16++) {
-                args[_key16 - 2] = arguments[_key16];
+              for (var _len17 = arguments.length, args = new Array(_len17 > 2 ? _len17 - 2 : 0), _key17 = 2; _key17 < _len17; _key17++) {
+                args[_key17 - 2] = arguments[_key17];
               }
 
               return _promisifyCcFn.apply(void 0, [_this2.cc.__callWith, userLogicFn, executionContext].concat(args));
@@ -1122,8 +1153,8 @@ export default function register(ccClassKey, _temp) {
                   cb = _ref6.cb,
                   __innerCb = _ref6.__innerCb;
 
-              for (var _len17 = arguments.length, args = new Array(_len17 > 2 ? _len17 - 2 : 0), _key17 = 2; _key17 < _len17; _key17++) {
-                args[_key17 - 2] = arguments[_key17];
+              for (var _len18 = arguments.length, args = new Array(_len18 > 2 ? _len18 - 2 : 0), _key18 = 2; _key18 < _len18; _key18++) {
+                args[_key18 - 2] = arguments[_key18];
               }
 
               isStateModuleValid(module, currentModule, cb, function (err, newCb) {
@@ -1142,13 +1173,13 @@ export default function register(ccClassKey, _temp) {
               });
             },
             callThunk: function callThunk(userLogicFn) {
-              var _this2$cc10;
+              var _this2$cc11;
 
-              for (var _len18 = arguments.length, args = new Array(_len18 > 1 ? _len18 - 1 : 0), _key18 = 1; _key18 < _len18; _key18++) {
-                args[_key18 - 1] = arguments[_key18];
+              for (var _len19 = arguments.length, args = new Array(_len19 > 1 ? _len19 - 1 : 0), _key19 = 1; _key19 < _len19; _key19++) {
+                args[_key19 - 1] = arguments[_key19];
               }
 
-              (_this2$cc10 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc10, [userLogicFn, {
+              (_this2$cc11 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc11, [userLogicFn, {
                 stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
                 module: currentModule,
                 calledBy: CALL_THUNK,
@@ -1156,7 +1187,7 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             },
             callThunkWith: function callThunkWith(userLogicFn, _temp4) {
-              var _this2$cc11;
+              var _this2$cc12;
 
               var _ref7 = _temp4 === void 0 ? {} : _temp4,
                   _ref7$module = _ref7.module,
@@ -1167,11 +1198,11 @@ export default function register(ccClassKey, _temp) {
                   _ref7$lazyMs = _ref7.lazyMs,
                   lazyMs = _ref7$lazyMs === void 0 ? -1 : _ref7$lazyMs;
 
-              for (var _len19 = arguments.length, args = new Array(_len19 > 2 ? _len19 - 2 : 0), _key19 = 2; _key19 < _len19; _key19++) {
-                args[_key19 - 2] = arguments[_key19];
+              for (var _len20 = arguments.length, args = new Array(_len20 > 2 ? _len20 - 2 : 0), _key20 = 2; _key20 < _len20; _key20++) {
+                args[_key20 - 2] = arguments[_key20];
               }
 
-              (_this2$cc11 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc11, [userLogicFn, {
+              (_this2$cc12 = _this2.cc).__promisifiedCallThunkWith.apply(_this2$cc12, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
                 forceSync: forceSync,
@@ -1182,8 +1213,8 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             },
             __promisifiedCallThunkWith: function __promisifiedCallThunkWith(userLogicFn, executionContext) {
-              for (var _len20 = arguments.length, args = new Array(_len20 > 2 ? _len20 - 2 : 0), _key20 = 2; _key20 < _len20; _key20++) {
-                args[_key20 - 2] = arguments[_key20];
+              for (var _len21 = arguments.length, args = new Array(_len21 > 2 ? _len21 - 2 : 0), _key21 = 2; _key21 < _len21; _key21++) {
+                args[_key21 - 2] = arguments[_key21];
               }
 
               return _promisifyCcFn.apply(void 0, [_this2.cc.__callThunkWith, userLogicFn, executionContext].concat(args));
@@ -1198,8 +1229,8 @@ export default function register(ccClassKey, _temp) {
                   cb = _ref8.cb,
                   __innerCb = _ref8.__innerCb;
 
-              for (var _len21 = arguments.length, args = new Array(_len21 > 2 ? _len21 - 2 : 0), _key21 = 2; _key21 < _len21; _key21++) {
-                args[_key21 - 2] = arguments[_key21];
+              for (var _len22 = arguments.length, args = new Array(_len22 > 2 ? _len22 - 2 : 0), _key22 = 2; _key22 < _len22; _key22++) {
+                args[_key22 - 2] = arguments[_key22];
               }
 
               isStateModuleValid(module, currentModule, cb, function (err, newCb) {
@@ -1218,13 +1249,13 @@ export default function register(ccClassKey, _temp) {
               });
             },
             commit: function commit(userLogicFn) {
-              var _this2$cc12;
+              var _this2$cc13;
 
-              for (var _len22 = arguments.length, args = new Array(_len22 > 1 ? _len22 - 1 : 0), _key22 = 1; _key22 < _len22; _key22++) {
-                args[_key22 - 1] = arguments[_key22];
+              for (var _len23 = arguments.length, args = new Array(_len23 > 1 ? _len23 - 1 : 0), _key23 = 1; _key23 < _len23; _key23++) {
+                args[_key23 - 1] = arguments[_key23];
               }
 
-              (_this2$cc12 = _this2.cc).__commitWith.apply(_this2$cc12, [userLogicFn, {
+              (_this2$cc13 = _this2.cc).__commitWith.apply(_this2$cc13, [userLogicFn, {
                 stateFor: STATE_FOR_ONE_CC_INSTANCE_FIRSTLY,
                 module: currentModule,
                 calledBy: COMMIT,
@@ -1232,7 +1263,7 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             },
             commitWith: function commitWith(userLogicFn, _temp6) {
-              var _this2$cc13;
+              var _this2$cc14;
 
               var _ref9 = _temp6 === void 0 ? {} : _temp6,
                   _ref9$module = _ref9.module,
@@ -1242,11 +1273,11 @@ export default function register(ccClassKey, _temp) {
                   cb = _ref9.cb,
                   lazyMs = _ref9.lazyMs;
 
-              for (var _len23 = arguments.length, args = new Array(_len23 > 2 ? _len23 - 2 : 0), _key23 = 2; _key23 < _len23; _key23++) {
-                args[_key23 - 2] = arguments[_key23];
+              for (var _len24 = arguments.length, args = new Array(_len24 > 2 ? _len24 - 2 : 0), _key24 = 2; _key24 < _len24; _key24++) {
+                args[_key24 - 2] = arguments[_key24];
               }
 
-              (_this2$cc13 = _this2.cc).__commitWith.apply(_this2$cc13, [userLogicFn, {
+              (_this2$cc14 = _this2.cc).__commitWith.apply(_this2$cc14, [userLogicFn, {
                 stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
                 module: module,
                 forceSync: forceSync,
@@ -1257,8 +1288,8 @@ export default function register(ccClassKey, _temp) {
               }].concat(args));
             }
           }, _this$cc["__promisifiedCallWith"] = function __promisifiedCallWith(userLogicFn, executionContext) {
-            for (var _len24 = arguments.length, args = new Array(_len24 > 2 ? _len24 - 2 : 0), _key24 = 2; _key24 < _len24; _key24++) {
-              args[_key24 - 2] = arguments[_key24];
+            for (var _len25 = arguments.length, args = new Array(_len25 > 2 ? _len25 - 2 : 0), _key25 = 2; _key25 < _len25; _key25++) {
+              args[_key25 - 2] = arguments[_key25];
             }
 
             return _promisifyCcFn.apply(void 0, [_this2.cc.__commitWith, userLogicFn, executionContext].concat(args));
@@ -1272,8 +1303,8 @@ export default function register(ccClassKey, _temp) {
                 cb = _ref10.cb,
                 __innerCb = _ref10.__innerCb;
 
-            for (var _len25 = arguments.length, args = new Array(_len25 > 2 ? _len25 - 2 : 0), _key25 = 2; _key25 < _len25; _key25++) {
-              args[_key25 - 2] = arguments[_key25];
+            for (var _len26 = arguments.length, args = new Array(_len26 > 2 ? _len26 - 2 : 0), _key26 = 2; _key26 < _len26; _key26++) {
+              args[_key26 - 2] = arguments[_key26];
             }
 
             isStateModuleValid(module, currentModule, cb, function (err, newCb) {
@@ -1628,24 +1659,24 @@ export default function register(ccClassKey, _temp) {
             });
             broadcastPropState(MODULE_GLOBAL, globalSate);
           }, _this$cc.emit = function emit(event) {
-            for (var _len26 = arguments.length, args = new Array(_len26 > 1 ? _len26 - 1 : 0), _key26 = 1; _key26 < _len26; _key26++) {
-              args[_key26 - 1] = arguments[_key26];
+            for (var _len27 = arguments.length, args = new Array(_len27 > 1 ? _len27 - 1 : 0), _key27 = 1; _key27 < _len27; _key27++) {
+              args[_key27 - 1] = arguments[_key27];
             }
 
             findEventHandlersToPerform.apply(void 0, [event, {
               identity: null
             }].concat(args));
           }, _this$cc.emitIdentity = function emitIdentity(event, identity) {
-            for (var _len27 = arguments.length, args = new Array(_len27 > 2 ? _len27 - 2 : 0), _key27 = 2; _key27 < _len27; _key27++) {
-              args[_key27 - 2] = arguments[_key27];
+            for (var _len28 = arguments.length, args = new Array(_len28 > 2 ? _len28 - 2 : 0), _key28 = 2; _key28 < _len28; _key28++) {
+              args[_key28 - 2] = arguments[_key28];
             }
 
             findEventHandlersToPerform.apply(void 0, [event, {
               identity: identity
             }].concat(args));
           }, _this$cc.emitWith = function emitWith(event, option) {
-            for (var _len28 = arguments.length, args = new Array(_len28 > 2 ? _len28 - 2 : 0), _key28 = 2; _key28 < _len28; _key28++) {
-              args[_key28 - 2] = arguments[_key28];
+            for (var _len29 = arguments.length, args = new Array(_len29 > 2 ? _len29 - 2 : 0), _key29 = 2; _key29 < _len29; _key29++) {
+              args[_key29 - 2] = arguments[_key29];
             }
 
             findEventHandlersToPerform.apply(void 0, [event, option].concat(args));
@@ -1673,6 +1704,8 @@ export default function register(ccClassKey, _temp) {
           this.$$dispatchForModule = this.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, currentModule, null, null, null, -1, ccKey);
           this.$$invoke = thisCC.invoke; // commit state to cc directly, but userFn can be promise or generator both!
 
+          this.$$xinvoke = thisCC.xinvoke; // commit state to cc directly, but userFn can be promise or generator both!
+
           this.$$invokeWith = thisCC.invokeWith;
           this.$$call = thisCC.call; // commit state by setState handler
 
@@ -1698,6 +1731,8 @@ export default function register(ccClassKey, _temp) {
           this.$$refComputed = {};
           this.$$moduleComputed = _computedValue[currentModule] || {};
           this.$$globalComputed = _computedValue[MODULE_GLOBAL] || {};
+          this.$$forceSyncState = thisCC.forceSyncState; // add$$ prefix, to let user it is cc api
+
           this.setState = thisCC.setState; //let setState call cc.setState
 
           this.setGlobalState = thisCC.setGlobalState; //let setState call cc.setState
@@ -1820,8 +1855,8 @@ export default function register(ccClassKey, _temp) {
           return function (targetModule, userLogicFn) {
             var _this5$cc;
 
-            for (var _len29 = arguments.length, args = new Array(_len29 > 2 ? _len29 - 2 : 0), _key29 = 2; _key29 < _len29; _key29++) {
-              args[_key29 - 2] = arguments[_key29];
+            for (var _len30 = arguments.length, args = new Array(_len30 > 2 ? _len30 - 2 : 0), _key30 = 2; _key30 < _len30; _key30++) {
+              args[_key30 - 2] = arguments[_key30];
             }
 
             return (_this5$cc = _this5.cc).__effect.apply(_this5$cc, [targetModule, userLogicFn, {
@@ -1836,8 +1871,8 @@ export default function register(ccClassKey, _temp) {
           return function (targetModule, userLogicFn, lazyMs) {
             var _this6$cc;
 
-            for (var _len30 = arguments.length, args = new Array(_len30 > 3 ? _len30 - 3 : 0), _key30 = 3; _key30 < _len30; _key30++) {
-              args[_key30 - 3] = arguments[_key30];
+            for (var _len31 = arguments.length, args = new Array(_len31 > 3 ? _len31 - 3 : 0), _key31 = 3; _key31 < _len31; _key31++) {
+              args[_key31 - 3] = arguments[_key31];
             }
 
             return (_this6$cc = _this6.cc).__effect.apply(_this6$cc, [targetModule, userLogicFn, {
@@ -1852,8 +1887,8 @@ export default function register(ccClassKey, _temp) {
           return function (targetModule, userLogicFn) {
             var _this7$cc;
 
-            for (var _len31 = arguments.length, args = new Array(_len31 > 2 ? _len31 - 2 : 0), _key31 = 2; _key31 < _len31; _key31++) {
-              args[_key31 - 2] = arguments[_key31];
+            for (var _len32 = arguments.length, args = new Array(_len32 > 2 ? _len32 - 2 : 0), _key32 = 2; _key32 < _len32; _key32++) {
+              args[_key32 - 2] = arguments[_key32];
             }
 
             return (_this7$cc = _this7.cc).__xeffect.apply(_this7$cc, [targetModule, userLogicFn, {
@@ -1868,8 +1903,8 @@ export default function register(ccClassKey, _temp) {
           return function (targetModule, userLogicFn, lazyMs) {
             var _this8$cc;
 
-            for (var _len32 = arguments.length, args = new Array(_len32 > 3 ? _len32 - 3 : 0), _key32 = 3; _key32 < _len32; _key32++) {
-              args[_key32 - 3] = arguments[_key32];
+            for (var _len33 = arguments.length, args = new Array(_len33 > 3 ? _len33 - 3 : 0), _key33 = 3; _key33 < _len33; _key33++) {
+              args[_key33 - 3] = arguments[_key33];
             }
 
             return (_this8$cc = _this8.cc).__xeffect.apply(_this8$cc, [targetModule, userLogicFn, {
