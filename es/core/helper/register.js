@@ -344,9 +344,22 @@ function mapCcClassKeyAndCcClassContext(ccClassKey, moduleName, originalSharedSt
   }
 
   var contextMap = ccContext.ccClassKey_ccClassContext_;
+  var ct = contextMap[ccClassKey];
 
-  if (contextMap[ccClassKey] !== undefined) {
-    throwCcHmrError(me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate"));
+  if (ct !== undefined) {
+    // analyze is ccClassKey really duplicated
+    if (util.isHotReloadMode()) {
+      var str1 = ct.originalGlobalStateKeys.toString() + ct.originalSharedStateKeys.toString() + JSON.stringify(ct.stateToPropMapping);
+      var str2 = originalGlobalStateKeys.toString() + originalSharedStateKeys.toString() + JSON.stringify(stateToPropMapping);
+
+      if (str1 !== str2) {
+        throw me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
+      } else {
+        throwCcHmrError(me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate"));
+      }
+    } else {
+      throw me(ERR.CC_CLASS_KEY_DUPLICATE, "ccClassKey:" + ccClassKey + " duplicate");
+    }
   }
 
   buildCcClassContext(ccClassKey, moduleName, originalSharedStateKeys, originalGlobalStateKeys, sharedStateKeys, globalStateKeys, stateToPropMapping, isPropStateModuleMode);
