@@ -871,7 +871,7 @@ export default function register(ccClassKey, {
                 }
               }
 
-              if (!state) {
+              if (!util.isObjectNotNull(state)) {
                 if (next) next();
                 return;
               } else {
