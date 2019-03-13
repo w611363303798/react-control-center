@@ -1,10 +1,10 @@
 import { isStateValid, isObjectNotNull } from '../../support/util';
 
-export default function (state, stateKeys) {
-  if (!isStateValid(state) || !isObjectNotNull(state)) {
-    return { partialState: {}, isStateEmpty: true };
-  }
+export default function (state, stateKeys, returnNullIfEmpty = false) {
   const partialState = {};
+  if (!isStateValid(state) || !isObjectNotNull(state)) {
+    return { partialState: returnNullIfEmpty ? null : partialState, isStateEmpty: true };
+  }
   let isStateEmpty = true;
   stateKeys.forEach(key => {
     const value = state[key];

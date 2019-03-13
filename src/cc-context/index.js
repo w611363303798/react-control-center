@@ -186,7 +186,7 @@ const ccContext = {
   refs,
   info: {
     startupTime: Date.now(),
-    version: '1.1.71',
+    version: '1.1.72',
     author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
     tag:'promise land',
   },

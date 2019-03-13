@@ -146,11 +146,12 @@ export default class CcFragment extends Component {
     if (super.componentWillUnmount) super.componentWillUnmount();
   }
   render() {
-    const children = this.props.children;
-    if (typeof children === 'function') {
-      return children(this.state.fragmentParams) || <Fragment />;
+    const { children, render } = this.props
+    const target = render || children;
+    if (typeof target === 'function') {
+      return target(this.state.fragmentParams) || <Fragment />;
     } else {
-      return children;
+      return target;
     }
   }
 

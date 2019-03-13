@@ -1,5 +1,5 @@
-import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
+import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
 import * as helper from '../core/helper';
 import React, { Component, Fragment } from 'react';
 import { MODULE_DEFAULT, ERR, CC_FRAGMENT_PREFIX, MODULE_GLOBAL, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';

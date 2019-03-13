@@ -992,7 +992,7 @@ export default function register(ccClassKey, {
                   //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
                   const {
                     partialState: sharedStateForCurrentCcClass, isStateEmpty: isSharedStateEmpty
-                  } = extractStateByKeys(_partialSharedState, sharedStateKeys);
+                  } = extractStateByKeys(_partialSharedState, sharedStateKeys, true);
 
                   //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
                   //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
@@ -1000,7 +1000,7 @@ export default function register(ccClassKey, {
                   //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
                   const {
                     partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
-                  } = extractStateByKeys(partialGlobalState, globalStateKeys);
+                  } = extractStateByKeys(partialGlobalState, globalStateKeys, true);
                   if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
 
                   let mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };

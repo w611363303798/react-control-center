@@ -222,7 +222,7 @@
     refs: refs,
     info: {
       startupTime: Date.now(),
-      version: '1.1.71',
+      version: '1.1.72',
       author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
       tag: 'promise land'
     },
@@ -788,15 +788,20 @@
     }
   }
 
-  function extractStateByKeys (state, stateKeys) {
+  function extractStateByKeys (state, stateKeys, returnNullIfEmpty) {
+    if (returnNullIfEmpty === void 0) {
+      returnNullIfEmpty = false;
+    }
+
+    var partialState = {};
+
     if (!isStateValid(state) || !isObjectNotNull(state)) {
       return {
-        partialState: {},
+        partialState: returnNullIfEmpty ? null : partialState,
         isStateEmpty: true
       };
     }
 
-    var partialState = {};
     var isStateEmpty = true;
     stateKeys.forEach(function (key) {
       var value = state[key];
@@ -2893,7 +2898,7 @@
                 }
               }
 
-              if (!state) {
+              if (!util.isObjectNotNull(state)) {
                 if (next) next();
                 return;
               } else {
@@ -3033,7 +3038,7 @@
                   if (ccKeys.length === 0) return;
                   if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
 
-                  var _extractStateByKeys7 = extractStateByKeys(_partialSharedState, sharedStateKeys),
+                  var _extractStateByKeys7 = extractStateByKeys(_partialSharedState, sharedStateKeys, true),
                       sharedStateForCurrentCcClass = _extractStateByKeys7.partialState,
                       isSharedStateEmpty = _extractStateByKeys7.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
                   //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
@@ -3041,7 +3046,7 @@
                   //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
 
-                  var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                  var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys, true),
                       globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
                       isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
 
