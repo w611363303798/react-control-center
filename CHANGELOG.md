@@ -1,5 +1,61 @@
 
 # Change Log
+#### 2018-03-16 23:30
+* feature add: now cc instance support $$dispatchIdentity
+```
+  //if a cc class's different instance watch a same module's different state, the store like
+  foo{
+    map:{
+      key1:{name:1,age:2,class:3}
+      key2:{name:11,age:22,class:33}
+    }
+  }
+  //but they always change their sub state of the the store, the reducer may like
+  changeName({moduleState, payload:{name, key}}){
+    const map = moduleState.map;
+    map[key] = name;
+    return {map};
+  }
+
+  // and you may initialize multi instance of the cc class in your jsx
+  <Foo ccKey="key1" />
+  <Foo ccKey="key2" />
+
+  //then you can call $$dispatchIdentity, that means cc always only render the target ccKey instance
+  class Foo extends Component{
+    changeName = (e)=>{
+      // $$dispatchIdentity(reducerDescriptor:string, payload:any, targetCcKey:string)
+      // if you don't specify a targetCcKey, it will be current instance's ccKey default
+      this.$$dispatchIdentity('changeName', {name:e.currentTarget.value});
+    }
+  }
+
+  //now you input name in key1 instance, cc only render key1
+  //and you input name in key2 instance, cc only render key2
+```
+* feature add: now CcFragment support hook
+```
+// it is only works for CcFragment, and this feature allow you hold local state in your CcFragment
+<CcFragment connect={{'counter/*':''}} render={({ hook, propState }) => {
+  const [count, setCount] = hook.useState(0);
+  hook.useEffect(()=>{
+    document.title = 'count '+count;
+    return ()=>{
+      document.title = 'CcFragment unmount ';
+    }
+  });
+  return (
+    <div>
+      {propState.counter.count}
+      <hr />
+      {count}
+      <button onClick={() => setCount(count + 1)}>+</button>
+      <button onClick={() => setCount(count - 1)}>-</button>
+    </div>
+  )
+}} />
+```
+
 #### 2018-03-09 16：30
 * feature: now cc allow user to use CcFragment wrap any of your stateless component
 ```
