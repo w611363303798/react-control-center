@@ -1,5 +1,5 @@
-import _inheritsLoose from "@babel/runtime/helpers/esm/inheritsLoose";
-import _assertThisInitialized from "@babel/runtime/helpers/esm/assertThisInitialized";
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+import _assertThisInitialized from "@babel/runtime/helpers/assertThisInitialized";
 import * as helper from '../core/helper';
 import React, { Component, Fragment } from 'react';
 import { MODULE_DEFAULT, ERR, CC_FRAGMENT_PREFIX, MODULE_GLOBAL, STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE } from '../support/constant';
@@ -138,35 +138,82 @@ function (_Component) {
         ccState.renderCount += 1;
         reactForceUpdateRef(state, cb);
       }
+    }; // hook implement fo CcFragment
+
+    var __hookMeta = {
+      isCcFragmentMounted: false,
+      useStateCount: 0,
+      useStateCursor: 0,
+      stateArr: [],
+      useEffectCount: 0,
+      useEffectCursor: 0,
+      effectCbArr: [],
+      effectCbReturnArr: []
+    };
+    _this.__hookMeta = __hookMeta;
+    var hook = {
+      useState: function useState(initialState) {
+        var cursor = __hookMeta.useStateCursor;
+        var stateArr = __hookMeta.stateArr;
+        __hookMeta.useStateCursor++;
+
+        if (__hookMeta.isCcFragmentMounted === false) {
+          //render CcFragment before componentDidMount
+          __hookMeta.useStateCount++;
+          stateArr[cursor] = initialState;
+        } else {
+          cursor = cursor % __hookMeta.useStateCount;
+        }
+
+        var setter = function setter(newState) {
+          stateArr[cursor] = newState;
+
+          _this.cc.reactForceUpdate();
+        };
+
+        return [stateArr[cursor], setter];
+      },
+      useEffect: function useEffect(cb) {
+        var cursor = __hookMeta.useEffectCursor;
+        __hookMeta.useEffectCursor++;
+
+        if (__hookMeta.isCcFragmentMounted === false) {
+          __hookMeta.effectCbArr.push(cb);
+
+          __hookMeta.useEffectCount++;
+        } else {
+          cursor = cursor % __hookMeta.useEffectCount;
+          __hookMeta.effectCbArr[cursor] = cb;
+        }
+      }
     };
     var dispatcher = helper.getDispatcherRef();
-    _this.state = {
-      fragmentParams: {
-        propState: _this.$$propState,
-        emit: emit,
-        dispatch: dispatcher.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, MODULE_DEFAULT, null, null, null, -1, ccKey),
-        effect: dispatcher.__$$getEffectHandler(ccKey),
-        xeffect: dispatcher.__$$getXEffectHandler(ccKey),
-        lazyEffect: dispatcher.__$$getLazyEffectHandler(ccKey),
-        lazyXeffect: dispatcher.__$$getLazyXEffectHandler(ccKey),
-        setState: function setState(module, state, lazyMs) {
-          dispatcher.$$changeState(state, {
-            ccKey: ccKey,
-            module: module,
-            stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
-            broadcastTriggeredBy: null,
-            lazyMs: lazyMs
-          });
-        },
-        setGlobalState: function setGlobalState(state, lazyMs) {
-          dispatcher.$$changeState(state, {
-            ccKey: ccKey,
-            MODULE_GLOBAL: MODULE_GLOBAL,
-            stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
-            broadcastTriggeredBy: null,
-            lazyMs: lazyMs
-          });
-        }
+    _this.__fragmentParams = {
+      hook: hook,
+      propState: _this.$$propState,
+      emit: emit,
+      dispatch: dispatcher.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, MODULE_DEFAULT, null, null, null, -1, ccKey),
+      effect: dispatcher.__$$getEffectHandler(ccKey),
+      xeffect: dispatcher.__$$getXEffectHandler(ccKey),
+      lazyEffect: dispatcher.__$$getLazyEffectHandler(ccKey),
+      lazyXeffect: dispatcher.__$$getLazyXEffectHandler(ccKey),
+      setState: function setState(module, state, lazyMs) {
+        dispatcher.$$changeState(state, {
+          ccKey: ccKey,
+          module: module,
+          stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
+          broadcastTriggeredBy: null,
+          lazyMs: lazyMs
+        });
+      },
+      setGlobalState: function setGlobalState(state, lazyMs) {
+        dispatcher.$$changeState(state, {
+          ccKey: ccKey,
+          MODULE_GLOBAL: MODULE_GLOBAL,
+          stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
+          broadcastTriggeredBy: null,
+          lazyMs: lazyMs
+        });
       }
     };
     return _this;
@@ -174,11 +221,35 @@ function (_Component) {
 
   var _proto = CcFragment.prototype;
 
+  _proto.componentDidMount = function componentDidMount() {
+    var _this2 = this;
+
+    this.__hookMeta.isCcFragmentMounted = true;
+
+    this.__hookMeta.effectCbArr.forEach(function (cb) {
+      var cbReturn = cb();
+
+      if (typeof cbReturn === 'function') {
+        _this2.__hookMeta.effectCbReturnArr.push(cbReturn);
+      }
+    });
+  };
+
+  _proto.componentDidUpdate = function componentDidUpdate() {
+    this.__hookMeta.effectCbArr.forEach(function (cb) {
+      return cb();
+    });
+  };
+
   _proto.shouldComponentUpdate = function shouldComponentUpdate() {
     return false;
   };
 
   _proto.componentWillUnmount = function componentWillUnmount() {
+    this.__hookMeta.effectCbReturnArr.forEach(function (cb) {
+      return cb();
+    });
+
     var _this$cc$ccState = this.cc.ccState,
         ccUniqueKey = _this$cc$ccState.ccUniqueKey,
         ccClassKey = _this$cc$ccState.ccClassKey;
@@ -187,12 +258,15 @@ function (_Component) {
   };
 
   _proto.render = function render() {
-    var children = this.props.children;
+    var _this$props = this.props,
+        children = _this$props.children,
+        render = _this$props.render;
+    var target = render || children;
 
-    if (typeof children === 'function') {
-      return children(this.state.fragmentParams) || React.createElement(Fragment, null);
+    if (typeof target === 'function') {
+      return target(this.__fragmentParams) || React.createElement(Fragment, null);
     } else {
-      return children;
+      return target;
     }
   };
 

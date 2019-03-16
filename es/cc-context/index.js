@@ -1,4 +1,4 @@
-import _extends from "@babel/runtime/helpers/esm/extends";
+import _extends from "@babel/runtime/helpers/extends";
 
 var _state2, _reducer;
 
@@ -140,7 +140,7 @@ var ccContext = {
   refs: refs,
   info: {
     startupTime: Date.now(),
-    version: '1.1.72',
+    version: '1.1.73',
     author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
     tag: 'promise land'
   },

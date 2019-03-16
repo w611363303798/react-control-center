@@ -112,35 +112,91 @@ export default class CcFragment extends Component {
       },
     };
 
-    const dispatcher = helper.getDispatcherRef();
+    // hook implement fo CcFragment
+    const __hookMeta = {
+      isCcFragmentMounted:false,
+      useStateCount: 0,
+      useStateCursor: 0,
+      stateArr:[],
+      useEffectCount: 0,
+      useEffectCursor: 0,
+      effectCbArr:[],
+      effectCbReturnArr:[],
+    }
+    this.__hookMeta = __hookMeta;
+    const hook = {
+      useState: initialState => {
+        let cursor = __hookMeta.useStateCursor;
+        const stateArr = __hookMeta.stateArr;
+        __hookMeta.useStateCursor++;
+        if (__hookMeta.isCcFragmentMounted === false) {//render CcFragment before componentDidMount
+          __hookMeta.useStateCount++;
+          stateArr[cursor] = initialState;
+        } else {
+          cursor = cursor % __hookMeta.useStateCount;
+        }
 
-    this.state = {
-      fragmentParams: {
-        propState: this.$$propState,
-        emit,
-        dispatch: dispatcher.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, MODULE_DEFAULT, null, null, null, -1, ccKey),
-        effect: dispatcher.__$$getEffectHandler(ccKey),
-        xeffect: dispatcher.__$$getXEffectHandler(ccKey),
-        lazyEffect: dispatcher.__$$getLazyEffectHandler(ccKey),
-        lazyXeffect: dispatcher.__$$getLazyXEffectHandler(ccKey),
-        setState: (module, state, lazyMs) => {
-          dispatcher.$$changeState(state, {
-            ccKey, module, stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
-            broadcastTriggeredBy: null, lazyMs
-          });
-        },
-        setGlobalState: (state, lazyMs) => {
-          dispatcher.$$changeState(state, {
-            ccKey, MODULE_GLOBAL, stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, broadcastTriggeredBy: null, lazyMs
-          });
-        },
+        const setter = newState => {
+          stateArr[cursor] = newState;
+          this.cc.reactForceUpdate();
+        }
+        return [stateArr[cursor], setter];
+      },
+      useEffect: (cb)=>{
+        let cursor = __hookMeta.useEffectCursor;
+        __hookMeta.useEffectCursor++;
+        if (__hookMeta.isCcFragmentMounted === false) {
+          __hookMeta.effectCbArr.push(cb);
+          __hookMeta.useEffectCount++;
+        }else{
+          cursor = cursor % __hookMeta.useEffectCount;
+          __hookMeta.effectCbArr[cursor] = cb;
+        }
       }
+    }
+
+    const dispatcher = helper.getDispatcherRef();
+    this.__fragmentParams = {
+      hook,
+      propState: this.$$propState,
+      emit,
+      dispatch: dispatcher.__$$getDispatchHandler(STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, MODULE_DEFAULT, null, null, null, -1, ccKey),
+      effect: dispatcher.__$$getEffectHandler(ccKey),
+      xeffect: dispatcher.__$$getXEffectHandler(ccKey),
+      lazyEffect: dispatcher.__$$getLazyEffectHandler(ccKey),
+      lazyXeffect: dispatcher.__$$getLazyXEffectHandler(ccKey),
+      setState: (module, state, lazyMs) => {
+        dispatcher.$$changeState(state, {
+          ccKey, module, stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE,
+          broadcastTriggeredBy: null, lazyMs
+        });
+      },
+      setGlobalState: (state, lazyMs) => {
+        dispatcher.$$changeState(state, {
+          ccKey, MODULE_GLOBAL, stateFor: STATE_FOR_ALL_CC_INSTANCES_OF_ONE_MODULE, broadcastTriggeredBy: null, lazyMs
+        });
+      },
     };
+
+  }
+  componentDidMount() {
+    this.__hookMeta.isCcFragmentMounted = true;
+    this.__hookMeta.effectCbArr.forEach(cb => {
+      const cbReturn = cb();
+      if (typeof cbReturn === 'function') {
+        this.__hookMeta.effectCbReturnArr.push(cbReturn);
+      }
+    });
+  }
+  componentDidUpdate(){
+    this.__hookMeta.effectCbArr.forEach(cb=>cb());
   }
   shouldComponentUpdate() {
     return false;
   }
   componentWillUnmount() {
+    this.__hookMeta.effectCbReturnArr.forEach(cb=>cb());
+
     const { ccUniqueKey, ccClassKey } = this.cc.ccState;
     helper.unsetRef(ccClassKey, ccUniqueKey);
     if (super.componentWillUnmount) super.componentWillUnmount();
@@ -149,7 +205,7 @@ export default class CcFragment extends Component {
     const { children, render } = this.props
     const target = render || children;
     if (typeof target === 'function') {
-      return target(this.state.fragmentParams) || <Fragment />;
+      return target(this.__fragmentParams) || <Fragment />;
     } else {
       return target;
     }
