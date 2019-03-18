@@ -222,7 +222,7 @@
     refs: refs,
     info: {
       startupTime: Date.now(),
-      version: '1.1.73',
+      version: '1.1.74',
       author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
       tag: 'promise land'
     },
@@ -2122,7 +2122,8 @@
         inputSharedStateKeys = _ref4$sharedStateKeys === void 0 ? [] : _ref4$sharedStateKeys,
         _ref4$globalStateKeys = _ref4.globalStateKeys,
         inputGlobalStateKeys = _ref4$globalStateKeys === void 0 ? [] : _ref4$globalStateKeys,
-        stateToPropMapping = _ref4.stateToPropMapping,
+        _ref4$stateToPropMapp = _ref4.stateToPropMapping,
+        stateToPropMapping = _ref4$stateToPropMapp === void 0 ? null : _ref4$stateToPropMapp,
         _ref4$isPropStateModu = _ref4.isPropStateModuleMode,
         isPropStateModuleMode = _ref4$isPropStateModu === void 0 ? false : _ref4$isPropStateModu,
         reducerModule = _ref4.reducerModule,

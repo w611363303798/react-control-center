@@ -6,8 +6,7 @@
 ![one-demo](http://g.recordit.co/aIThT3wFUT.gif)
 
 ## [Advanced Counter](https://stackblitz.com/edit/dva-example-count-1saxx8)
-## [Online demo](https://codepen.io/fantasticsoul/pen/QYeMje) 
-## [Online advanced demo](https://codepen.io/fantasticsoul/pen/QYeMje) 
+## [Jsrun playground](http://jsrun.net/fLXKp/play) 
 ## [Jsrun video](http://jsrun.net/vLXKp/play)
 
 ## why react-control-center

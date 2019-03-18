@@ -515,7 +515,7 @@ export default function register(ccClassKey, {
   module = MODULE_DEFAULT,
   sharedStateKeys: inputSharedStateKeys = [],
   globalStateKeys: inputGlobalStateKeys = [],
-  stateToPropMapping,
+  stateToPropMapping = null,
   isPropStateModuleMode = false,
   reducerModule,
   extendInputClass = true,
