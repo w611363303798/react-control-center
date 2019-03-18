@@ -148,6 +148,10 @@ function (_Component) {
       useEffectCount: 0,
       useEffectCursor: 0,
       effectCbArr: [],
+      effectSeeAoa: [],
+      // shouldEffectExecute array of array
+      effectSeeResult: [],
+      // collect every effect fn's shouldExecute result
       effectCbReturnArr: []
     };
     _this.__hookMeta = __hookMeta;
@@ -173,17 +177,51 @@ function (_Component) {
 
         return [stateArr[cursor], setter];
       },
-      useEffect: function useEffect(cb) {
+      useEffect: function useEffect(cb, shouldEffectExecute) {
         var cursor = __hookMeta.useEffectCursor;
         __hookMeta.useEffectCursor++;
 
         if (__hookMeta.isCcFragmentMounted === false) {
           __hookMeta.effectCbArr.push(cb);
 
+          __hookMeta.effectSeeAoa.push(shouldEffectExecute);
+
           __hookMeta.useEffectCount++;
         } else {
+          // if code running jump into this block, CcFragment already mounted, and now compute result for didUpdate
           cursor = cursor % __hookMeta.useEffectCount;
-          __hookMeta.effectCbArr[cursor] = cb;
+
+          if (Array.isArray(shouldEffectExecute)) {
+            var len = shouldEffectExecute.length;
+
+            if (len == 0) {
+              __hookMeta.effectSeeResult = false; // effect fn will been executed only in didMount
+            } else {
+              // compare prevSee and curSee
+              var effectSeeResult = false;
+              var prevSeeArr = __hookMeta.effectSeeAoa[cursor];
+
+              if (!prevSeeArr) {
+                effectSeeResult = true;
+              } else {
+                for (var i = 0; i < len; i++) {
+                  if (shouldEffectExecute[i] !== prevSeeArr[i]) {
+                    effectSeeResult = true;
+                    break;
+                  }
+                }
+              }
+
+              __hookMeta.effectSeeAoa[cursor] = shouldEffectExecute;
+              __hookMeta.effectSeeResult[cursor] = effectSeeResult;
+              if (effectSeeResult) __hookMeta.effectCbArr[cursor] = cb;
+            }
+          } else {
+            __hookMeta.effectSeeResult[cursor] = true; // effect fn will always been executed in didMount and didUpdate
+
+            __hookMeta.effectSeeAoa[cursor] = shouldEffectExecute;
+            __hookMeta.effectCbArr[cursor] = cb;
+          }
         }
       }
     };
@@ -222,22 +260,36 @@ function (_Component) {
   var _proto = CcFragment.prototype;
 
   _proto.componentDidMount = function componentDidMount() {
-    var _this2 = this;
-
+    var _this$__hookMeta = this.__hookMeta,
+        effectCbArr = _this$__hookMeta.effectCbArr,
+        effectCbReturnArr = _this$__hookMeta.effectCbReturnArr;
     this.__hookMeta.isCcFragmentMounted = true;
-
-    this.__hookMeta.effectCbArr.forEach(function (cb) {
+    effectCbArr.forEach(function (cb) {
       var cbReturn = cb();
 
       if (typeof cbReturn === 'function') {
-        _this2.__hookMeta.effectCbReturnArr.push(cbReturn);
+        effectCbReturnArr.push(cbReturn);
+      } else {
+        effectCbReturnArr.push(null);
       }
     });
   };
 
   _proto.componentDidUpdate = function componentDidUpdate() {
-    this.__hookMeta.effectCbArr.forEach(function (cb) {
-      return cb();
+    var _this$__hookMeta2 = this.__hookMeta,
+        effectCbArr = _this$__hookMeta2.effectCbArr,
+        effectCbReturnArr = _this$__hookMeta2.effectCbReturnArr,
+        effectSeeResult = _this$__hookMeta2.effectSeeResult;
+    effectCbArr.forEach(function (cb, idx) {
+      var shouldEffectExecute = effectSeeResult[idx];
+
+      if (shouldEffectExecute) {
+        var cbReturn = cb();
+
+        if (typeof cbReturn === 'function') {
+          effectCbReturnArr[idx] = cbReturn;
+        }
+      }
     });
   };
 
@@ -247,7 +299,7 @@ function (_Component) {
 
   _proto.componentWillUnmount = function componentWillUnmount() {
     this.__hookMeta.effectCbReturnArr.forEach(function (cb) {
-      return cb();
+      if (cb) cb();
     });
 
     var _this$cc$ccState = this.cc.ccState,

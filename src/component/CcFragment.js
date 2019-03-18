@@ -121,7 +121,9 @@ export default class CcFragment extends Component {
       useEffectCount: 0,
       useEffectCursor: 0,
       effectCbArr:[],
-      effectCbReturnArr:[],
+      effectSeeAoa:[],// shouldEffectExecute array of array
+      effectSeeResult:[],// collect every effect fn's shouldExecute result
+      effectCbReturnArr:[], 
     }
     this.__hookMeta = __hookMeta;
     const hook = {
@@ -142,15 +144,42 @@ export default class CcFragment extends Component {
         }
         return [stateArr[cursor], setter];
       },
-      useEffect: (cb)=>{
+      useEffect: (cb, shouldEffectExecute) => {
         let cursor = __hookMeta.useEffectCursor;
         __hookMeta.useEffectCursor++;
         if (__hookMeta.isCcFragmentMounted === false) {
           __hookMeta.effectCbArr.push(cb);
+          __hookMeta.effectSeeAoa.push(shouldEffectExecute);
           __hookMeta.useEffectCount++;
-        }else{
+        } else {
+          // if code running jump into this block, CcFragment already mounted, and now compute result for didUpdate
           cursor = cursor % __hookMeta.useEffectCount;
-          __hookMeta.effectCbArr[cursor] = cb;
+          if (Array.isArray(shouldEffectExecute)) {
+            const len = shouldEffectExecute.length;
+            if (len == 0) {
+              __hookMeta.effectSeeResult = false;// effect fn will been executed only in didMount
+            } else {// compare prevSee and curSee
+              let effectSeeResult = false;
+              const prevSeeArr = __hookMeta.effectSeeAoa[cursor];
+              if (!prevSeeArr) {
+                effectSeeResult = true;
+              } else {
+                for (let i = 0; i < len; i++) {
+                  if (shouldEffectExecute[i] !== prevSeeArr[i]) {
+                    effectSeeResult = true;
+                    break;
+                  }
+                }
+              }
+              __hookMeta.effectSeeAoa[cursor] = shouldEffectExecute;
+              __hookMeta.effectSeeResult[cursor] = effectSeeResult;
+              if (effectSeeResult) __hookMeta.effectCbArr[cursor] = cb;
+            }
+          } else {
+            __hookMeta.effectSeeResult[cursor] = true;// effect fn will always been executed in didMount and didUpdate
+            __hookMeta.effectSeeAoa[cursor] = shouldEffectExecute;
+            __hookMeta.effectCbArr[cursor] = cb;
+          }
         }
       }
     }
@@ -180,22 +209,36 @@ export default class CcFragment extends Component {
 
   }
   componentDidMount() {
+    const { effectCbArr, effectCbReturnArr } = this.__hookMeta;
     this.__hookMeta.isCcFragmentMounted = true;
-    this.__hookMeta.effectCbArr.forEach(cb => {
+    effectCbArr.forEach(cb => {
       const cbReturn = cb();
       if (typeof cbReturn === 'function') {
-        this.__hookMeta.effectCbReturnArr.push(cbReturn);
+        effectCbReturnArr.push(cbReturn);
+      }else{
+        effectCbReturnArr.push(null);
       }
     });
   }
-  componentDidUpdate(){
-    this.__hookMeta.effectCbArr.forEach(cb=>cb());
+  componentDidUpdate() {
+    const { effectCbArr, effectCbReturnArr, effectSeeResult } = this.__hookMeta;
+    effectCbArr.forEach((cb, idx) => {
+      const shouldEffectExecute = effectSeeResult[idx];
+      if(shouldEffectExecute){
+        const cbReturn = cb();
+        if (typeof cbReturn === 'function') {
+          effectCbReturnArr[idx] = cbReturn;
+        }
+      }
+    });
   }
   shouldComponentUpdate() {
     return false;
   }
   componentWillUnmount() {
-    this.__hookMeta.effectCbReturnArr.forEach(cb=>cb());
+    this.__hookMeta.effectCbReturnArr.forEach(cb=>{
+      if(cb)cb();
+    });
 
     const { ccUniqueKey, ccClassKey } = this.cc.ccState;
     helper.unsetRef(ccClassKey, ccUniqueKey);
