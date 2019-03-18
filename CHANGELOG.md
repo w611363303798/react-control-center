@@ -1,5 +1,30 @@
 
 # Change Log
+#### 2018-03-18 10:00
+* optimize: optimize useEffect, add second param to let render behavior more smart just like react hook
+```
+//if you pass an array to useEffect, the effect callback will been executed or not depend on the array's item changed or not;
+<CcFragment connect={{'counter/*':''}} render={({ hook, propState }) => {
+  const [count, setCount] = hook.useState(0);
+  hook.useEffect(()=>{
+    document.title = 'count '+count;
+    return ()=>{
+      document.title = 'CcFragment unmount ';
+    }
+  },[count]);
+  return (
+    <div style={{border:'6px solid gold', margin:'6px'}}>
+      <h3>show CcFragment hook feature</h3>
+      {propState.counter.count}
+      <hr />
+      {count}
+      <button onClick={() => setCount(count + 1)}>+</button>
+      <button onClick={() => setCount(count - 1)}>-</button>
+    </div>
+  )
+}} />
+```
+
 #### 2018-03-16 23:30
 * feature add: now cc instance support $$dispatchIdentity
 ```
