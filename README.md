@@ -5,6 +5,7 @@
 
 ![one-demo](http://g.recordit.co/aIThT3wFUT.gif)
 
+## [Funny Counter](https://stackblitz.com/edit/funny-counter)
 ## [Advanced Counter](https://stackblitz.com/edit/dva-example-count-1saxx8)
 ## [Jsrun playground](http://jsrun.net/fLXKp/play) 
 ## [Jsrun video](http://jsrun.net/vLXKp/play)
