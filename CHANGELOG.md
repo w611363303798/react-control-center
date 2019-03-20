@@ -1,5 +1,17 @@
 
 # Change Log
+#### 2018-03-20 10:00
+* bug fix: when using register but not set sharedStateKeys, propState is correct
+```
+@register('fooClass',{module:'foo', stateToPropMapping:{'foo/*':''}});
+class Foo extends Component{
+  render(){
+    const propState = this.$$propState;//propState is not the latest propState;
+  }
+}
+```
+* optimize: whe using connect, now the isPropStateModuleMode is true by default 
+
 #### 2018-03-18 10:00
 * optimize: optimize useEffect, add second param to let render behavior more smart just like react hook
 ```

@@ -19,7 +19,9 @@ export default function (ccClassKey, stateToPropMapping, option) {
     option = {};
   }
 
-  var mergedOption = _extends({}, option, {
+  var mergedOption = _extends({
+    isPropStateModuleMode: true
+  }, option, {
     stateToPropMapping: stateToPropMapping
   });
 

@@ -222,7 +222,7 @@
     refs: refs,
     info: {
       startupTime: Date.now(),
-      version: '1.1.75',
+      version: '1.1.76',
       author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
       tag: 'promise land'
     },
@@ -2997,9 +2997,12 @@
                 return justWarning$1(err.message + " prepareBroadcastState failed!");
               }
 
+              var skipBroadcastRefState = false;
+
               if (stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY) {
-                // abort broadcast, including module state and prop state
-                if (targetSharedStateKeys.length === 0 && targetGlobalStateKeys.length === 0) return;
+                if (targetSharedStateKeys.length === 0 && targetGlobalStateKeys.length === 0) {
+                  skipBroadcastRefState = true;
+                }
               }
 
               var _extractStateToBeBroa = extractStateToBeBroadcasted(moduleName, committedState, targetSharedStateKeys, targetGlobalStateKeys),
@@ -3019,17 +3022,17 @@
                     _this2.$$beforeBroadcastState({
                       broadcastTriggeredBy: broadcastTriggeredBy
                     }, function () {
-                      _this2.cc.broadcastState(committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
+                      _this2.cc.broadcastState(skipBroadcastRefState, committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
                     });
                   } else {
                     _this2.$$beforeBroadcastState({
                       broadcastTriggeredBy: broadcastTriggeredBy
                     });
 
-                    _this2.cc.broadcastState(committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
+                    _this2.cc.broadcastState(skipBroadcastRefState, committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
                   }
                 } else {
-                  _this2.cc.broadcastState(committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
+                  _this2.cc.broadcastState(skipBroadcastRefState, committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
                 }
               };
 
@@ -3039,109 +3042,111 @@
               } else {
                 startBroadcastState();
               }
-            }, _this$cc.broadcastState = function broadcastState(originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity) {
-              var _partialSharedState = partialSharedState;
-              if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
+            }, _this$cc.broadcastState = function broadcastState(skipBroadcastRefState, originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity) {
+              if (skipBroadcastRefState === false) {
+                var _partialSharedState = partialSharedState;
+                if (needClone) _partialSharedState = util.clone(partialSharedState); // this clone operation may cause performance issue, if partialSharedState is too big!!
 
-              var currentCcKey = _this2.cc.ccState.ccUniqueKey;
-              // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
-              // so flag ignoreCurrentCcKey as true;
+                var currentCcKey = _this2.cc.ccState.ccUniqueKey;
+                // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
+                // so flag ignoreCurrentCcKey as true;
 
-              var ignoreCurrentCcKey = stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY;
-              var ccClassKeys = moduleName_ccClassKeys_[moduleName];
+                var ignoreCurrentCcKey = stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY;
+                var ccClassKeys = moduleName_ccClassKeys_[moduleName];
 
-              if (ccClassKeys) {
-                //  these ccClass are watching the same module's state
-                ccClassKeys.forEach(function (ccClassKey) {
-                  var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
-                  var ccKeys = classContext.ccKeys,
-                      sharedStateKeys = classContext.sharedStateKeys,
-                      globalStateKeys = classContext.globalStateKeys;
-                  if (ccKeys.length === 0) return;
-                  if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
-
-                  var _extractStateByKeys7 = extractStateByKeys(_partialSharedState, sharedStateKeys, true),
-                      sharedStateForCurrentCcClass = _extractStateByKeys7.partialState,
-                      isSharedStateEmpty = _extractStateByKeys7.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
-                  //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
-                  //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
-                  //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
-
-
-                  var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys, true),
-                      globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
-                      isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
-
-                  if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
-
-                  var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
-
-                  ccKeys.forEach(function (ccKey) {
-                    if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
-                    var ref = ccKey_ref_$1[ccKey];
-
-                    if (ref) {
-                      var option = ccKey_option_$1[ccKey];
-                      var toSet = null,
-                          changedBy = -1;
-
-                      if (option.syncSharedState && option.syncGlobalState) {
-                        changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE;
-                        toSet = mergedStateForCurrentCcClass;
-                      } else if (option.syncSharedState) {
-                        changedBy = CHANGE_BY_BROADCASTED_SHARED_STATE;
-                        toSet = sharedStateForCurrentCcClass;
-                      } else if (option.syncGlobalState) {
-                        changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE;
-                        toSet = globalStateForCurrentCcClass;
-                      }
-
-                      if (toSet) {
-                        if (ccContext.isDebug) {
-                          console.log(ss$1("ref " + ccKey + " to be rendered state(changedBy " + changedBy + ") is broadcast from same module's other ref " + currentCcKey), cl$1());
-                        }
-
-                        ref.cc.prepareReactSetState(identity, changedBy, toSet, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
-                      }
-                    }
-                  });
-                });
-              }
-
-              if (util.isObjectNotNull(module_globalState_)) {
-                var moduleNames = Object.keys(module_globalState_);
-                moduleNames.forEach(function (mName) {
-                  var partialGlobalState = module_globalState_[mName];
-                  var ccClassKeys = moduleName_ccClassKeys_[mName];
+                if (ccClassKeys) {
+                  //  these ccClass are watching the same module's state
                   ccClassKeys.forEach(function (ccClassKey) {
                     var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
                     var ccKeys = classContext.ccKeys,
+                        sharedStateKeys = classContext.sharedStateKeys,
                         globalStateKeys = classContext.globalStateKeys;
                     if (ccKeys.length === 0) return;
-                    if (globalStateKeys.length === 0) return;
+                    if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return; //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
 
-                    var _extractStateByKeys9 = extractStateByKeys(partialGlobalState, globalStateKeys),
-                        globalStateForCurrentCcClass = _extractStateByKeys9.partialState,
-                        isPartialGlobalStateEmpty = _extractStateByKeys9.isStateEmpty;
+                    var _extractStateByKeys7 = extractStateByKeys(_partialSharedState, sharedStateKeys, true),
+                        sharedStateForCurrentCcClass = _extractStateByKeys7.partialState,
+                        isSharedStateEmpty = _extractStateByKeys7.isStateEmpty; //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
+                    //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
+                    //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
+                    //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
 
-                    if (isPartialGlobalStateEmpty) return;
+
+                    var _extractStateByKeys8 = extractStateByKeys(partialGlobalState, globalStateKeys, true),
+                        globalStateForCurrentCcClass = _extractStateByKeys8.partialState,
+                        isPartialGlobalStateEmpty = _extractStateByKeys8.isStateEmpty;
+
+                    if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
+
+                    var mergedStateForCurrentCcClass = _extends({}, globalStateForCurrentCcClass, sharedStateForCurrentCcClass);
+
                     ccKeys.forEach(function (ccKey) {
+                      if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
                       var ref = ccKey_ref_$1[ccKey];
 
                       if (ref) {
                         var option = ccKey_option_$1[ccKey];
+                        var toSet = null,
+                            changedBy = -1;
 
-                        if (option.syncGlobalState) {
+                        if (option.syncSharedState && option.syncGlobalState) {
+                          changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE;
+                          toSet = mergedStateForCurrentCcClass;
+                        } else if (option.syncSharedState) {
+                          changedBy = CHANGE_BY_BROADCASTED_SHARED_STATE;
+                          toSet = sharedStateForCurrentCcClass;
+                        } else if (option.syncGlobalState) {
+                          changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE;
+                          toSet = globalStateForCurrentCcClass;
+                        }
+
+                        if (toSet) {
                           if (ccContext.isDebug) {
-                            console.log(ss$1("ref " + ccKey + " to be rendered state(only global state) is broadcast from other module " + moduleName), cl$1());
+                            console.log(ss$1("ref " + ccKey + " to be rendered state(changedBy " + changedBy + ") is broadcast from same module's other ref " + currentCcKey), cl$1());
                           }
 
-                          ref.cc.prepareReactSetState(identity, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, globalStateForCurrentCcClass, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
+                          ref.cc.prepareReactSetState(identity, changedBy, toSet, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
                         }
                       }
                     });
                   });
-                });
+                }
+
+                if (util.isObjectNotNull(module_globalState_)) {
+                  var moduleNames = Object.keys(module_globalState_);
+                  moduleNames.forEach(function (mName) {
+                    var partialGlobalState = module_globalState_[mName];
+                    var ccClassKeys = moduleName_ccClassKeys_[mName];
+                    ccClassKeys.forEach(function (ccClassKey) {
+                      var classContext = ccClassKey_ccClassContext_$1[ccClassKey];
+                      var ccKeys = classContext.ccKeys,
+                          globalStateKeys = classContext.globalStateKeys;
+                      if (ccKeys.length === 0) return;
+                      if (globalStateKeys.length === 0) return;
+
+                      var _extractStateByKeys9 = extractStateByKeys(partialGlobalState, globalStateKeys),
+                          globalStateForCurrentCcClass = _extractStateByKeys9.partialState,
+                          isPartialGlobalStateEmpty = _extractStateByKeys9.isStateEmpty;
+
+                      if (isPartialGlobalStateEmpty) return;
+                      ccKeys.forEach(function (ccKey) {
+                        var ref = ccKey_ref_$1[ccKey];
+
+                        if (ref) {
+                          var option = ccKey_option_$1[ccKey];
+
+                          if (option.syncGlobalState) {
+                            if (ccContext.isDebug) {
+                              console.log(ss$1("ref " + ccKey + " to be rendered state(only global state) is broadcast from other module " + moduleName), cl$1());
+                            }
+
+                            ref.cc.prepareReactSetState(identity, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, globalStateForCurrentCcClass, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY);
+                          }
+                        }
+                      });
+                    });
+                  });
+                }
               }
 
               broadcastPropState(moduleName, originalState);
@@ -4599,7 +4604,9 @@
       option = {};
     }
 
-    var mergedOption = _extends({}, option, {
+    var mergedOption = _extends({
+      isPropStateModuleMode: true
+    }, option, {
       stateToPropMapping: stateToPropMapping
     });
 

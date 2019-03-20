@@ -14,6 +14,6 @@ import register from './register';
  * @param {Array<string>} [option.globalStateKeys]
  */
 export default function (ccClassKey, stateToPropMapping, option = {}) {
-  const mergedOption = { ...option, stateToPropMapping }
+  const mergedOption = { isPropStateModuleMode:true, ...option, stateToPropMapping }
   return register(ccClassKey, mergedOption);
 }

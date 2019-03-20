@@ -948,9 +948,11 @@ export default function register(ccClassKey, {
                 return justWarning(`${err.message} prepareBroadcastState failed!`)
               }
 
+              let skipBroadcastRefState = false;
               if(stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY){
-                 // abort broadcast, including module state and prop state
-                if (targetSharedStateKeys.length === 0 && targetGlobalStateKeys.length === 0) return;
+                if (targetSharedStateKeys.length === 0 && targetGlobalStateKeys.length === 0) {
+                  skipBroadcastRefState = true;
+                }
               }
 
               const { isPartialSharedStateEmpty, isPartialGlobalStateEmpty, partialSharedState, partialGlobalState, module_globalState_ }
@@ -963,14 +965,14 @@ export default function register(ccClassKey, {
                 if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
                   if (asyncLifecycleHook) {
                     this.$$beforeBroadcastState({ broadcastTriggeredBy }, () => {
-                      this.cc.broadcastState(committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
+                      this.cc.broadcastState(skipBroadcastRefState, committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
                     });
                   } else {
                     this.$$beforeBroadcastState({ broadcastTriggeredBy });
-                    this.cc.broadcastState(committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
+                    this.cc.broadcastState(skipBroadcastRefState, committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
                   }
                 } else {
-                  this.cc.broadcastState(committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
+                  this.cc.broadcastState(skipBroadcastRefState, committedState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity);
                 }
               };
 
@@ -981,108 +983,109 @@ export default function register(ccClassKey, {
                 startBroadcastState();
               }
             },
-            broadcastState: (originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity) => {
-
-              let _partialSharedState = partialSharedState;
-              if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone operation may cause performance issue, if partialSharedState is too big!!
-
-              const { ccUniqueKey: currentCcKey } = this.cc.ccState;
-              const ccClassKey_isHandled_ = {};//record which ccClassKey has been handled
-
-              // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
-              // so flag ignoreCurrentCcKey as true;
-              const ignoreCurrentCcKey = stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY;
-
-              const ccClassKeys = moduleName_ccClassKeys_[moduleName];
-              if (ccClassKeys) {
-                //  these ccClass are watching the same module's state
-                ccClassKeys.forEach(ccClassKey => {
-                  //  flag this ccClassKey been handled
-                  ccClassKey_isHandled_[ccClassKey] = true;
-
-                  const classContext = ccClassKey_ccClassContext_[ccClassKey];
-                  const { ccKeys, sharedStateKeys, globalStateKeys } = classContext;
-                  if (ccKeys.length === 0) return;
-                  if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return;
-
-                  //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
-                  const {
-                    partialState: sharedStateForCurrentCcClass, isStateEmpty: isSharedStateEmpty
-                  } = extractStateByKeys(_partialSharedState, sharedStateKeys, true);
-
-                  //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
-                  //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
-                  //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
-                  //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
-                  const {
-                    partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
-                  } = extractStateByKeys(partialGlobalState, globalStateKeys, true);
-                  if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
-
-                  let mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };
-
-                  ccKeys.forEach(ccKey => {
-                    if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
-
-                    const ref = ccKey_ref_[ccKey];
-                    if (ref) {
-                      const option = ccKey_option_[ccKey];
-                      let toSet = null, changedBy = -1;
-                      if (option.syncSharedState && option.syncGlobalState) {
-                        changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE;
-                        toSet = mergedStateForCurrentCcClass;
-                      } else if (option.syncSharedState) {
-                        changedBy = CHANGE_BY_BROADCASTED_SHARED_STATE;
-                        toSet = sharedStateForCurrentCcClass;
-                      } else if (option.syncGlobalState) {
-                        changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE;
-                        toSet = globalStateForCurrentCcClass;
-                      }
-
-                      if (toSet) {
-                        if (ccContext.isDebug) {
-                          console.log(ss(`ref ${ccKey} to be rendered state(changedBy ${changedBy}) is broadcast from same module's other ref ${currentCcKey}`), cl());
-                        }
-                        ref.cc.prepareReactSetState(identity, changedBy, toSet, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY)
-                      };
-                    }
-                  });
-
-                });
-              }
-
-              if (util.isObjectNotNull(module_globalState_)) {
-                const moduleNames = Object.keys(module_globalState_);
-                moduleNames.forEach(mName => {
-                  const partialGlobalState = module_globalState_[mName];
-                  const ccClassKeys = moduleName_ccClassKeys_[mName];
+            broadcastState: (skipBroadcastRefState, originalState, stateFor, moduleName, partialSharedState, partialGlobalState, module_globalState_, needClone, identity) => {
+              if (skipBroadcastRefState === false) {
+                let _partialSharedState = partialSharedState;
+                if (needClone) _partialSharedState = util.clone(partialSharedState);// this clone operation may cause performance issue, if partialSharedState is too big!!
+  
+                const { ccUniqueKey: currentCcKey } = this.cc.ccState;
+                const ccClassKey_isHandled_ = {};//record which ccClassKey has been handled
+  
+                // if stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY, it means currentCcInstance has triggered reactSetState
+                // so flag ignoreCurrentCcKey as true;
+                const ignoreCurrentCcKey = stateFor === STATE_FOR_ONE_CC_INSTANCE_FIRSTLY;
+  
+                const ccClassKeys = moduleName_ccClassKeys_[moduleName];
+                if (ccClassKeys) {
+                  //  these ccClass are watching the same module's state
                   ccClassKeys.forEach(ccClassKey => {
+                    //  flag this ccClassKey been handled
+                    ccClassKey_isHandled_[ccClassKey] = true;
+  
                     const classContext = ccClassKey_ccClassContext_[ccClassKey];
-                    const { ccKeys, globalStateKeys } = classContext;
-
+                    const { ccKeys, sharedStateKeys, globalStateKeys } = classContext;
                     if (ccKeys.length === 0) return;
-                    if (globalStateKeys.length === 0) return;
+                    if (sharedStateKeys.length === 0 && globalStateKeys.length === 0) return;
+  
+                    //  extract _partialSharedState again! because different class with a same module may have different sharedStateKeys!!!
+                    const {
+                      partialState: sharedStateForCurrentCcClass, isStateEmpty: isSharedStateEmpty
+                    } = extractStateByKeys(_partialSharedState, sharedStateKeys, true);
+  
+                    //  extract sourcePartialGlobalState again! because different class watch different globalStateKeys.
+                    //  it is ok here if current ccClass's globalStateKeys include mappedGlobalKeys or not！
+                    //  partialGlobalState is prepared for this module especially by method getSuitableGlobalStateKeysAndSharedStateKeys
+                    //  just call extract state from partialGlobalState to get globalStateForCurrentCcClass
                     const {
                       partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
-                    } = extractStateByKeys(partialGlobalState, globalStateKeys);
-
-                    if (isPartialGlobalStateEmpty) return;
-
+                    } = extractStateByKeys(partialGlobalState, globalStateKeys, true);
+                    if (isSharedStateEmpty && isPartialGlobalStateEmpty) return;
+  
+                    let mergedStateForCurrentCcClass = { ...globalStateForCurrentCcClass, ...sharedStateForCurrentCcClass };
+  
                     ccKeys.forEach(ccKey => {
+                      if (ccKey === currentCcKey && ignoreCurrentCcKey) return;
+  
                       const ref = ccKey_ref_[ccKey];
                       if (ref) {
                         const option = ccKey_option_[ccKey];
-                        if (option.syncGlobalState) {
-                          if (ccContext.isDebug) {
-                            console.log(ss(`ref ${ccKey} to be rendered state(only global state) is broadcast from other module ${moduleName}`), cl());
-                          }
-                          ref.cc.prepareReactSetState(identity, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, globalStateForCurrentCcClass, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY)
+                        let toSet = null, changedBy = -1;
+                        if (option.syncSharedState && option.syncGlobalState) {
+                          changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE_AND_SHARED_STATE;
+                          toSet = mergedStateForCurrentCcClass;
+                        } else if (option.syncSharedState) {
+                          changedBy = CHANGE_BY_BROADCASTED_SHARED_STATE;
+                          toSet = sharedStateForCurrentCcClass;
+                        } else if (option.syncGlobalState) {
+                          changedBy = CHANGE_BY_BROADCASTED_GLOBAL_STATE;
+                          toSet = globalStateForCurrentCcClass;
                         }
+  
+                        if (toSet) {
+                          if (ccContext.isDebug) {
+                            console.log(ss(`ref ${ccKey} to be rendered state(changedBy ${changedBy}) is broadcast from same module's other ref ${currentCcKey}`), cl());
+                          }
+                          ref.cc.prepareReactSetState(identity, changedBy, toSet, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY)
+                        };
                       }
                     });
-
+  
                   });
-                });
+                }
+  
+                if (util.isObjectNotNull(module_globalState_)) {
+                  const moduleNames = Object.keys(module_globalState_);
+                  moduleNames.forEach(mName => {
+                    const partialGlobalState = module_globalState_[mName];
+                    const ccClassKeys = moduleName_ccClassKeys_[mName];
+                    ccClassKeys.forEach(ccClassKey => {
+                      const classContext = ccClassKey_ccClassContext_[ccClassKey];
+                      const { ccKeys, globalStateKeys } = classContext;
+  
+                      if (ccKeys.length === 0) return;
+                      if (globalStateKeys.length === 0) return;
+                      const {
+                        partialState: globalStateForCurrentCcClass, isStateEmpty: isPartialGlobalStateEmpty
+                      } = extractStateByKeys(partialGlobalState, globalStateKeys);
+  
+                      if (isPartialGlobalStateEmpty) return;
+  
+                      ccKeys.forEach(ccKey => {
+                        const ref = ccKey_ref_[ccKey];
+                        if (ref) {
+                          const option = ccKey_option_[ccKey];
+                          if (option.syncGlobalState) {
+                            if (ccContext.isDebug) {
+                              console.log(ss(`ref ${ccKey} to be rendered state(only global state) is broadcast from other module ${moduleName}`), cl());
+                            }
+                            ref.cc.prepareReactSetState(identity, CHANGE_BY_BROADCASTED_GLOBAL_STATE_FROM_OTHER_MODULE, globalStateForCurrentCcClass, STATE_FOR_ONE_CC_INSTANCE_FIRSTLY)
+                          }
+                        }
+                      });
+  
+                    });
+                  });
+                }
               }
 
               broadcastPropState(moduleName, originalState);
