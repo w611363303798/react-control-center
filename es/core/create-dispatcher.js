@@ -26,7 +26,11 @@ export default function (fragmentHook, CustomizedComponent) {
     };
 
     _proto.render = function render() {
-      return this.props.children || '';
+      return this.props.children || React.createElement("span", {
+        style: {
+          display: 'none'
+        }
+      });
     };
 
     return DefaultComponent;

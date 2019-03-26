@@ -222,7 +222,7 @@
     refs: refs,
     info: {
       startupTime: Date.now(),
-      version: '1.1.76',
+      version: '1.1.77',
       author: ['624313307@qq.com', 'zhongzhengkai@hotmail.com'],
       tag: 'promise land'
     },
@@ -3677,7 +3677,11 @@
       };
 
       _proto.render = function render() {
-        return this.props.children || '';
+        return this.props.children || React__default.createElement("span", {
+          style: {
+            display: 'none'
+          }
+        });
       };
 
       return DefaultComponent;

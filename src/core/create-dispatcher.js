@@ -14,7 +14,7 @@ export default function (fragmentHook, CustomizedComponent) {
       if (fragmentHook) fragmentHook(fragmentContext);
     }
     render() {
-      return this.props.children || '';
+      return this.props.children || <span style={{display:'none'}}/>;
     }
   }
 
