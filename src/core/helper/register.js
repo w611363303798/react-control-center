@@ -912,21 +912,21 @@ export default function register(ccClassKey, {
                 if (next) next();
               }
             },
-            prepareBroadcastGlobalState: (broadcastTriggeredBy, globalState, lazyMs) => {
+            prepareBroadcastGlobalState: (identity, broadcastTriggeredBy, globalState, lazyMs) => {
               const { partialState: validGlobalState, isStateEmpty } = getAndStoreValidGlobalState(globalState);
               const startBroadcastGlobalState = () => {
                 if (!isStateEmpty) {
                   if (this.$$beforeBroadcastState) {//check if user define a life cycle hook $$beforeBroadcastState
                     if (asyncLifecycleHook) {
                       this.$$beforeBroadcastState({ broadcastTriggeredBy });
-                      this.cc.broadcastGlobalState(validGlobalState);
+                      this.cc.broadcastGlobalState(identity, validGlobalState);
                     } else {
                       this.$$beforeBroadcastState({ broadcastTriggeredBy }, () => {
-                        this.cc.broadcastGlobalState(validGlobalState);
+                        this.cc.broadcastGlobalState(identity, validGlobalState);
                       });
                     }
                   } else {
-                    this.cc.broadcastGlobalState(validGlobalState);
+                    this.cc.broadcastGlobalState(identity, validGlobalState);
                   }
                 }
               }
@@ -1090,7 +1090,7 @@ export default function register(ccClassKey, {
 
               broadcastPropState(moduleName, originalState);
             },
-            broadcastGlobalState: (globalSate) => {
+            broadcastGlobalState: (identity, globalSate) => {
               globalCcClassKeys.forEach(ccClassKey => {
                 const classContext = ccClassKey_ccClassContext_[ccClassKey];
                 const { globalStateKeys, ccKeys } = classContext;
@@ -1196,7 +1196,7 @@ export default function register(ccClassKey, {
 
           const _doChangeState = () => {
             if (module == MODULE_GLOBAL) {
-              this.cc.prepareBroadcastGlobalState(broadcastTriggeredBy, state, lazyMs);
+              this.cc.prepareBroadcastGlobalState(identity, broadcastTriggeredBy, state, lazyMs);
             } else {
               const ccState = this.cc.ccState;
               const currentModule = ccState.module;

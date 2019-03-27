@@ -1470,7 +1470,7 @@ export default function register(ccClassKey, _temp) {
 
               if (next) next();
             }
-          }, _this$cc.prepareBroadcastGlobalState = function prepareBroadcastGlobalState(broadcastTriggeredBy, globalState, lazyMs) {
+          }, _this$cc.prepareBroadcastGlobalState = function prepareBroadcastGlobalState(identity, broadcastTriggeredBy, globalState, lazyMs) {
             var _getAndStoreValidGlob = getAndStoreValidGlobalState(globalState),
                 validGlobalState = _getAndStoreValidGlob.partialState,
                 isStateEmpty = _getAndStoreValidGlob.isStateEmpty;
@@ -1484,16 +1484,16 @@ export default function register(ccClassKey, _temp) {
                       broadcastTriggeredBy: broadcastTriggeredBy
                     });
 
-                    _this2.cc.broadcastGlobalState(validGlobalState);
+                    _this2.cc.broadcastGlobalState(identity, validGlobalState);
                   } else {
                     _this2.$$beforeBroadcastState({
                       broadcastTriggeredBy: broadcastTriggeredBy
                     }, function () {
-                      _this2.cc.broadcastGlobalState(validGlobalState);
+                      _this2.cc.broadcastGlobalState(identity, validGlobalState);
                     });
                   }
                 } else {
-                  _this2.cc.broadcastGlobalState(validGlobalState);
+                  _this2.cc.broadcastGlobalState(identity, validGlobalState);
                 }
               }
             };
@@ -1673,7 +1673,7 @@ export default function register(ccClassKey, _temp) {
             }
 
             broadcastPropState(moduleName, originalState);
-          }, _this$cc.broadcastGlobalState = function broadcastGlobalState(globalSate) {
+          }, _this$cc.broadcastGlobalState = function broadcastGlobalState(identity, globalSate) {
             globalCcClassKeys.forEach(function (ccClassKey) {
               var classContext = ccClassKey_ccClassContext_[ccClassKey];
               var globalStateKeys = classContext.globalStateKeys,
@@ -1828,7 +1828,7 @@ export default function register(ccClassKey, _temp) {
 
           var _doChangeState = function _doChangeState() {
             if (module == MODULE_GLOBAL) {
-              _this3.cc.prepareBroadcastGlobalState(broadcastTriggeredBy, state, lazyMs);
+              _this3.cc.prepareBroadcastGlobalState(identity, broadcastTriggeredBy, state, lazyMs);
             } else {
               var ccState = _this3.cc.ccState;
               var currentModule = ccState.module;
@@ -2038,7 +2038,7 @@ export default function register(ccClassKey, _temp) {
                   cb = _paramObj.cb,
                   _paramObj$lazyMs = _paramObj.lazyMs,
                   _lazyMs2 = _paramObj$lazyMs === void 0 ? -1 : _paramObj$lazyMs,
-                  _identity2 = _paramObj.identity;
+                  identity = _paramObj.identity;
 
               _module = _module2;
               _reducerModule = _reducerModule2 || _module2;
@@ -2047,7 +2047,7 @@ export default function register(ccClassKey, _temp) {
               _payload = payload;
               _cb = cb;
               _lazyMs = _lazyMs2;
-              if (_identity2) _identity = _identity2;
+              if (identity) _identity = identity;
             } else if (paramObjType === 'string') {
               var slashCount = paramObj.split('').filter(function (v) {
                 return v === '/';
